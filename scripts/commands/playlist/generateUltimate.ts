@@ -8,6 +8,7 @@ import iptvParser from 'iptv-playlist-parser'
 import { Collection } from '@freearhey/core'
 import { eachLimit } from 'async'
 import path from 'node:path'
+import fs from 'node:fs'
 import axios from 'axios'
 import zlib from 'node:zlib'
 
@@ -62,19 +63,7 @@ async function main() {
   // External playlists to fetch and include
   const externalPlaylists: { url: string; groupTitle: string }[] = [
     { url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8', groupTitle: 'Free-TV' },
-    { url: 'https://t.freetv.fun/m3u/adult.m3u', groupTitle: 'FreeTV - Adult' },
-    { url: 'https://t.freetv.fun/m3u/entertainment.m3u', groupTitle: 'FreeTV - Entertainment' },
-    { url: 'https://t.freetv.fun/m3u/generic.m3u', groupTitle: 'FreeTV - Generic' },
-    { url: 'https://t.freetv.fun/m3u/kids.m3u', groupTitle: 'FreeTV - Kids' },
-    { url: 'https://t.freetv.fun/m3u/knowledge.m3u', groupTitle: 'FreeTV - Knowledge' },
-    { url: 'https://t.freetv.fun/m3u/learn.m3u', groupTitle: 'FreeTV - Learn' },
-    { url: 'https://t.freetv.fun/m3u/movies.m3u', groupTitle: 'FreeTV - Movies' },
-    { url: 'https://t.freetv.fun/m3u/music.m3u', groupTitle: 'FreeTV - Music' },
-    { url: 'https://t.freetv.fun/m3u/news.m3u', groupTitle: 'FreeTV - News' },
-    { url: 'https://t.freetv.fun/m3u/other.m3u', groupTitle: 'FreeTV - Other' },
-    { url: 'https://t.freetv.fun/m3u/sports.m3u', groupTitle: 'FreeTV - Sports' },
-    { url: 'https://t.freetv.fun/m3u/test.m3u', groupTitle: 'FreeTV - Test' },
-    { url: 'https://t.freetv.fun/m3u/worldcup.m3u', groupTitle: 'FreeTV - Worldcup' },
+
     { url: 'https://raw.githubusercontent.com/YueChan/Live/main/Global.m3u', groupTitle: 'YueChan - Global' },
     { url: 'https://raw.githubusercontent.com/YueChan/Live/main/Radio.m3u', groupTitle: 'YueChan - Radio' },
     { url: 'https://raw.githubusercontent.com/iptvjs/iptv/main/adultiptv_all.m3u', groupTitle: 'IPTVjs - Adult' }
@@ -94,6 +83,30 @@ async function main() {
       logger.info(`loaded ${streams.length} streams from ${url} -> group: "${groupTitle}"`)
     } catch (err) {
       logger.error(`failed to fetch ${url}: ${err}`)
+    }
+  }
+
+  // Local VOD files to include (preserves original group-titles from the M3U)
+  const localPlaylists: { filepath: string; defaultGroup: string }[] = [
+    { filepath: '/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U\'s /movies_organized_poster_groups102925.m3u', defaultGroup: 'VOD - Movies' }
+  ]
+
+  let allLocalStreams: { groupTitle: string; streams: Stream[] }[] = []
+
+  for (const { filepath: localPath, defaultGroup } of localPlaylists) {
+    logger.info(`reading local playlist: ${localPath}...`)
+    try {
+      const content = fs.readFileSync(localPath, 'utf8')
+      const parsed: iptvParser.Playlist = iptvParser.parse(content)
+      const streams = parsed.items.map((item: iptvParser.PlaylistItem) => {
+        const stream = Stream.fromPlaylistItem(item)
+        stream.groupTitle = item.group?.title || defaultGroup
+        return stream
+      })
+      allLocalStreams.push({ groupTitle: '', streams })
+      logger.info(`loaded ${streams.length} streams from local file`)
+    } catch (err) {
+      logger.error(`failed to read local file ${localPath}: ${err}`)
     }
   }
 
@@ -126,6 +139,18 @@ async function main() {
   }
   if (allExternalStreams.length) {
     logger.info(`total streams after external additions: ${combinedStreams.count()}`)
+  }
+
+  // Add all local VOD streams (group-titles already set from source file)
+  for (const { streams } of allLocalStreams) {
+    logger.info(`adding ${streams.length} local VOD streams...`)
+    streams.forEach((stream: Stream) => {
+      stream.setGuides(data.guidesGroupedByStreamId.get(stream.getId()))
+      combinedStreams.add(stream)
+    })
+  }
+  if (allLocalStreams.length) {
+    logger.info(`total streams after local VOD additions: ${combinedStreams.count()}`)
   }
 
   logger.info(`loaded ${combinedStreams.count()} total streams`)
