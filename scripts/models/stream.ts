@@ -12,6 +12,7 @@ export class Stream extends sdk.Models.Stream {
   groupTitle: string = 'Undefined'
   removed: boolean = false
   tvgId?: string
+  tvgLogo?: string
   statusCode?: string
   guides = new Collection<sdk.Models.Guide>()
 
@@ -94,6 +95,7 @@ export class Stream extends sdk.Models.Stream {
     })
 
     stream.tvgId = data.tvg.id
+    stream.tvgLogo = data.tvg.logo || undefined
     stream.line = data.line
 
     return stream
@@ -395,6 +397,8 @@ export class Stream extends sdk.Models.Stream {
   }
 
   getTvgLogo(): string {
+    if (this.tvgLogo) return this.tvgLogo
+
     const logo = this.getLogos().first()
 
     return logo ? logo.url : ''
