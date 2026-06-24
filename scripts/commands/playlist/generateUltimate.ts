@@ -86,23 +86,24 @@ async function main() {
   }
 
   // Local VOD files to include
-  const localPlaylists: { filepath: string; groupTitle: string }[] = [
-    { filepath: '/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U\'s /movies_organized_poster_groups102925.m3u', groupTitle: 'VOD - Movies' }
+  const localPlaylists: { filepath: string; groupTitle?: string }[] = [
+    { filepath: '/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U\'s /movies_organized_poster_groups102925.m3u', groupTitle: 'VOD - Movies' },
+    { filepath: '/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U\'s /tv shows with posters.m3u' }
   ]
 
   let allLocalStreams: { groupTitle: string; streams: Stream[] }[] = []
 
-  for (const { filepath: localPath, groupTitle } of localPlaylists) {
+  for (const { filepath: localPath, groupTitle: overrideGroup } of localPlaylists) {
     logger.info(`reading local playlist: ${localPath}...`)
     try {
       const content = fs.readFileSync(localPath, 'utf8')
       const parsed: iptvParser.Playlist = iptvParser.parse(content)
       const streams = parsed.items.map((item: iptvParser.PlaylistItem) => {
         const stream = Stream.fromPlaylistItem(item)
-        stream.groupTitle = groupTitle
+        stream.groupTitle = overrideGroup || item.group?.title || 'VOD - TV Shows'
         return stream
       })
-      allLocalStreams.push({ groupTitle, streams })
+      allLocalStreams.push({ groupTitle: overrideGroup || '', streams })
       logger.info(`loaded ${streams.length} streams from local file`)
     } catch (err) {
       logger.error(`failed to read local file ${localPath}: ${err}`)
