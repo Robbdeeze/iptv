@@ -88,7 +88,7 @@ async function main() {
   // Local VOD files to include
   const localPlaylists: { filepath: string; groupTitle?: string }[] = [
     { filepath: '/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U\'s /movies_organized_poster_groups102925.m3u', groupTitle: 'VOD - Movies' },
-    { filepath: '/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U\'s /tv shows with posters.m3u' }
+    { filepath: '/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U\'s /tv shows with posters.m3u', groupTitle: 'VOD - TV Shows' }
   ]
 
   let allLocalStreams: { groupTitle: string; streams: Stream[] }[] = []
@@ -100,7 +100,7 @@ async function main() {
       const parsed: iptvParser.Playlist = iptvParser.parse(content)
       const streams = parsed.items.map((item: iptvParser.PlaylistItem) => {
         const stream = Stream.fromPlaylistItem(item)
-        stream.groupTitle = overrideGroup || item.group?.title || 'VOD - TV Shows'
+        stream.groupTitle = overrideGroup
         return stream
       })
       allLocalStreams.push({ groupTitle: overrideGroup || '', streams })
