@@ -1,6 +1,6 @@
 import { ROOT_DIR, STREAMS_DIR } from '../../constants'
 import { Storage } from '@freearhey/storage-js'
-import { PlaylistParser, StreamTester } from '../../core'
+import { PlaylistParser } from '../../core'
 import { loadData, data } from '../../api'
 import { Logger } from '@freearhey/core'
 import { Stream, Playlist } from '../../models'
@@ -52,9 +52,10 @@ async function main() {
   // List all m3u files under streams/
   const files = await streamsStorage.list('**/*.m3u')
   
-  // Filter for US, CA, UK files (case-insensitive)
+  // Filter for US, CA, UK files (case-insensitive), excluding auto-generated famelack files
   const targetFiles = files.filter(filepath => {
     const filename = path.basename(filepath).toLowerCase()
+    if (filename.includes('famelack')) return false
     return filename.startsWith('us') || filename.startsWith('ca') || filename.startsWith('uk')
   })
 
@@ -62,8 +63,6 @@ async function main() {
 
   // External playlists to fetch and include
   const externalPlaylists: { url: string; groupTitle: string }[] = [
-    { url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8', groupTitle: 'Free-TV' },
-
     { url: 'https://raw.githubusercontent.com/YueChan/Live/main/Global.m3u', groupTitle: 'YueChan - Global' },
     { url: 'https://raw.githubusercontent.com/YueChan/Live/main/Radio.m3u', groupTitle: 'YueChan - Radio' },
     { url: 'https://raw.githubusercontent.com/iptvjs/iptv/main/adultiptv_all.m3u', groupTitle: 'IPTVjs - Adult' }
@@ -110,6 +109,60 @@ async function main() {
     }
   }
 
+  // Famelack data: fetch US/UK channel JSON, convert to M3U, and save to streams/
+  const famelackSources: { countryCode: string; groupTitle: string }[] = [
+    { countryCode: 'us', groupTitle: 'Famelack - US' },
+    { countryCode: 'uk', groupTitle: 'Famelack - UK' }
+  ]
+
+  let allFamelackStreams: { groupTitle: string; streams: Stream[] }[] = []
+
+  for (const { countryCode, groupTitle } of famelackSources) {
+    const url = `https://raw.githubusercontent.com/famelack/famelack-data/main/tv/raw/countries/${countryCode}.json`
+    logger.info(`fetching famelack ${countryCode} channels...`)
+    try {
+      const response = await axios.get(url, { timeout: 30000 })
+      const channels: any[] = response.data
+      const streams: Stream[] = []
+      let m3uContent = '#EXTM3U\r\n'
+
+      for (const ch of channels) {
+        const streamUrls = ch.sources?.streams
+        if (!streamUrls || !streamUrls.length) continue
+
+        for (const streamUrl of streamUrls) {
+          const tvgId = ch.nanoid || ''
+          const name = ch.name || 'Unknown'
+          m3uContent += `#EXTINF:-1 tvg-id="${tvgId}" group-title="${groupTitle}",${name}\r\n${streamUrl}\r\n`
+
+          const stream = new Stream({
+            channel: tvgId,
+            title: name,
+            url: streamUrl,
+            quality: null,
+            referrer: null,
+            user_agent: null,
+            label: null,
+            feed: null
+          })
+          stream.groupTitle = groupTitle
+          streams.push(stream)
+        }
+      }
+
+      // Save individual M3U file to streams/ folder
+      const m3uFilename = `${countryCode}_famelack.m3u`
+      const m3uFilepath = path.join(STREAMS_DIR, m3uFilename)
+      fs.writeFileSync(m3uFilepath, m3uContent)
+      logger.info(`saved ${streams.length} streams to streams/${m3uFilename}`)
+
+      allFamelackStreams.push({ groupTitle, streams })
+      logger.info(`loaded ${streams.length} streams from famelack ${countryCode}`)
+    } catch (err) {
+      logger.error(`failed to fetch famelack ${countryCode}: ${err}`)
+    }
+  }
+
   let combinedStreams = new Collection<Stream>()
 
   for (const filepath of targetFiles) {
@@ -153,6 +206,17 @@ async function main() {
     logger.info(`total streams after local VOD additions: ${combinedStreams.count()}`)
   }
 
+  // Add all famelack streams
+  for (const { groupTitle, streams } of allFamelackStreams) {
+    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
+    streams.forEach((stream: Stream) => {
+      combinedStreams.add(stream)
+    })
+  }
+  if (allFamelackStreams.length) {
+    logger.info(`total streams after famelack additions: ${combinedStreams.count()}`)
+  }
+
   logger.info(`loaded ${combinedStreams.count()} total streams`)
 
   // Deduplicate streams by URL
@@ -160,48 +224,6 @@ async function main() {
   combinedStreams = combinedStreams.uniqBy((stream: Stream) => stream.url)
 
   logger.info(`retained ${combinedStreams.count()} streams after deduplication`)
-
-  // Check channel links/status (keep only online streams)
-  logger.info('checking channel links status (filtering out offline streams)...')
-  const tester = new StreamTester({
-    options: {
-      timeout: 5000 // 5 seconds timeout per stream check
-    }
-  })
-
-  const workingStreams = new Collection<Stream>()
-  let checkedCount = 0
-  const totalToCheck = combinedStreams.count()
-
-  await new Promise<void>((resolve) => {
-    eachLimit(
-      combinedStreams.all(),
-      30, // 30 concurrent requests
-      async (stream: Stream) => {
-        try {
-          const result = await tester.test(stream)
-          checkedCount++
-
-          if (checkedCount % 100 === 0 || checkedCount === totalToCheck) {
-            logger.info(`progress: checked ${checkedCount}/${totalToCheck} streams...`)
-          }
-
-          if (result.status.ok) {
-            workingStreams.add(stream)
-          }
-        } catch (err) {
-          // Ignore errors and exclude stream
-        }
-      },
-      (err) => {
-        if (err) logger.error(`error during stream checking: ${err}`)
-        resolve()
-      }
-    )
-  })
-
-  logger.info(`retained ${workingStreams.count()} online streams out of ${totalToCheck}`)
-  combinedStreams = workingStreams
 
   // Sort streams: Group Title (asc), Title (asc), Resolution (desc)
   logger.info('sorting streams...')
