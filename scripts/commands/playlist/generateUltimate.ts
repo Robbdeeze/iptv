@@ -85,24 +85,24 @@ async function main() {
     }
   }
 
-  // Local VOD files to include (preserves original group-titles from the M3U)
-  const localPlaylists: { filepath: string; defaultGroup: string }[] = [
-    { filepath: '/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U\'s /movies_organized_poster_groups102925.m3u', defaultGroup: 'VOD - Movies' }
+  // Local VOD files to include
+  const localPlaylists: { filepath: string; groupTitle: string }[] = [
+    { filepath: '/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U\'s /movies_organized_poster_groups102925.m3u', groupTitle: 'VOD - Movies' }
   ]
 
   let allLocalStreams: { groupTitle: string; streams: Stream[] }[] = []
 
-  for (const { filepath: localPath, defaultGroup } of localPlaylists) {
+  for (const { filepath: localPath, groupTitle } of localPlaylists) {
     logger.info(`reading local playlist: ${localPath}...`)
     try {
       const content = fs.readFileSync(localPath, 'utf8')
       const parsed: iptvParser.Playlist = iptvParser.parse(content)
       const streams = parsed.items.map((item: iptvParser.PlaylistItem) => {
         const stream = Stream.fromPlaylistItem(item)
-        stream.groupTitle = item.group?.title || defaultGroup
+        stream.groupTitle = groupTitle
         return stream
       })
-      allLocalStreams.push({ groupTitle: '', streams })
+      allLocalStreams.push({ groupTitle, streams })
       logger.info(`loaded ${streams.length} streams from local file`)
     } catch (err) {
       logger.error(`failed to read local file ${localPath}: ${err}`)
