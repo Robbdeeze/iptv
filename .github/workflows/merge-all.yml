@@ -71,11 +71,9 @@ jobs:
           done
           echo "Total: $total | Sampled: 100 | Dead in sample: $dead"
 
-      - run: |
-          git config user.name "Robbdeeze"
-          git config user.email "robbdeeze@gmail.com"
-          git add Robbdeeze_UltimateTV_AllM3uMerged.m3u Robbdeeze_UltimateTV_AllM3uMerged_Epg.xml Robbdeeze_UltimateTV_AllM3uMerged_Epg.xml.gz
-          git diff --cached --quiet || git commit -m "[Bot] Update Robbdeeze_UltimateTV_AllM3uMerged.m3u and EPG"
-          git fetch origin master
-          git rebase origin/master
-          git push
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "[Bot] Update Robbdeeze_UltimateTV_AllM3uMerged.m3u and EPG"
+          commit_user_name: "Robbdeeze"
+          commit_user_email: "robbdeeze@gmail.com"
+          file_pattern: Robbdeeze_UltimateTV_AllM3uMerged.m3u Robbdeeze_UltimateTV_AllM3uMerged_Epg.xml Robbdeeze_UltimateTV_AllM3uMerged_Epg.xml.gz
