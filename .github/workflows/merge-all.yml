@@ -9,14 +9,13 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - run: npm ci --ignore-scripts
@@ -71,7 +70,7 @@ jobs:
           done
           echo "Total: $total | Sampled: 100 | Dead in sample: $dead"
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "[Bot] Update Robbdeeze_UltimateTV_AllM3uMerged.m3u and EPG"
           commit_user_name: "Robbdeeze"

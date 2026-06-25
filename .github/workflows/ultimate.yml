@@ -74,7 +74,7 @@ jobs:
 
       - name: Commit and push changes
         if: steps.git-check.outputs.changes != '0'
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "[Bot] Update Robbdeeze_UltimateTV playlist, EPG, and imported streams"
           commit_user_name: "github-actions[bot]"
