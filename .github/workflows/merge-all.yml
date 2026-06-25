@@ -75,6 +75,7 @@ jobs:
           git config user.name "Robbdeeze"
           git config user.email "robbdeeze@gmail.com"
           git add Robbdeeze_UltimateTV_AllM3uMerged.m3u Robbdeeze_UltimateTV_AllM3uMerged_Epg.xml Robbdeeze_UltimateTV_AllM3uMerged_Epg.xml.gz
-          git pull --rebase origin master
           git diff --cached --quiet || git commit -m "[Bot] Update Robbdeeze_UltimateTV_AllM3uMerged.m3u and EPG"
+          git fetch origin master
+          git rebase origin/master
           git push
