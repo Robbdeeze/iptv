@@ -29,6 +29,41 @@ jobs:
       - name: Generate Ultimate Playlist
         run: npm run playlist:ultimate
 
+      - name: Generate channels.xml
+        run: npx tsx scripts/commands/playlist/generateEpg.ts --channels-xml channels.xml
+
+      - name: Build EPG with iptv-org/epg
+        run: |
+          docker run -d --name epg \
+            -v $PWD:/epg/public:Z \
+            -p 3000:3000 \
+            -e MAX_CONNECTIONS=5 \
+            -e DAYS=1 \
+            ghcr.io/iptv-org/epg:master
+
+          echo "Waiting for EPG generation to complete..."
+          for i in $(seq 1 180); do
+            sleep 60
+            if curl -sI http://localhost:3000/guide.xml 2>/dev/null | head -1 | grep -q "200"; then
+              echo "EPG generated successfully in ${i} minutes"
+              curl -s -o guide.xml http://localhost:3000/guide.xml
+              break
+            fi
+            echo "Waiting... (${i}/180 minutes)"
+          done
+
+          if [ ! -f guide.xml ]; then
+            echo "EPG generation did not complete within timeout"
+            docker logs epg --tail 50
+            docker stop epg
+            exit 1
+          fi
+
+          docker stop epg
+
+      - name: Process and compress EPG
+        run: npx tsx scripts/commands/playlist/generateEpg.ts --process-guide guide.xml
+
       - name: Check for changes
         id: git-check
         run: |
