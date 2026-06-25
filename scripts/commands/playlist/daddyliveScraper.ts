@@ -4,194 +4,75 @@ import axios from 'axios'
 
 const GROUP_TITLE = 'DaddyLive - Sports'
 
-const SPORTS_CATEGORIES = new Set([
-  'soccer', 'football', 'basketball', 'baseball', 'hockey', 'tennis',
-  'mma', 'boxing', 'rugby', 'cricket', 'motorsports', 'f1', 'motogp',
-  'ufc', 'nfl', 'nba', 'nhl', 'mlb', 'wwe', 'wrestling', 'ppv events',
+// Known sports channel name patterns (lowercase) used to filter player9Data
+const SPORTS_PATTERNS = [
+  'sport', 'espn', 'nfl', 'nba', 'nhl', 'mlb', 'ncaa', 'f1', 'motogp',
+  'ufc', 'wwe', 'boxing', 'mma', 'racing', 'darts', 'snooker',
+  'dazn', 'bein sport', 'sky sport', 'tnt sport', 'eurosport',
+  'fox sport', 'cbs sport', 'nbcsn', 'golf', 'tennis', 'cricket',
+  'rugby', 'cycling', 'volleyball', 'handball', 'hockey',
+  'tsn', 'sportsnet', 'atp', 'wta', 'formula', 'motorsport',
+  'soccer', 'football', 'basketball', 'baseball',
+  'premier league', 'champions league', 'serie a', 'la liga',
+  'nfl redzone', 'nba tv', 'nhl network', 'mlb network',
+  'fight', 'wrestling',
+  'sportklub', 'arena sport', 'cosmote sport', 'nova sport',
+  'match!', 'matchtv',
+  'football.' /* Football. 1/2/3 */, 'sport tv',
+  'eleven sport', 'viaplay',
+  'supersport',
+  'channel 4', 'channel 5', 'bbc one', 'bbc two', 'bbc three', 'bbc four',
+  'itv', 'itv1', 'itv2', 'itv3', 'itv4',
+  // Major broadcasters that carry sports
+  'fox news', 'bbc news', 'sky news', 'nbc sport',
+  'cbs', 'fox ',
+  'servus tv', 'orf ',
+  'rai ', 'canal+',
+  'sport tv',
+  'ptv sport',
+]
+
+const EVENTS_INTERESTING_CATEGORIES = [
+  'popular live events', 'ppv events', 'soccer', 'football',
+  'basketball', 'baseball', 'hockey', 'tennis', 'mma', 'boxing',
+  'rugby', 'cricket', 'motorsports', 'f1', 'motogp',
+  'ufc', 'nfl', 'nba', 'nhl', 'mlb', 'wwe', 'wrestling',
   'horse racing', 'darts', 'snooker', 'golf', 'cycling', 'volleyball',
-  'handball', 'olympics', 'racing'
-])
+  'handball', 'olympics', 'racing', 'athletics', 'badminton',
+  'table tennis', 'water polo', 'field hockey', 'formula'
+]
 
-const COUNTRY_MAP: Record<string, string> = {
-  netherlands: 'nl',
-  holland: 'nl',
-  'united kingdom': 'uk',
-  'great britain': 'uk',
-  england: 'uk',
-  britain: 'uk',
-  'united states': 'us',
-  'usa': 'us',
-  america: 'us',
-  germany: 'de',
-  deutschland: 'de',
-  france: 'fr',
-  spain: 'es',
-  españa: 'es',
-  italy: 'it',
-  italia: 'it',
-  portugal: 'pt',
-  belgium: 'be',
-  belgique: 'be',
-  switzerland: 'ch',
-  schweiz: 'ch',
-  austria: 'at',
-  Österreich: 'at',
-  poland: 'pl',
-  polska: 'pl',
-  russia: 'ru',
-  turkey: 'tr',
-  türkiye: 'tr',
-  brazil: 'br',
-  brasil: 'br',
-  argentina: 'ar',
-  japan: 'jp',
-  china: 'cn',
-  australia: 'au',
-  canada: 'ca',
-  mexico: 'mx',
-  colombia: 'co',
-  chile: 'cl',
-  peru: 'pe',
-  ecuador: 'ec',
-  uruguay: 'uy',
-  paraguay: 'py',
-  bolivia: 'bo',
-  venezuela: 've',
-  'costa rica': 'cr',
-  panama: 'pa',
-  honduras: 'hn',
-  guatemala: 'gt',
-  'el salvador': 'sv',
-  nicaragua: 'ni',
-  cuba: 'cu',
-  'dominican republic': 'do',
-  'puerto rico': 'pr',
-  ireland: 'ie',
-  eire: 'ie',
-  scotland: 'sct',
-  wales: 'wls',
-  'northern ireland': 'nir',
-  denmark: 'dk',
-  danmark: 'dk',
-  sweden: 'se',
-  sverige: 'se',
-  norway: 'no',
-  norge: 'no',
-  finland: 'fi',
-  suomi: 'fi',
-  iceland: 'is',
-  Ísland: 'is',
-  greece: 'gr',
-  Ελλάδα: 'gr',
-  croatia: 'hr',
-  hrvatska: 'hr',
-  serbia: 'rs',
-  srbija: 'rs',
-  romania: 'ro',
-  românia: 'ro',
-  bulgaria: 'bg',
-  България: 'bg',
-  hungary: 'hu',
-  magyarország: 'hu',
-  'czech republic': 'cz',
-  czechia: 'cz',
-  Česko: 'cz',
-  slovakia: 'sk',
-  slovenia: 'si',
-  bosnia: 'ba',
-  herzegovina: 'ba',
-  albania: 'al',
-  macedonia: 'mk',
-  montenegro: 'me',
-  ukraine: 'ua',
-  belarus: 'by',
-  lithuania: 'lt',
-  latvia: 'lv',
-  estonia: 'ee',
-  georgia: 'ge',
-  armenia: 'am',
-  azerbaijan: 'az',
-  israel: 'il',
-  'saudi arabia': 'sa',
-  qatar: 'qa',
-  uae: 'ae',
-  'united arab emirates': 'ae',
-  india: 'in',
-  bharat: 'in',
-  pakistan: 'pk',
-  bangladesh: 'bd',
-  'sri lanka': 'lk',
-  nepal: 'np',
-  thailand: 'th',
-  vietnam: 'vn',
-  indonesia: 'id',
-  malaysia: 'my',
-  philippines: 'ph',
-  singapore: 'sg',
-  'hong kong': 'hk',
-  taiwan: 'tw',
-  'south korea': 'kr',
-  korea: 'kr',
-  'north korea': 'kp',
-  egypt: 'eg',
-  morocco: 'ma',
-  tunisia: 'tn',
-  algeria: 'dz',
-  nigeria: 'ng',
-  ghana: 'gh',
-  senegal: 'sn',
-  cameroon: 'cm',
-  'ivory coast': 'ci',
-  kenya: 'ke',
-  'south africa': 'za',
-  'new zealand': 'nz',
-  'world feed': 'int',
-  international: 'int'
-}
-
-function normalizeName(name: string): string {
-  let normalized = name.toLowerCase().trim()
-  // Collapse whitespace
-  normalized = normalized.replace(/\s+/g, ' ')
-  // Remove special chars except spaces, hyphens, dots, and parentheses
-  normalized = normalized.replace(/[^a-z0-9\s\-\.\(\)]/g, '')
-  // Normalize country names
-  const words = normalized.split(/\s+/)
-  const mapped = words.map(word => COUNTRY_MAP[word] || word)
-  return mapped.join(' ').trim()
-}
-
-function cleanForMatch(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]/g, '')
-}
-
-interface Player9Entry {
+type PlayerEntry = {
   name: string
   url: string
+  [key: string]: any
 }
 
-interface EventChannel {
+type EventChannel = {
   channel_name?: string
   channel_id?: string | number
   url?: string
   source?: string
 }
 
-interface EventItem {
+type EventItem = {
   time?: string
   event?: string
   channels?: EventChannel[]
   source?: string
 }
 
-interface DayData {
+type DayData = {
   day?: string
   categories?: Record<string, EventItem[]>
 }
 
-async function scrapeActiveDomains(logger: Logger): Promise<string[]> {
-  const domains: string[] = []
+function isSportsChannel(name: string): boolean {
+  const lower = name.toLowerCase().trim()
+  return SPORTS_PATTERNS.some(pattern => lower.includes(pattern))
+}
 
+async function fetchActiveDomain(logger: Logger): Promise<string | null> {
   try {
     logger.info('Fetching https://daddylive.org/ ...')
     const response = await axios.get('https://daddylive.org/', {
@@ -203,91 +84,59 @@ async function scrapeActiveDomains(logger: Logger): Promise<string[]> {
     })
     const html: string = response.data
 
-    // Find the section header "DaddyLive - DaddyLiveHD Live Sports Stream Online Free HD"
-    const sectionHeader =
-      'DaddyLive - DaddyLiveHD Live Sports Stream Online Free HD'
+    const sectionHeader = 'DaddyLive - DaddyLiveHD Live Sports Stream Online Free HD'
     const sectionIdx = html.indexOf(sectionHeader)
     if (sectionIdx === -1) {
       logger.error('Could not find DaddyLiveHD section on the page')
-      return domains
+      return null
     }
 
-    // Get content from the section to next known section or end
     const sections = ['WarFlix - Movies', 'DaddyLive Telegram', 'Discord']
     let endIdx = html.length
     for (const sec of sections) {
       const idx = html.indexOf(sec, sectionIdx + sectionHeader.length)
-      if (idx !== -1 && idx < endIdx) {
-        endIdx = idx
-      }
+      if (idx !== -1 && idx < endIdx) endIdx = idx
     }
     const sectionContent = html.slice(sectionIdx, endIdx)
 
-    // Find "Domain - X" patterns with "Active" status and extract the URL
-    // Structure is like: Domain - X <some content> Active <some content> https://...
-    // Use a two-pass approach: find all Active spans, then find the nearest preceding/following domain URL
-
-    // Pass 1: Find all occurrences of "Active" in the section
+    // Find Active domains
     let searchStart = 0
     while (true) {
       const activeIdx = sectionContent.indexOf('Active', searchStart)
       if (activeIdx === -1) break
-
-      // Get context around this Active marker
       const contextStart = Math.max(0, activeIdx - 400)
       const contextEnd = Math.min(sectionContent.length, activeIdx + 150)
       const context = sectionContent.slice(contextStart, contextEnd)
-
-      // Check if this is in a Domain block (look for "Domain" near the context)
-      const domainMatch = context.match(/Domain\s*-\s*\d+/i)
-      if (domainMatch) {
-        // Extract URL from the context - look for https:// patterns
+      if (context.match(/Domain\s*-\s*\d+/i)) {
         const urlMatch = context.match(
           /https?:\/\/(?:daddylive|streameast|dlhd)[a-zA-Z0-9.-]+\.[a-z]+/
         )
-        if (urlMatch) {
-          const url = urlMatch[0].replace(/\/+$/, '') // trailing slash
-          if (!domains.includes(url)) {
-            domains.push(url)
-            logger.info(`Found active domain: ${url}`)
-          }
-        }
+        if (urlMatch) return urlMatch[0].replace(/\/+$/, '')
       }
-
       searchStart = activeIdx + 6
     }
 
-    // Fallback: if no domains found via "Active", try scanning for Domain blocks
-    if (domains.length === 0) {
-      const domainBlockRegex =
-        /Domain\s*-\s*\d+[\s\S]{0,500}?(Active|Offline)[\s\S]{0,200}?(https?:\/\/[^\s<>"']+)/gi
-      let blockMatch: RegExpExecArray | null
-      while ((blockMatch = domainBlockRegex.exec(sectionContent)) !== null) {
-        if (blockMatch[1] === 'Active') {
-          const url = blockMatch[2].replace(/\/+$/, '')
-          if (!domains.includes(url)) {
-            domains.push(url)
-            logger.info(`Found active domain (fallback): ${url}`)
-          }
-        }
-      }
+    // Fallback regex
+    const fallbackMatch = sectionContent.match(
+      /Domain\s*-\s*\d+[\s\S]{0,500}?Active[\s\S]{0,200}?(https?:\/\/[^\s<>"']+)/i
+    )
+    if (fallbackMatch) {
+      const url = fallbackMatch[1].replace(/\/+$/, '')
+      if (url.match(/daddylive|streameast|dlhd/)) return url
     }
   } catch (err: any) {
     logger.error(`Failed to scrape daddylive domains: ${err.message || err}`)
   }
-
-  return domains
+  return null
 }
 
-async function fetchPlayer9Data(
+async function fetchPlayerData(
   domain: string,
+  playerVar: string,
   logger: Logger
-): Promise<Map<string, string>> {
-  const map = new Map<string, string>()
-
+): Promise<PlayerEntry[]> {
   try {
     const url = `${domain}/embed/embed.php?id=32&player=1&source=tv.json`
-    logger.info(`Fetching player9Data from ${url} ...`)
     const response = await axios.get(url, {
       timeout: 30000,
       headers: {
@@ -296,58 +145,168 @@ async function fetchPlayer9Data(
       }
     })
     const html: string = response.data
-
-    // Extract const player9Data = [...];
-    // Use a regex that finds the declaration and captures the array
     const match = html.match(
-      /const\s+player9Data\s*=\s*(\[[\s\S]*?\])\s*;/
+      new RegExp(`const\\s+${playerVar}\\s*=\\s*(\\[[\\s\\S]*?\\])\\s*;`)
     )
     if (!match) {
-      logger.error('Could not find player9Data in the embed page')
-      return map
+      logger.warn(`Could not find ${playerVar} in the embed page`)
+      return []
     }
+    const entries: PlayerEntry[] = JSON.parse(match[1])
+    logger.info(`Parsed ${entries.length} entries from ${playerVar}`)
+    return entries
+  } catch (err: any) {
+    logger.warn(`Failed to fetch ${playerVar}: ${err.message || err}`)
+    return []
+  }
+}
 
-    let entries: Player9Entry[]
-    try {
-      entries = JSON.parse(match[1])
-    } catch (parseErr: any) {
-      logger.error(
-        `Failed to parse player9Data JSON: ${parseErr.message || parseErr}`
+function findMatch(data: PlayerEntry[], title: string): PlayerEntry | null {
+  if (!Array.isArray(data) || !title) return null
+
+  // Normalize once
+  function norm(s: string): string {
+    return s.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ')
+  }
+
+  const n = norm(title)
+
+  // 1. Exact name match
+  for (const c of data) {
+    if (c.name && norm(c.name) === n) return c
+  }
+
+  // 2. startsWith
+  for (const c of data) {
+    if (!c.name) continue
+    const h = norm(c.name)
+    if (n.startsWith(h) || h.startsWith(n)) return c
+  }
+
+  // 3. Word containment
+  const words = n.split(' ').filter(x => x.length > 1)
+  if (words.length) {
+    for (const c of data) {
+      if (!c.name) continue
+      const h = norm(c.name)
+      if (words.every(w => h.includes(w))) return c
+    }
+  }
+
+  return null
+}
+
+async function extractStreamFromEventEmbed(
+  embedUrl: string,
+  player9Data: PlayerEntry[],
+  logger: Logger
+): Promise<string | null> {
+  try {
+    const response = await axios.get(embedUrl, {
+      timeout: 30000,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    })
+    const html: string = response.data
+
+    // Extract channel_id
+    const cidMatch = html.match(/const\s+channel_id\s*=\s*"([^"]+)"/)
+    if (!cidMatch) return null
+    const channelId = cidMatch[1].replace(/\\\//g, '/')
+
+    // Check if source=tv.json (standard channel) or not (event link)
+    const hasTvSource = embedUrl.includes('source=tv.json')
+
+    let title: string
+    if (hasTvSource) {
+      // Extract channelData and look up title
+      const cdMatch = html.match(
+        /(?:var|let|const)\s+channelData\s*=\s*(\[[\s\S]*?\])\s*;/
       )
-      return map
+      if (cdMatch) {
+        try {
+          const channelData = JSON.parse(cdMatch[1])
+          const entry = channelData.find(
+            (c: any) => String(c.id) === String(channelId)
+          )
+          title = entry?.title || channelId.replace(/-/g, ' ')
+        } catch {
+          title = channelId.replace(/-/g, ' ')
+        }
+      } else {
+        title = channelId.replace(/-/g, ' ')
+      }
+    } else {
+      // For event-specific links, title is the channel_id with dashes replaced
+      title = channelId.replace(/-/g, ' ')
     }
 
-    logger.info(`Parsed ${entries.length} entries from player9Data`)
+    // Try findMatch against player9Data
+    const match = findMatch(player9Data, title)
+    if (match?.url) return match.url
 
-    for (const entry of entries) {
-      if (entry.name && entry.url) {
-        const normalizedName = normalizeName(entry.name)
-        const cleanedName = cleanForMatch(entry.name)
-
-        // Store multiple key variants for matching flexibility
-        map.set(entry.name, entry.url)
-        map.set(normalizedName, entry.url)
-        if (cleanedName !== normalizedName && cleanedName !== entry.name) {
-          map.set(cleanedName, entry.url)
+    // Also try extracting playerLinksOrder and trying dlhd sources
+    const linkOrderMatch = html.match(
+      /const\s+playerLinksOrder\s*=\s*(\[[\s\S]*?\])\s*;/
+    )
+    if (linkOrderMatch) {
+      const linkOrder: string[] = JSON.parse(linkOrderMatch[1])
+      for (const sourceId of linkOrder) {
+        // dlhd sources construct URLs from channel_id
+        if (sourceId.startsWith('dlhd')) {
+          const num = sourceId.replace('dlhd', '')
+          const dlhdUrls: Record<string, string> = {
+            '1': 'https://cricsfree.cfd/live/stream-',
+            '2': 'https://dlhd.pk/cast/stream-',
+            '3': 'https://dlhd.pk/watch/stream-',
+            '4': 'https://dlhd.pk/plus/stream-',
+            '5': 'https://dlhd.pk/player/stream-',
+            '10': 'https://dlhd.pk/casting/stream-',
+          }
+          const baseUrl = dlhdUrls[num]
+          if (baseUrl) {
+            const dlhdUrl = `${baseUrl}${channelId}.php`
+            try {
+              const dlhdResp = await axios.get(dlhdUrl, {
+                timeout: 10000,
+                maxRedirects: 5,
+                headers: {
+                  'User-Agent':
+                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
+              })
+              // Check if the response contains an m3u8 URL
+              const m3u8Match = dlhdResp.data.match(
+                /https?:\/\/[^\s"']+\.m3u8[^\s"']*/
+              )
+              if (m3u8Match) return m3u8Match[0]
+              // Check if it redirects to an m3u8
+              if (
+                dlhdResp.request?.res?.responseUrl?.includes('.m3u8')
+              ) {
+                return dlhdResp.request.res.responseUrl
+              }
+            } catch {
+              // dlhd source failed, continue to next
+            }
+          }
         }
       }
     }
 
-    logger.info(`Built lookup map with ${map.size} keys`)
-  } catch (err: any) {
-    logger.error(
-      `Failed to fetch player9Data from ${domain}: ${err.message || err}`
-    )
+    return null
+  } catch {
+    return null
   }
-
-  return map
 }
 
-async function fetchSportEvents(
+async function fetchEvents(
   domain: string,
   logger: Logger
-): Promise<EventItem[]> {
-  const sportsEvents: EventItem[] = []
+): Promise<{ channels: EventChannel[] }> {
+  const allChannels: EventChannel[] = []
 
   try {
     const url = `${domain}/api/events`
@@ -365,102 +324,27 @@ async function fetchSportEvents(
       const categories = day.categories || {}
       for (const [categoryName, events] of Object.entries(categories)) {
         const lowerCat = categoryName.toLowerCase().trim()
-        // Check if this category is a sports category
-        const isSport =
-          Array.from(SPORTS_CATEGORIES).some((sport) => {
-            if (lowerCat.includes(sport)) return true
-            if (sport.includes(lowerCat)) return true
-            return false
-          }) || false
-
-        if (!isSport) continue
-
+        const isInteresting = EVENTS_INTERESTING_CATEGORIES.some(
+          cat => lowerCat.includes(cat) || cat.includes(lowerCat)
+        )
+        if (!isInteresting) continue
         if (!Array.isArray(events)) continue
 
         for (const event of events) {
           if (!event.channels || !Array.isArray(event.channels)) continue
           for (const channel of event.channels) {
-            if (channel.channel_name) {
-              sportsEvents.push({
-                time: event.time,
-                event: event.event,
-                channels: [
-                  {
-                    channel_name: channel.channel_name,
-                    channel_id: channel.channel_id,
-                    source: channel.source || event.source
-                  }
-                ]
-              })
-            }
+            allChannels.push(channel)
           }
         }
       }
     }
 
-    logger.info(`Found ${sportsEvents.length} sport event channels`)
+    logger.info(`Found ${allChannels.length} channels from interesting event categories`)
   } catch (err: any) {
-    logger.error(
-      `Failed to fetch sports events from ${domain}: ${err.message || err}`
-    )
+    logger.error(`Failed to fetch events: ${err.message || err}`)
   }
 
-  return sportsEvents
-}
-
-function matchChannel(
-  channelName: string,
-  player9Map: Map<string, string>
-): string | null {
-  const normalized = normalizeName(channelName)
-  const cleaned = cleanForMatch(channelName)
-
-  // 1. Exact match (try all key variants)
-  if (player9Map.has(channelName)) return player9Map.get(channelName)!
-  if (player9Map.has(normalized)) return player9Map.get(normalized)!
-  if (player9Map.has(cleaned)) return player9Map.get(cleaned)!
-
-  // 2. Substring / containment match against all keys
-  for (const [key, url] of player9Map) {
-    const keyNorm = normalizeName(key)
-    const keyClean = cleanForMatch(key)
-
-    // Check containment both ways
-    if (cleaned.includes(keyClean) || keyClean.includes(cleaned)) return url
-    if (normalized.includes(keyNorm) || keyNorm.includes(normalized)) return url
-  }
-
-  // 3. Individual word match - if any significant word from the channel
-  //    appears in the player key and vice versa, it's a strong candidate
-  const normWords = normalized
-    .split(/\s+/)
-    .filter((w) => w.length > 1 && !/^\d+$/.test(w) && !w.endsWith('p') && w !== 'hd' && w !== 'fhd' && w !== 'uhd' && w !== 'k')
-  if (normWords.length === 0) return null
-
-  let bestMatch: { url: string; score: number } | null = null
-  for (const [key, url] of player9Map) {
-    const keyNorm = normalizeName(key)
-    const keyWords = keyNorm
-      .split(/\s+/)
-      .filter((w) => w.length > 1 && !/^\d+$/.test(w) && !w.endsWith('p') && w !== 'hd' && w !== 'fhd' && w !== 'uhd' && w !== 'k')
-
-    if (keyWords.length === 0) continue
-
-    const commonWords = normWords.filter(w => keyWords.some(kw => kw.includes(w) || w.includes(kw)))
-    // Also check if any keyWord is in normWords
-    const commonReverse = keyWords.filter(kw => normWords.some(w => w.includes(kw) || kw.includes(w)))
-    
-    const allCommon = new Set([...commonWords, ...commonReverse])
-    const score = allCommon.size
-
-    if (score > 0 && (!bestMatch || score > bestMatch.score)) {
-      bestMatch = { url, score }
-    }
-  }
-
-  if (bestMatch && bestMatch.score >= 1) return bestMatch.url
-
-  return null
+  return { channels: allChannels }
 }
 
 export async function scrapeDaddylive(
@@ -468,83 +352,118 @@ export async function scrapeDaddylive(
 ): Promise<{ groupTitle: string; streams: Stream[] }[]> {
   const result: { groupTitle: string; streams: Stream[] }[] = []
 
-  // Step 1: Scrape active domains
-  logger.info('=== Step 1: Scraping active daddylive domains ===')
-  const domains = await scrapeActiveDomains(logger)
-
-  if (domains.length === 0) {
-    logger.error(
-      'No active daddylive domains found. Cannot proceed.'
-    )
+  // Step 1: Find active domain
+  logger.info('=== Step 1: Finding active daddylive domain ===')
+  const domain = await fetchActiveDomain(logger)
+  if (!domain) {
+    logger.error('No active daddylive domain found')
     return result
   }
-
-  logger.info(`Active domains found: ${domains.join(', ')}`)
-
-  // Step 2: Use the first active domain
-  const domain = domains[0].replace(/\/+$/, '')
   logger.info(`Using domain: ${domain}`)
 
-  // Step 3: Fetch player9Data for stream URL mapping
-  logger.info('=== Step 2: Fetching player9Data stream map ===')
-  const player9Map = await fetchPlayer9Data(domain, logger)
-
-  if (player9Map.size === 0) {
-    logger.error('No player9Data entries found. Cannot proceed.')
+  // Step 2: Fetch player data arrays
+  logger.info('=== Step 2: Fetching player data arrays ===')
+  const player9Data = await fetchPlayerData(domain, 'player9Data', logger)
+  if (player9Data.length === 0) {
+    logger.error('No player9Data found')
     return result
   }
 
-  // Step 4: Fetch sports events
-  logger.info('=== Step 3: Fetching sports events ===')
-  const sportsEvents = await fetchSportEvents(domain, logger)
-
-  if (sportsEvents.length === 0) {
-    logger.warn('No sports events found.')
-    return result
-  }
-
-  // Step 5: Match events to streams
-  logger.info('=== Step 4: Matching events to streams ===')
-  const streams: Stream[] = []
+  // Step 3: Extract sports channels directly from player9Data
+  logger.info('=== Step 3: Extracting sports channels from player9Data ===')
   const seenUrls = new Set<string>()
-  let matchedCount = 0
+  const streams: Stream[] = []
 
-  for (const event of sportsEvents) {
-    if (!event.channels || event.channels.length === 0) continue
+  let sportsCount = 0
+  for (const entry of player9Data) {
+    if (!entry.name || !entry.url) continue
+    if (!entry.url.includes('.m3u8')) continue
+    if (!isSportsChannel(entry.name)) continue
+    if (seenUrls.has(entry.url)) continue
+    seenUrls.add(entry.url)
 
-    for (const channel of event.channels) {
+    const stream = new Stream({
+      channel: null,
+      feed: null,
+      title: entry.name,
+      url: entry.url,
+      quality: null,
+      referrer: null,
+      user_agent: null,
+      label: null
+    })
+    stream.tvgId = entry.name
+    stream.tvgLogo = ''
+    stream.groupTitle = GROUP_TITLE
+    streams.push(stream)
+    sportsCount++
+  }
+  logger.info(`Added ${sportsCount} sports channels from player9Data`)
+
+  // Step 4: Fetch events API for additional channels
+  logger.info('=== Step 4: Fetching events for additional channels ===')
+  const { channels: eventChannels } = await fetchEvents(domain, logger)
+
+  if (eventChannels.length > 0) {
+    let eventMatched = 0
+    for (const channel of eventChannels) {
       const channelName = channel.channel_name || ''
-      if (!channelName) continue
+      const hasRealName =
+        channelName && !channelName.match(/^Link\s*-\s*\d+$/i)
 
-      const m3u8Url = matchChannel(channelName, player9Map)
-      if (!m3u8Url) continue
-
-      // Deduplicate by URL
-      if (seenUrls.has(m3u8Url)) continue
-      seenUrls.add(m3u8Url)
-
-      const stream = new Stream({
-        channel: null,
-        feed: null,
-        title: channelName,
-        url: m3u8Url,
-        quality: null,
-        referrer: null,
-        user_agent: null,
-        label: null
-      })
-
-      stream.tvgId = channelName
-      stream.tvgLogo = ''
-      stream.groupTitle = GROUP_TITLE
-
-      streams.push(stream)
-      matchedCount++
+      if (hasRealName) {
+        // Standard channel with a real name - use findMatch against player9Data
+        const match = findMatch(player9Data, channelName)
+        if (match?.url && !seenUrls.has(match.url)) {
+          seenUrls.add(match.url)
+          const stream = new Stream({
+            channel: null,
+            feed: null,
+            title: channelName,
+            url: match.url,
+            quality: null,
+            referrer: null,
+            user_agent: null,
+            label: null
+          })
+          stream.tvgId = channelName
+          stream.tvgLogo = ''
+          stream.groupTitle = GROUP_TITLE
+          streams.push(stream)
+          eventMatched++
+        }
+      } else if (channel.url) {
+        // Event-specific link - try to extract stream from embed page
+        const m3u8Url = await extractStreamFromEventEmbed(
+          channel.url,
+          player9Data,
+          logger
+        )
+        if (m3u8Url && !seenUrls.has(m3u8Url)) {
+          seenUrls.add(m3u8Url)
+          const stream = new Stream({
+            channel: null,
+            feed: null,
+            title: channel.event || channelName,
+            url: m3u8Url,
+            quality: null,
+            referrer: null,
+            user_agent: null,
+            label: null
+          })
+          stream.tvgId = channel.event || channelName
+          stream.tvgLogo = ''
+          stream.groupTitle = GROUP_TITLE
+          streams.push(stream)
+          eventMatched++
+        }
+      }
     }
+    logger.info(`Matched ${eventMatched} additional channels from events API`)
   }
 
   logger.info(
-    `Matched ${matchedCount} event channels to streams (${streams.length} unique)`
+    `Total DaddyLive streams: ${streams.length}`
   )
 
   if (streams.length > 0) {

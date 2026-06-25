@@ -753,36 +753,466 @@ https://5caf24a595d94.streamlock.net:1937/8132/8132/playlist.m3u8
 https://wowzastream.westmancom.com/wcgtvlive/wcgtvPSA.stream/master.m3u8
 #EXTINF:-1 tvg-id="ZeeTVCanada.ca@SD" tvg-logo="https://i.imgur.com/mARKUZ9.png" group-title="Canada",Zee TV Canada (1080p)
 https://origin-cae-m462953.toober.com/4c3caf7294b3/c8bf99484885/playlist.m3u8
-#EXTINF:-1 tvg-id="BBC One UK" tvg-logo="" group-title="DaddyLive - Sports",BBC One UK
-https://2-fss-1.streamhoster.com/pl_148/201830-1293592-1/playlist.m3u8
-#EXTINF:-1 tvg-id="beIN Sports MAX 2 Arabia" tvg-logo="" group-title="DaddyLive - Sports",beIN Sports MAX 2 Arabia
-https://ncdn.telewebion.ir/ara/live/playlist.m3u8
+#EXTINF:-1 tvg-id="ACI Sport TV (1080p)" tvg-logo="" group-title="DaddyLive - Sports",ACI Sport TV (1080p)
+https://webstream.multistream.it/memfs/e2cb3629-c1a2-495b-b43a-9eb386f04ed8.m3u8
+#EXTINF:-1 tvg-id="Adjarasport 1" tvg-logo="" group-title="DaddyLive - Sports",Adjarasport 1
+https://live20.bozztv.com/dvrfl05/gin-adjara/index.m3u8
+#EXTINF:-1 tvg-id="Africa 24 Sport (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Africa 24 Sport (1080p)
+https://africa24.vedge.infomaniak.com/livecast/ik:africa24sport/manifest.m3u8
+#EXTINF:-1 tvg-id="Al Iraqia Sport (720p)" tvg-logo="" group-title="DaddyLive - Sports",Al Iraqia Sport (720p)
+https://imn-live.esite-lab.com/hls/iraqia-sports-1.m3u8
+#EXTINF:-1 tvg-id="Al-Aimma TV (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Al-Aimma TV (1080p)
+https://alaimma.tv/live/index.m3u8
+#EXTINF:-1 tvg-id="Alfa Sport (1080p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Alfa Sport (1080p) [Not 24/7]
+https://dev.aftermind.xyz/edge-hls/unitrust/alfasports/index.m3u8?token=8TXWzhY3h6jrzqEqx
+#EXTINF:-1 tvg-id="Amman TV (720p)" tvg-logo="" group-title="DaddyLive - Sports",Amman TV (720p)
+https://ammantv-live.ercdn.net/ammantvhd/ammantvhd.m3u8
+#EXTINF:-1 tvg-id="AntenaSport (1280p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",AntenaSport (1280p) [Not 24/7]
+https://hls.rundletv.eu.org/LIVE$AntenaSport/6.m3u8/Level/300720051?end=END&start=LIVE
+#EXTINF:-1 tvg-id="AS3 Sport TV (1080p)" tvg-logo="" group-title="DaddyLive - Sports",AS3 Sport TV (1080p)
+https://streamtv.as3sport.online:3394/hybrid/play.m3u8
+#EXTINF:-1 tvg-id="AsiriTV (720p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",AsiriTV (720p) [Not 24/7]
+https://video2.lhdserver.es/asiritv/live.m3u8
+#EXTINF:-1 tvg-id="Auto Motor Sport" tvg-logo="" group-title="DaddyLive - Sports",Auto Motor Sport
+https://jmp2.uk/plu-5f760c3d41aa2d0007bfde19.m3u8
+#EXTINF:-1 tvg-id="Awapa Sports TV (1080p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Awapa Sports TV (1080p) [Not 24/7]
+https://mgv-awapa.akamaized.net/hls/live/2104282/MGV_CHANNEL15/master.m3u8
+#EXTINF:-1 tvg-id="Bahrain Sports 1 (720p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Bahrain Sports 1 (720p) [Not 24/7]
+https://5c7b683162943.streamlock.net/live/ngrp:sportsone_all/playlist.m3u8
+#EXTINF:-1 tvg-id="Bahrain Sports 2 (720p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Bahrain Sports 2 (720p) [Not 24/7]
+https://5c7b683162943.streamlock.net/live/ngrp:bahrainsportstwo_all/playlist.m3u8
+#EXTINF:-1 tvg-id="Band Sports (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Band Sports (1080p)
+https://cdn-5.nxplay.com.br/BAND_SPORTS/index.m3u8
+#EXTINF:-1 tvg-id="Canal 15 ILCE Summa Sabres (720p)" tvg-logo="" group-title="DaddyLive - Sports",Canal 15 ILCE Summa Sabres (720p)
+https://live-ilce.ovp-vivaro.digital/ovp-origin-abr/ngrp:6359ef999f3fb_all/playlist.m3u8
+#EXTINF:-1 tvg-id="Canal+ (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Canal+ (1080p)
+http://151.80.18.177:86/Canal+_HD/index.m3u8
+#EXTINF:-1 tvg-id="Canal+ Cinemas (720p)" tvg-logo="" group-title="DaddyLive - Sports",Canal+ Cinemas (720p)
+http://151.80.18.177:86/Canal+_cinema_HD/index.m3u8
+#EXTINF:-1 tvg-id="Canal+ Family (720p)" tvg-logo="" group-title="DaddyLive - Sports",Canal+ Family (720p)
+http://151.80.18.177:86/Canal+_Family_HD/index.m3u8
+#EXTINF:-1 tvg-id="Canal+ Haiti [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",Canal+ Haiti [Geo-blocked]
+https://vdo.pro-fhi.net:3605/live/dgenlcpmlive.m3u8
+#EXTINF:-1 tvg-id="Canal+ Sport (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Canal+ Sport (1080p)
+http://151.80.18.177:86/Canal+_sport_HD/index.m3u8
+#EXTINF:-1 tvg-id="CBC Sport HD [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",CBC Sport HD [Geo-blocked]
+https://mn-nl.mncdn.com/cbcsports_live/cbcsports/playlist.m3u8
+#EXTINF:-1 tvg-id="CBS News (720p)" tvg-logo="" group-title="DaddyLive - Sports",CBS News (720p)
+https://jmp2.uk/plu-62310f66d5888f0007534342.m3u8
+#EXTINF:-1 tvg-id="CBS News (720p)" tvg-logo="" group-title="DaddyLive - Sports",CBS News (720p)
+https://jmp2.uk/plu-62310d5a5dc9550007c6f580.m3u8
+#EXTINF:-1 tvg-id="CCTV-Golf & Tennis (1080p)" tvg-logo="" group-title="DaddyLive - Sports",CCTV-Golf & Tennis (1080p)
+http://38.75.136.137:98/gslb/dsdqpub/gefwq.m3u8?auth=testpub
+#EXTINF:-1 tvg-id="CCTV-Storm Football (1080p)" tvg-logo="" group-title="DaddyLive - Sports",CCTV-Storm Football (1080p)
+http://38.75.136.137:98/gslb/dsdqpub/fyzq.m3u8?auth=testpub
+#EXTINF:-1 tvg-id="Channel 5" tvg-logo="" group-title="DaddyLive - Sports",Channel 5
+https://app.viloud.tv/hls/channel/dcbf7a54c89ba12d98cc7c401c37f565.m3u8
+#EXTINF:-1 tvg-id="Channel 5 (576p)" tvg-logo="" group-title="DaddyLive - Sports",Channel 5 (576p)
+http://94.230.128.107:8080/5_kanal/index.m3u8
+#EXTINF:-1 tvg-id="Channel 5 (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Channel 5 (1080p)
+https://streamer2.nexgen.bz/05-CHANNEL5/index.m3u8
+#EXTINF:-1 tvg-id="Channel 5 (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Channel 5 (1080p)
+https://639bc5877c5fe.streamlock.net/tv5hdlive/tv5hdlive/playlist.m3u8
+#EXTINF:-1 tvg-id="Channel 5 (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Channel 5 (1080p)
+https://api-tv.ipnet.ua/api/v1/manifest/2118742539.m3u8
+#EXTINF:-1 tvg-id="Channel 44 (480p)" tvg-logo="" group-title="DaddyLive - Sports",Channel 44 (480p)
+https://d1k6kax80wecy5.cloudfront.net/WFqZJc/index.m3u8
 #EXTINF:-1 tvg-id="Chilevision" tvg-logo="" group-title="DaddyLive - Sports",Chilevision
 http://38.250.127.17:9800/play/a05h/index.m3u8
-#EXTINF:-1 tvg-id="DAZN PPV DE" tvg-logo="" group-title="DaddyLive - Sports",DAZN PPV DE
-https://player.smotrim.ru/iframe/stream/live_id/0487fd79-60e6-4333-a545-909d6e015173
-#EXTINF:-1 tvg-id="ERT 2 Greece" tvg-logo="" group-title="DaddyLive - Sports",ERT 2 Greece
-http://88.212.15.19/live/test_ct2_25p/playlist.m3u8
+#EXTINF:-1 tvg-id="CITV Channel" tvg-logo="" group-title="DaddyLive - Sports",CITV Channel
+http://43.252.18.195:5080/live/streams/CITVChannel.playlist.m3u8
+#EXTINF:-1 tvg-id="Cricket Gold (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Cricket Gold (1080p)
+https://streams2.sofast.tv/ptnr-yupptv/title-cricketgold/v1/master/611d79b11b77e2f571934fd80ca1413453772ac7/b2048bb8-1686-4432-aa50-647245383e0c/manifest.m3u8
+#EXTINF:-1 tvg-id="ČT Sport (720p)" tvg-logo="" group-title="DaddyLive - Sports",ČT Sport (720p)
+http://88.212.15.19/live/test_ctsport_25p/playlist.m3u8
+#EXTINF:-1 tvg-id="DAZN Combat (684p)" tvg-logo="" group-title="DaddyLive - Sports",DAZN Combat (684p)
+https://jmp2.uk/plu-64d626ac9b414d000820e2fc.m3u8
+#EXTINF:-1 tvg-id="DAZN Combat (1080p)" tvg-logo="" group-title="DaddyLive - Sports",DAZN Combat (1080p)
+https://dazn-combat-rakuten.amagi.tv/hls/amagi_hls_data_rakutenAA-dazn-combat-rakuten/CDN/master.m3u8
+#EXTINF:-1 tvg-id="DAZN Darts x Pluto TV" tvg-logo="" group-title="DaddyLive - Sports",DAZN Darts x Pluto TV
+https://jmp2.uk/plu-64b67f0424ade50008a3be17.m3u8
+#EXTINF:-1 tvg-id="DAZN Handball x Pluto TV" tvg-logo="" group-title="DaddyLive - Sports",DAZN Handball x Pluto TV
+https://jmp2.uk/plu-6683f7fe36a2f9000804940c.m3u8
+#EXTINF:-1 tvg-id="DAZN Heldinnen x Pluto TV" tvg-logo="" group-title="DaddyLive - Sports",DAZN Heldinnen x Pluto TV
+https://jmp2.uk/plu-64afe50c5dc16600087f3227.m3u8
+#EXTINF:-1 tvg-id="DD Sports SD (1080p)" tvg-logo="" group-title="DaddyLive - Sports",DD Sports SD (1080p)
+https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/b17adfe543354fdd8d189b110617cddd/index.m3u8
+#EXTINF:-1 tvg-id="Dhamma TV (720p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Dhamma TV (720p) [Not 24/7]
+https://b.webcache.maxindo.net.id/dhamma/dhamma.m3u8
+#EXTINF:-1 tvg-id="Digi Sport 1 [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Digi Sport 1 [Not 24/7]
+http://315e5a5d.ottrast.com/iptv/MM4E93NGF5LADZ/2523/index.m3u8
+#EXTINF:-1 tvg-id="Digi Sport 2 [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Digi Sport 2 [Not 24/7]
+http://315e5a5d.ottrast.com/iptv/MM4E93NGF5LADZ/2522/index.m3u8
+#EXTINF:-1 tvg-id="Digi Sport 3 [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Digi Sport 3 [Not 24/7]
+http://315e5a5d.ottrast.com/iptv/8XFKA8883W9M5K/2524/index.m3u8
+#EXTINF:-1 tvg-id="DSports Uruguay" tvg-logo="" group-title="DaddyLive - Sports",DSports Uruguay
+https://cors-proxy.cooks.fyi/http://147.135.114.221:8001/play/a00m/index.m3u8
+#EXTINF:-1 tvg-id="Dyn Sport Mix (720p)" tvg-logo="" group-title="DaddyLive - Sports",Dyn Sport Mix (720p)
+https://jmp2.uk/plu-6866525c8a412a0e95c438b4.m3u8
+#EXTINF:-1 tvg-id="Equidia Racing Mag (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Equidia Racing Mag (1080p)
+https://raw.githubusercontent.com/Paradise-91/ParaTV/main/streams/equidia/racingmag.m3u8
+#EXTINF:-1 tvg-id="Esport3 (1080p) [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",Esport3 (1080p) [Geo-blocked]
+https://directes-tv-cat.3catdirectes.cat/live-content/esport3-hls/master.m3u8
+#EXTINF:-1 tvg-id="Esport3 (1080p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Esport3 (1080p) [Not 24/7]
+https://directes-tv-int.3catdirectes.cat/live-content/esport3-hls/master.m3u8
+#EXTINF:-1 tvg-id="F10 HD [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",F10 HD [Geo-blocked]
+https://tv2.bitstreaming.net:3235/multi_live/play.m3u8
+#EXTINF:-1 tvg-id="FightBox" tvg-logo="" group-title="DaddyLive - Sports",FightBox
+https://iptv.prosto.tv/ch118/index.m3u8
+#EXTINF:-1 tvg-id="FloRacing 24/7 (1080p)" tvg-logo="" group-title="DaddyLive - Sports",FloRacing 24/7 (1080p)
+https://amg02278-amg02278c1-distrotv-us-7534.playouts.now.amagi.tv/playlist/amg02278-flosports-floracing24x7-distrotvus/playlist.m3u8
+#EXTINF:-1 tvg-id="Formula (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Formula (1080p)
+https://c4635.cdn.xsg.ge/c4635/TVFormula/index.m3u8
+#EXTINF:-1 tvg-id="GEM Sport" tvg-logo="" group-title="DaddyLive - Sports",GEM Sport
+https://steep-wildflower-284d.nhhwkiszzzvcuojxdo.workers.dev/?url=https://gg.hls2.xyz/live/IR+-+GEM+Sport/chunks.m3u8
+#EXTINF:-1 tvg-id="GLORY Kickboxing (720p)" tvg-logo="" group-title="DaddyLive - Sports",GLORY Kickboxing (720p)
+https://6f972d29.wurl.com/master/f36d25e7e52f1ba8d7e56eb859c636563214f541/UmFrdXRlblRWLWV1X0dsb3J5S2lja2JveGluZ19ITFM/playlist.m3u8
+#EXTINF:-1 tvg-id="HanoiTV1 (1080p) [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",HanoiTV1 (1080p) [Geo-blocked]
+https://cloudstreamhntv.tek4tv.vn/capture/smil:HN1.smil/chunklist.m3u8
+#EXTINF:-1 tvg-id="HanoiTV2 (1080p) [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",HanoiTV2 (1080p) [Geo-blocked]
+https://cloudstreamhntv.tek4tv.vn/live/smil:HN2.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="Hard Knocks Fighting Championship" tvg-logo="" group-title="DaddyLive - Sports",Hard Knocks Fighting Championship
+https://d39g1vxj2ef6in.cloudfront.net/v1/master/3fec3e5cac39a52b2132f9c66c83dae043dc17d4/prod-rakuten-stitched/master.m3u8?ads.xumo_channelId=88883037
+#EXTINF:-1 tvg-id="IasiTV Life (1080p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",IasiTV Life (1080p) [Not 24/7]
+https://tv.streambox.ro/hls/itv/index.m3u8
 #EXTINF:-1 tvg-id="Ictimai TV Azerbaijan" tvg-logo="" group-title="DaddyLive - Sports",Ictimai TV Azerbaijan
 https://live.itv.az/itv.m3u8
-#EXTINF:-1 tvg-id="ITV 1" tvg-logo="" group-title="DaddyLive - Sports",ITV 1
-https://stream.sen-gt.com/A2itv/myStream/playlist.m3u8
-#EXTINF:-1 tvg-id="M4 Sports Hungary" tvg-logo="" group-title="DaddyLive - Sports",M4 Sports Hungary
+#EXTINF:-1 tvg-id="Immaculata TV (720p)" tvg-logo="" group-title="DaddyLive - Sports",Immaculata TV (720p)
+https://g5nl63z8lpq6-hls-live.5centscdn.com/tvistream/a5586d8ea3b7b021120a05c60dc59876.sdp/playlist.m3u8
+#EXTINF:-1 tvg-id="ITV (480p)" tvg-logo="" group-title="DaddyLive - Sports",ITV (480p)
+https://cdn10.live-tv.cloud/itvrv/abr-lq/playlist.m3u8
+#EXTINF:-1 tvg-id="ITV Choice (1080p) [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",ITV Choice (1080p) [Geo-blocked]
+https://amg00654-itvstudios-itvchoice-samsungau-2bacj.amagi.tv/playlist/amg00654-itvstudios-itvchoice-samsungau/playlist.m3u8
+#EXTINF:-1 tvg-id="ITV Deportes (720p)" tvg-logo="" group-title="DaddyLive - Sports",ITV Deportes (720p)
+https://thm-it-roku.otteravision.com/thm/it/it.m3u8
+#EXTINF:-1 tvg-id="ITV Life (2160p)" tvg-logo="" group-title="DaddyLive - Sports",ITV Life (2160p)
+https://ca1.buximedia.com/itv/life/tracks-v1a1/mono.m3u8
+#EXTINF:-1 tvg-id="ITV Patagonia (720p)" tvg-logo="" group-title="DaddyLive - Sports",ITV Patagonia (720p)
+https://unlimited1-cl.dps.live/itv/itv.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="ITV Persian Music (1080p)" tvg-logo="" group-title="DaddyLive - Sports",ITV Persian Music (1080p)
+https://ca1.buximedia.com/itv/persian/tracks-v1a1/mono.m3u8
+#EXTINF:-1 tvg-id="ITV Un Village Français (1080p)" tvg-logo="" group-title="DaddyLive - Sports",ITV Un Village Français (1080p)
+https://amg00654-itv-amg00654c32-rakuten-fr-6134.playouts.now.amagi.tv/playlist/amg00654-itvstudiosfast-unvillagesfrancais-rakutenfr/playlist.m3u8
+#EXTINF:-1 tvg-id="Jordan Sport (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Jordan Sport (1080p)
+http://93.184.10.248/JordanSport/index.m3u8
+#EXTINF:-1 tvg-id="KSA Sports 1 (1080p)" tvg-logo="" group-title="DaddyLive - Sports",KSA Sports 1 (1080p)
+https://aloula-redirect.vercel.app/9/playlist.m3u8
+#EXTINF:-1 tvg-id="KSA Sports 2 (1080p)" tvg-logo="" group-title="DaddyLive - Sports",KSA Sports 2 (1080p)
+https://aloula-redirect.vercel.app/10/playlist.m3u8
+#EXTINF:-1 tvg-id="KSA Sports 3 (1080p)" tvg-logo="" group-title="DaddyLive - Sports",KSA Sports 3 (1080p)
+https://aloula-redirect.vercel.app/16/playlist.m3u8
+#EXTINF:-1 tvg-id="KTV Sport (1080p)" tvg-logo="" group-title="DaddyLive - Sports",KTV Sport (1080p)
+https://kwtspta.cdn.mangomolo.com/sp/smil:sp.stream.smil/chunklist.m3u8
+#EXTINF:-1 tvg-id="KTV Sport Plus (1080p)" tvg-logo="" group-title="DaddyLive - Sports",KTV Sport Plus (1080p)
+https://kwtsplta.cdn.mangomolo.com/spl/smil:spl.stream.smil/chunklist.m3u8
+#EXTINF:-1 tvg-id="Leaderboard Sports News (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Leaderboard Sports News (1080p)
+https://amg02703-amg02703c20-samsung-au-9093.playouts.now.amagi.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="Link - 1" tvg-logo="" group-title="DaddyLive - Sports",Link - 1
+https://streaming.televizor-24-tochka.ru/live/25.m3u8
+#EXTINF:-1 tvg-id="M4 Sport" tvg-logo="" group-title="DaddyLive - Sports",M4 Sport
 http://88.212.15.19/live/m4_hun/index.m3u8
+#EXTINF:-1 tvg-id="M-Net Sport (720p)" tvg-logo="" group-title="DaddyLive - Sports",M-Net Sport (720p)
+http://ares.mnet.mk/hls/mnet-sport.m3u8
+#EXTINF:-1 tvg-id="Match! Strana (720p)" tvg-logo="" group-title="DaddyLive - Sports",Match! Strana (720p)
+http://31.148.48.15/Match_Strana/index.m3u8
+#EXTINF:-1 tvg-id="MEGOGO Sport [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",MEGOGO Sport [Geo-blocked]
+http://471ccec7.tvclub.xyz/iptv/BUYS9YTNABMC25/31612/index.m3u8
+#EXTINF:-1 tvg-id="MiTV (720p)" tvg-logo="" group-title="DaddyLive - Sports",MiTV (720p)
+https://rds3.desdeparaguay.net/mitv/mitv/playlist.m3u8
+#EXTINF:-1 tvg-id="MMA-TV (576p)" tvg-logo="" group-title="DaddyLive - Sports",MMA-TV (576p)
+http://31.148.48.15/M1_Global/index.m3u8
+#EXTINF:-1 tvg-id="MNB Sport (1080p)" tvg-logo="" group-title="DaddyLive - Sports",MNB Sport (1080p)
+https://live.mnb.mn/hls/mnb_sport.stream.m3u8
+#EXTINF:-1 tvg-id="MODUS Super Series Darts" tvg-logo="" group-title="DaddyLive - Sports",MODUS Super Series Darts
+https://jmp2.uk/plu-671656a37d5da50008de6514.m3u8
+#EXTINF:-1 tvg-id="MODUS Super Series Darts" tvg-logo="" group-title="DaddyLive - Sports",MODUS Super Series Darts
+https://jmp2.uk/plu-67164414e40c4a00087f450d.m3u8
+#EXTINF:-1 tvg-id="MODUS Super Series Darts" tvg-logo="" group-title="DaddyLive - Sports",MODUS Super Series Darts
+https://jmp2.uk/plu-671643fc5534bb00089187ad.m3u8
+#EXTINF:-1 tvg-id="MODUS Super Series Darts" tvg-logo="" group-title="DaddyLive - Sports",MODUS Super Series Darts
+https://jmp2.uk/plu-671655b2daad7f00085d202d.m3u8
+#EXTINF:-1 tvg-id="MODUS Super Series Darts (720p)" tvg-logo="" group-title="DaddyLive - Sports",MODUS Super Series Darts (720p)
+https://jmp2.uk/plu-66337e6ba0a74e000889563b.m3u8
+#EXTINF:-1 tvg-id="MODUS Super Series Darts (720p)" tvg-logo="" group-title="DaddyLive - Sports",MODUS Super Series Darts (720p)
+https://jmp2.uk/plu-671656dfdaad7f00085d2133.m3u8
+#EXTINF:-1 tvg-id="MODUS Super Series Darts (720p)" tvg-logo="" group-title="DaddyLive - Sports",MODUS Super Series Darts (720p)
+https://jmp2.uk/plu-6716571bc7626f000890c518.m3u8
+#EXTINF:-1 tvg-id="Mojitv" tvg-logo="" group-title="DaddyLive - Sports",Mojitv
+https://odmedia-mojitv-1-be.samsung.wurl.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="Mojitv" tvg-logo="" group-title="DaddyLive - Sports",Mojitv
+https://odmedia-mojitv-1-nl.samsung.wurl.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="More Than Sports TV (1080p)" tvg-logo="" group-title="DaddyLive - Sports",More Than Sports TV (1080p)
+https://mts1.iptv-playoutcenter.de/mts/mts-web/playlist.m3u8
+#EXTINF:-1 tvg-id="Motorracing France" tvg-logo="" group-title="DaddyLive - Sports",Motorracing France
+https://d46c0ebf9ef94053848fdd7b1f2f6b90.mediatailor.eu-central-1.amazonaws.com/v1/master/81bfcafb76f9c947b24574657a9ce7fe14ad75c0/live-prod/7b971242-c5fe-11ec-967f-401ac48a6867/0/master.m3u8
 #EXTINF:-1 tvg-id="Movistar Plus+" tvg-logo="" group-title="DaddyLive - Sports",Movistar Plus+
 http://45.4.1.201:8000/play/a19y/index.m3u8
-#EXTINF:-1 tvg-id="ORF 1 Austria" tvg-logo="" group-title="DaddyLive - Sports",ORF 1 Austria
+#EXTINF:-1 tvg-id="Multivisión Sports (720p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Multivisión Sports (720p) [Not 24/7]
+https://stream.digitalgt.com:3605/live/multivisionsportslive.m3u8
+#EXTINF:-1 tvg-id="Niederbayern TV Deggendorf & Straubing (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Niederbayern TV Deggendorf & Straubing (1080p)
+https://stream03.welocal.stream/stream/fhd-nbydeggendorf_99148/ngrp:stream_all/index.m3u8
+#EXTINF:-1 tvg-id="Nordisk krim fra Viaplay" tvg-logo="" group-title="DaddyLive - Sports",Nordisk krim fra Viaplay
+https://jmp2.uk/plu-64eca23c9c1e390008524ae6.m3u8
+#EXTINF:-1 tvg-id="OF-TV Offenbach (720p)" tvg-logo="" group-title="DaddyLive - Sports",OF-TV Offenbach (720p)
+https://5864df9ceac85.streamlock.net/germanpictures-live/_definst_/mp4:streamschedule/playlist.m3u8
+#EXTINF:-1 tvg-id="Oman Sports TV (1080p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Oman Sports TV (1080p) [Not 24/7]
+https://partneta.cdn.mgmlcdn.com/omsport/smil:omsport.stream.smil/chunklist.m3u8
+#EXTINF:-1 tvg-id="One Golf (720p)" tvg-logo="" group-title="DaddyLive - Sports",One Golf (720p)
+http://162.250.201.58:6211/pk/ONEGOLF/index.m3u8
+#EXTINF:-1 tvg-id="ORF 1" tvg-logo="" group-title="DaddyLive - Sports",ORF 1
 http://88.212.15.19/live/test_orf_eins_tizen/playlist.m3u8
-#EXTINF:-1 tvg-id="Qazsport" tvg-logo="" group-title="DaddyLive - Sports",Qazsport
+#EXTINF:-1 tvg-id="ORF 2 (720p)" tvg-logo="" group-title="DaddyLive - Sports",ORF 2 (720p)
+https://orf2-247.mdn.ors.at/orf/orf2/qxa-247/manifest.m3u8
+#EXTINF:-1 tvg-id="ORF 2 Wien (1080p)" tvg-logo="" group-title="DaddyLive - Sports",ORF 2 Wien (1080p)
+http://79.127.207.193/ORF2/playlist.m3u8
+#EXTINF:-1 tvg-id="ORF III HD (720p)" tvg-logo="" group-title="DaddyLive - Sports",ORF III HD (720p)
+https://orf3.mdn.ors.at/orf/orf3/qxa/manifest.m3u8
+#EXTINF:-1 tvg-id="OxiTV (720p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",OxiTV (720p) [Not 24/7]
+https://streamunoapp.com:3520/live/oxitvcanal36live.m3u8
+#EXTINF:-1 tvg-id="Persiana Fight" tvg-logo="" group-title="DaddyLive - Sports",Persiana Fight
+https://fighthls.persiana.live/hls/stream.m3u8
+#EXTINF:-1 tvg-id="PFL MMA (720p)" tvg-logo="" group-title="DaddyLive - Sports",PFL MMA (720p)
+https://jmp2.uk/plu-64f6180130ab3300083d896b.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Darts" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Darts
+https://jmp2.uk/plu-67b481cc1a5ca760801c6c5e.m3u8
+#EXTINF:-1 tvg-id="Pluto TV E-Sports" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV E-Sports
+https://jmp2.uk/plu-5ff3934600d4c7000733ff49.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Esportes" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Esportes
+https://jmp2.uk/plu-5f32d2db0af67400077f29c4.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Snooker 900 (720p)" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Snooker 900 (720p)
+https://jmp2.uk/plu-68ac5543a1ac0c90f2c8943e.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Snooker 900 (720p)" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Snooker 900 (720p)
+https://jmp2.uk/plu-69148c470155f9b136b5d856.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Snooker 900 (720p)" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Snooker 900 (720p)
+https://jmp2.uk/plu-66fd35e44ca31f0008060b77.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Snooker 900 (720p)" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Snooker 900 (720p)
+https://jmp2.uk/plu-69148c76e9dec35c9269a16c.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Snooker 900 (720p)" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Snooker 900 (720p)
+https://jmp2.uk/plu-68ac55bb3efb41cd979a65ec.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Snooker 900 (720p)" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Snooker 900 (720p)
+https://jmp2.uk/plu-68ac55fe3efb41cd979a6877.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Snooker 900 (720p)" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Snooker 900 (720p)
+https://jmp2.uk/plu-68ac56363efb41cd979a8005.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Sport" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Sport
+https://jmp2.uk/plu-608030eff4b6f70007e1684c.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Sport" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Sport
+https://jmp2.uk/plu-6357f3de3643ba0007bc0b50.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Sport" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Sport
+https://jmp2.uk/plu-6357f33cb51d2d00077927c6.m3u8
+#EXTINF:-1 tvg-id="Pluto TV Sport" tvg-logo="" group-title="DaddyLive - Sports",Pluto TV Sport
+https://jmp2.uk/plu-62cd74e38f6f0d000798cd93.m3u8
+#EXTINF:-1 tvg-id="Polsat Sport 1 (1080p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Polsat Sport 1 (1080p) [Not 24/7]
+http://88b9da48.kazmazpaz.ru/iptv/XVU58NBPX2LUMP/7296/index.m3u8
+#EXTINF:-1 tvg-id="Polsat Sport 2 (1080p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Polsat Sport 2 (1080p) [Not 24/7]
+http://88b9da48.kazmazpaz.ru/iptv/XVU58NBPX2LUMP/7310/index.m3u8
+#EXTINF:-1 tvg-id="Polsat Sport 3 (1080p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Polsat Sport 3 (1080p) [Not 24/7]
+http://88b9da48.kazmazpaz.ru/iptv/XVU58NBPX2LUMP/7303/index.m3u8
+#EXTINF:-1 tvg-id="Polsat Sport Fight (1080p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Polsat Sport Fight (1080p) [Not 24/7]
+http://88b9da48.kazmazpaz.ru/iptv/XVU58NBPX2LUMP/7311/index.m3u8
+#EXTINF:-1 tvg-id="Premier Sports 2 (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Premier Sports 2 (1080p)
+https://amg19223-amg19223c4-amgplt0351.playout.now3.amagi.tv/playlist/amg19223-amg19223c4-amgplt0351/playlist.m3u8
+#EXTINF:-1 tvg-id="Premier Sports (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Premier Sports (1080p)
+https://amg19223-amg19223c3-amgplt0351.playout.now3.amagi.tv/playlist/amg19223-amg19223c3-amgplt0351/playlist.m3u8
+#EXTINF:-1 tvg-id="PRO Sport International" tvg-logo="" group-title="DaddyLive - Sports",PRO Sport International
+https://proshls.wns.live/hls/stream.m3u8
+#EXTINF:-1 tvg-id="PTV Sports (1080p)" tvg-logo="" group-title="DaddyLive - Sports",PTV Sports (1080p)
+http://103.250.28.74:8000/play/a019/index.m3u8
+#EXTINF:-1 tvg-id="Puthiya Thalaimurai (576p)" tvg-logo="" group-title="DaddyLive - Sports",Puthiya Thalaimurai (576p)
+https://segment.yuppcdn.net/240122/puthiya/playlist.m3u8
+#EXTINF:-1 tvg-id="QazSport (480p) [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",QazSport (480p) [Geo-blocked]
 https://qazsporttv-stream.qazcdn.com/qazsporttv/qazsporttv/playlist.m3u8
-#EXTINF:-1 tvg-id="RTVS Sport Slovakia" tvg-logo="" group-title="DaddyLive - Sports",RTVS Sport Slovakia
+#EXTINF:-1 tvg-id="Racing.com (720p)" tvg-logo="" group-title="DaddyLive - Sports",Racing.com (720p)
+https://racingvic-i.akamaized.net/hls/live/598695/racingvic/index1500.m3u8
+#EXTINF:-1 tvg-id="Rai 1 (720p)" tvg-logo="" group-title="DaddyLive - Sports",Rai 1 (720p)
+https://dash2.antik.sk/live/test_rai_uno_tizen/playlist.m3u8
+#EXTINF:-1 tvg-id="Rai 1 HD (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Rai 1 HD (1080p)
+https://srv1.adriatelekom.com/Rai1/index.m3u8
+#EXTINF:-1 tvg-id="Rai 2 HD (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Rai 2 HD (1080p)
+https://srv1.adriatelekom.com/Rai2/index.m3u8
+#EXTINF:-1 tvg-id="Rai 3 (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Rai 3 (1080p)
+https://srv1.adriatelekom.com/Rai3/index.m3u8
+#EXTINF:-1 tvg-id="Rai Gulp HD (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Rai Gulp HD (1080p)
+https://srv1.adriatelekom.com/RaiGulp/index.m3u8
+#EXTINF:-1 tvg-id="Rai News 24 (720p)" tvg-logo="" group-title="DaddyLive - Sports",Rai News 24 (720p)
+https://rainews1-live.akamaized.net/hls/live/598326/rainews1/rainews1/playlist.m3u8
+#EXTINF:-1 tvg-id="Rai Scuola HD (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Rai Scuola HD (1080p)
+https://srv1.adriatelekom.com/RaiScuola/index.m3u8
+#EXTINF:-1 tvg-id="Rai Sport 2" tvg-logo="" group-title="DaddyLive - Sports",Rai Sport 2
+http://originstream12.rai.it/italy/raisport2_1200/master.m3u8
+#EXTINF:-1 tvg-id="Rai Sport HD (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Rai Sport HD (1080p)
+https://srv1.adriatelekom.com/RaiSport/index.m3u8
+#EXTINF:-1 tvg-id="Rai Storia HD (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Rai Storia HD (1080p)
+https://srv1.adriatelekom.com/RaiStoria/index.m3u8
+#EXTINF:-1 tvg-id="Realitatea Sportiva (720p)" tvg-logo="" group-title="DaddyLive - Sports",Realitatea Sportiva (720p)
+https://stream.realitatea.net/realitatea/sportiva_md/ts:playlist.m3u8
+#EXTINF:-1 tvg-id="Retake E-sport Live" tvg-logo="" group-title="DaddyLive - Sports",Retake E-sport Live
+https://jmp2.uk/plu-69a164f76c0414a7ec68de54.m3u8
+#EXTINF:-1 tvg-id="Retake E-sport Live (720p)" tvg-logo="" group-title="DaddyLive - Sports",Retake E-sport Live (720p)
+https://jmp2.uk/plu-66fd1338ec9d6d00081e0443.m3u8
+#EXTINF:-1 tvg-id="Retake E-sport Live (720p)" tvg-logo="" group-title="DaddyLive - Sports",Retake E-sport Live (720p)
+https://jmp2.uk/plu-69a162eb762ae48b4302fb7c.m3u8
+#EXTINF:-1 tvg-id="RTSH Sport (1080p)" tvg-logo="" group-title="DaddyLive - Sports",RTSH Sport (1080p)
+http://178.33.11.6:8696/live/rtshsport/playlist.m3u8
+#EXTINF:-1 tvg-id="S Sport" tvg-logo="" group-title="DaddyLive - Sports",S Sport
 https://bcovlive-a.akamaihd.net/540fcb034b144b848e7ff887f61a293a/eu-central-1/6415845530001/profile_0/chunklist.m3u8
-#EXTINF:-1 tvg-id="Sport TV5 Portugal" tvg-logo="" group-title="DaddyLive - Sports",Sport TV5 Portugal
+#EXTINF:-1 tvg-id="S Sport 2" tvg-logo="" group-title="DaddyLive - Sports",S Sport 2
+https://bcovlive-a.akamaihd.net/29c60f23ea4840ba8726925a77fcfd0b/eu-central-1/6415845530001/profile_0/chunklist.m3u8
+#EXTINF:-1 tvg-id="San Marino RTV Sport (720p)" tvg-logo="" group-title="DaddyLive - Sports",San Marino RTV Sport (720p)
+https://d2hrvno5bw6tg2.cloudfront.net/smrtv-ch02/smil:ch-02.smil/master.m3u8
+#EXTINF:-1 tvg-id="Sharjah Sports (1080p) [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",Sharjah Sports (1080p) [Geo-blocked]
+https://svs.itworkscdn.net/smc4sportslive/smc4tv.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="Sky News Arabia (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Sky News Arabia (1080p)
+https://live-stream.skynewsarabia.com/c-horizontal-channel/horizontal-stream/index.m3u8
+#EXTINF:-1 tvg-id="Sky News Arabia (1080p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Sky News Arabia (1080p) [Not 24/7]
+https://stream.skynewsarabia.com/ott/ott.m3u8
+#EXTINF:-1 tvg-id="Sky News Arabia (Portrait) (1280p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Sky News Arabia (Portrait) (1280p) [Not 24/7]
+https://stream.skynewsarabia.com/vertical/vertical.m3u8
+#EXTINF:-1 tvg-id="Sky News Arabia Vertical (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Sky News Arabia Vertical (1080p)
+https://live-stream.skynewsarabia.com/c-vertical-channel/vertical-stream/index.m3u8
+#EXTINF:-1 tvg-id="Sky News Extra 1 (540p)" tvg-logo="" group-title="DaddyLive - Sports",Sky News Extra 1 (540p)
+https://skynewsau-live.akamaized.net/hls/live/2002689/skynewsau-extra1/master.m3u8
+#EXTINF:-1 tvg-id="Sky News Extra 2 (540p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Sky News Extra 2 (540p) [Not 24/7]
+https://skynewsau-live.akamaized.net/hls/live/2002690/skynewsau-extra2/master.m3u8
+#EXTINF:-1 tvg-id="Sky News Extra 3 (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Sky News Extra 3 (1080p)
+https://skynewsau-live.akamaized.net/hls/live/2002691/skynewsau-extra3/master.m3u8
+#EXTINF:-1 tvg-id="Sky Racing 1 (720p)" tvg-logo="" group-title="DaddyLive - Sports",Sky Racing 1 (720p)
+https://636ffd31f0e12.streamlock.net/RacingStream1/RacingStream1/playlist.m3u8
+#EXTINF:-1 tvg-id="Sky Racing 2 (720p)" tvg-logo="" group-title="DaddyLive - Sports",Sky Racing 2 (720p)
+https://636ffd31f0e12.streamlock.net/RacingStream2/RacingStream2/playlist.m3u8
+#EXTINF:-1 tvg-id="Sony Sports Ten 3 Hindi (576p)" tvg-logo="" group-title="DaddyLive - Sports",Sony Sports Ten 3 Hindi (576p)
+http://103.229.254.25:7001/play/a09q/index.m3u8
+#EXTINF:-1 tvg-id="SPIEGEL TV Konflikte" tvg-logo="" group-title="DaddyLive - Sports",SPIEGEL TV Konflikte
+https://jmp2.uk/plu-65b9268fc798e800085add89.m3u8
+#EXTINF:-1 tvg-id="Sport" tvg-logo="" group-title="DaddyLive - Sports",Sport
 https://stream8.cinerama.uz/1004/tracks-v1a1/mono.m3u8
+#EXTINF:-1 tvg-id="Sport Klub (1080p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Sport Klub (1080p) [Not 24/7]
+http://88b9da48.kazmazpaz.ru/iptv/XVU58NBPX2LUMP/2521/index.m3u8
+#EXTINF:-1 tvg-id="Sportitalia 24 (720p) [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",Sportitalia 24 (720p) [Geo-blocked]
+https://di-yx2saj20.vo.lswcdn.net/sportitalia/smil:silive24.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="Sportitalia (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Sportitalia (1080p)
+https://edge-001.streamup.eu/sportitalia/sihd_abr/playlist.m3u8
+#EXTINF:-1 tvg-id="Sportitalia Live 24" tvg-logo="" group-title="DaddyLive - Sports",Sportitalia Live 24
+https://di-g7ij0rwh.vo.lswcdn.net/sportitalia/silive24.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="Sportitalia Motori (720p) [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",Sportitalia Motori (720p) [Geo-blocked]
+https://di-yx2saj20.vo.lswcdn.net/sportitalia/smil:simotori.smil/playlist.m3u8
+#EXTINF:-1 tvg-id="Sportitalia Solocalcio (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Sportitalia Solocalcio (1080p)
+https://distribution.sportitalialive.it/sportitalia/sisolocalcio_abr/playlist.m3u8
+#EXTINF:-1 tvg-id="Sportoutdoor.tv" tvg-logo="" group-title="DaddyLive - Sports",Sportoutdoor.tv
+https://gto2000-sportoutdoortv-1-it.samsung.wurl.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="Sports Connect (720p)" tvg-logo="" group-title="DaddyLive - Sports",Sports Connect (720p)
+https://streamdot.broadpeak.io/cff02a74da64d1459391ce1f72d58f1a/afxpstr/SportsConnect/index.m3u8
+#EXTINF:-1 tvg-id="Sports TV (720p) [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",Sports TV (720p) [Geo-blocked]
+https://live.sportstv.com.tr/hls/low/sportstv.m3u8
+#EXTINF:-1 tvg-id="SporTV 2 (1280p)" tvg-logo="" group-title="DaddyLive - Sports",SporTV 2 (1280p)
+https://stm.sinalmycn.com/21003/video.m3u8?token=EkP2qSi13ckjQRLSIDoxI5rMZsF5rZyEYzqWjxD248ScEUPYQ0
+#EXTINF:-1 tvg-id="SporTV 2 Alternativo (720p)" tvg-logo="" group-title="DaddyLive - Sports",SporTV 2 Alternativo (720p)
+https://stm.sinalmycn.com/19025/video.m3u8
+#EXTINF:-1 tvg-id="SporTV 3 (1080p)" tvg-logo="" group-title="DaddyLive - Sports",SporTV 3 (1080p)
+https://stm.sinalmycn.com/21006/video.m3u8?token=EkP2qSi13ckjQRLSIDoxI5rMZsF5rZyEYzqWjxD248ScEUPYQ0
+#EXTINF:-1 tvg-id="SporTV (1280p)" tvg-logo="" group-title="DaddyLive - Sports",SporTV (1280p)
+https://stm.sinalmycn.com/21000/video.m3u8?token=EkP2qSi13ckjQRLSIDoxI5rMZsF5rZyEYzqWjxD248ScEUPYQ0
+#EXTINF:-1 tvg-id="SporTV Alternativo (720p)" tvg-logo="" group-title="DaddyLive - Sports",SporTV Alternativo (720p)
+https://stm.sinalmycn.com/19024/video.m3u8
+#EXTINF:-1 tvg-id="Star Sports 1 (720p)" tvg-logo="" group-title="DaddyLive - Sports",Star Sports 1 (720p)
+https://tvsen7.aynaott.com/sspts1/index.m3u8
+#EXTINF:-1 tvg-id="Star Sports 2 HD (720p)" tvg-logo="" group-title="DaddyLive - Sports",Star Sports 2 HD (720p)
+https://tvsen7.aynaott.com/ssport2hd/index.m3u8
+#EXTINF:-1 tvg-id="Star Sports 2 Hindi HD (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Star Sports 2 Hindi HD (1080p)
+http://103.157.248.140:8000/play/a01m/index.m3u8
+#EXTINF:-1 tvg-id="Strongman Champions League (720p)" tvg-logo="" group-title="DaddyLive - Sports",Strongman Champions League (720p)
+https://rightsboosterltd-scl-2-eu.rakuten.wurl.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="Strongman Champions League (720p)" tvg-logo="" group-title="DaddyLive - Sports",Strongman Champions League (720p)
+https://rightsboosterltd-scl-1-be.samsung.wurl.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="SuperSport PSL" tvg-logo="" group-title="DaddyLive - Sports",SuperSport PSL
-https://rtp.noxun.net/hls/stream.m3u8
-#EXTINF:-1 tvg-id="TRT 1 Turkey" tvg-logo="" group-title="DaddyLive - Sports",TRT 1 Turkey
-http://88.212.15.19/live/test_ct1_25p/playlist.m3u8
+https://495c5a85d9074f29acffeaea9e0215eb.msvdn.net/super/super_main/super_main_hbbtv/playlist.m3u8
+#EXTINF:-1 tvg-id="SuperTennis (1080p)" tvg-logo="" group-title="DaddyLive - Sports",SuperTennis (1080p)
+https://live-embed.supertennix.hiway.media/restreamer/supertennix_client/gpu-a-c0-16/restreamer/outgest/aa3673f1-e178-44a9-a947-ef41db73211a/manifest.m3u8
+#EXTINF:-1 tvg-id="Suspilne. Donbas" tvg-logo="" group-title="DaddyLive - Sports",Suspilne. Donbas
+https://iptv.prosto.tv/ch191/tracks-v1a1/mono.m3u8?21yo=1&e=1783350581&id=742347&ip=178.136.40.86&live=1&secret=vu2y5m72&st=FOBLjQZsAj97omf627Quzg
+#EXTINF:-1 tvg-id="Suspilne. Sport" tvg-logo="" group-title="DaddyLive - Sports",Suspilne. Sport
+https://iptv.prosto.tv/ch112/tracks-v2a1/mono.m3u8?21yo=0&e=1783247457&id=921233&ip=178.136.40.86&live=1&secret=9szoe89y&st=jPS6nYqNZLDECF8uSDa74g
+#EXTINF:-1 tvg-id="T Sports (720p)" tvg-logo="" group-title="DaddyLive - Sports",T Sports (720p)
+https://tvsen7.aynaott.com/tsports-hd/index.m3u8
+#EXTINF:-1 tvg-id="TDM Sports Ch. 93 (720p)" tvg-logo="" group-title="DaddyLive - Sports",TDM Sports Ch. 93 (720p)
+https://live3.tdm.com.mo/ch4/sport_ch4.live/playlist.m3u8
+#EXTINF:-1 tvg-id="TeleFormula (720p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",TeleFormula (720p) [Not 24/7]
+https://wms60.tecnoxia.com/radiof/abr_radioftele/playlist.m3u8
+#EXTINF:-1 tvg-id="Telekanal RAI (480p)" tvg-logo="" group-title="DaddyLive - Sports",Telekanal RAI (480p)
+https://stream.rai.ua/rai/stream.m3u8
+#EXTINF:-1 tvg-id="Ten Sports Pakistan" tvg-logo="" group-title="DaddyLive - Sports",Ten Sports Pakistan
+http://121.91.61.106:8000/play/a04h/index.m3u8
+#EXTINF:-1 tvg-id="Tennis Channel Germany (720p)" tvg-logo="" group-title="DaddyLive - Sports",Tennis Channel Germany (720p)
+https://tennischanneldeu-rakuten.amagi.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="Tigo Sports (720p)" tvg-logo="" group-title="DaddyLive - Sports",Tigo Sports (720p)
+https://live.enhdtv.com:8081/8160/index.m3u8
+#EXTINF:-1 tvg-id="Tigo Sports (720p) [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",Tigo Sports (720p) [Geo-blocked]
+https://live20.bozztv.com/akamaissh101/ssh101/livetigocr/playlist.m3u8
+#EXTINF:-1 tvg-id="Tigo Sports (1080p)" tvg-logo="" group-title="DaddyLive - Sports",Tigo Sports (1080p)
+https://master.tucableip.com/Amistoso/index.m3u8
+#EXTINF:-1 tvg-id="Tigo Sports TV El Salvador (720p) [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",Tigo Sports TV El Salvador (720p) [Geo-blocked]
+https://channel03.tigosports.com.sv/out/v1/31f36d52d558475ca18799d8ca5e4b40/index.m3u8
+#EXTINF:-1 tvg-id="Tigo Sports+" tvg-logo="" group-title="DaddyLive - Sports",Tigo Sports+
+http://45.170.130.224:8000/play/a04i/index.m3u8
+#EXTINF:-1 tvg-id="TNC Sports (1080p)" tvg-logo="" group-title="DaddyLive - Sports",TNC Sports (1080p)
+https://streamer1.nexgen.bz/TNC_SPORTS/index.m3u8
+#EXTINF:-1 tvg-id="TR Sport (480p)" tvg-logo="" group-title="DaddyLive - Sports",TR Sport (480p)
+https://livetr.teleromagna.it/mia/live/playlist.m3u8
+#EXTINF:-1 tvg-id="True crime från Viaplay" tvg-logo="" group-title="DaddyLive - Sports",True crime från Viaplay
+https://jmp2.uk/plu-645cb7857cb4b1000859c57c.m3u8
+#EXTINF:-1 tvg-id="Türkmenistan Sport (406p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Türkmenistan Sport (406p) [Not 24/7]
+https://alpha.tv.online.tm/hls/ch004.m3u8
+#EXTINF:-1 tvg-id="tv9 Telemaremma (576p)" tvg-logo="" group-title="DaddyLive - Sports",tv9 Telemaremma (576p)
+https://rtmp-live-ingest-us-east-1-universe-dacast-com.akamaized.net/transmuxv1/streams/2095a288-1384-ed2e-5da0-278ccbb72295.m3u8
+#EXTINF:-1 tvg-id="TV Golfo Uraba" tvg-logo="" group-title="DaddyLive - Sports",TV Golfo Uraba
+https://stmv7.voxtvhd.com.br/golfo/golfo/playlist.m3u8
+#EXTINF:-1 tvg-id="TVMatic Fight (720p)" tvg-logo="" group-title="DaddyLive - Sports",TVMatic Fight (720p)
+http://cdn.tvmatic.net/fight.m3u8
+#EXTINF:-1 tvg-id="TVMsport+ (1080p)" tvg-logo="" group-title="DaddyLive - Sports",TVMsport+ (1080p)
+https://stream.smashmalta.com:25463/live/webplayer/livestream/29.m3u8
+#EXTINF:-1 tvg-id="TVR Sport" tvg-logo="" group-title="DaddyLive - Sports",TVR Sport
+https://tvr-sport.lg.mncdn.com/tvrsport/smil:tvrsport.smil/chunklist_b5160000.m3u8
+#EXTINF:-1 tvg-id="TVRI Sport (720p)" tvg-logo="" group-title="DaddyLive - Sports",TVRI Sport (720p)
+https://ott-balancer.tvri.go.id/live/eds/SportHD/hls/SportHD.m3u8
+#EXTINF:-1 tvg-id="TyC Sports (1080p)" tvg-logo="" group-title="DaddyLive - Sports",TyC Sports (1080p)
+https://amg26268-amg26268c14-freelivesports-emea-10267.playouts.now.amagi.tv/ts-us-e2-n2/playlist/amg26268-sportsstudio-tycsports-freelivesportsemea/playlist.m3u8
+#EXTINF:-1 tvg-id="TyC Sports USA" tvg-logo="" group-title="DaddyLive - Sports",TyC Sports USA
+http://45.170.130.224:8000/play/a020/index.m3u8
+#EXTINF:-1 tvg-id="UFC" tvg-logo="" group-title="DaddyLive - Sports",UFC
+https://jmp2.uk/plu-69a20556814d27f4ae630a92.m3u8
+#EXTINF:-1 tvg-id="UFC" tvg-logo="" group-title="DaddyLive - Sports",UFC
+https://jmp2.uk/plu-6792044b680721c77c5b9ba2.m3u8
+#EXTINF:-1 tvg-id="UFC" tvg-logo="" group-title="DaddyLive - Sports",UFC
+https://jmp2.uk/plu-67921b873de7c8cf94233f52.m3u8
+#EXTINF:-1 tvg-id="UFC" tvg-logo="" group-title="DaddyLive - Sports",UFC
+https://jmp2.uk/plu-67921b78b83355184c667770.m3u8
+#EXTINF:-1 tvg-id="UFC" tvg-logo="" group-title="DaddyLive - Sports",UFC
+https://jmp2.uk/plu-679205a13de7c8cf941e7857.m3u8
+#EXTINF:-1 tvg-id="UFC (720p)" tvg-logo="" group-title="DaddyLive - Sports",UFC (720p)
+https://jmp2.uk/plu-679203d4bc03978b9b4b79a6.m3u8
+#EXTINF:-1 tvg-id="UFC (720p)" tvg-logo="" group-title="DaddyLive - Sports",UFC (720p)
+https://jmp2.uk/plu-67a52cd4ec91870008a62164.m3u8
+#EXTINF:-1 tvg-id="UFC (720p)" tvg-logo="" group-title="DaddyLive - Sports",UFC (720p)
+https://jmp2.uk/plu-6792066f3de7c8cf941e7ce3.m3u8
+#EXTINF:-1 tvg-id="UniTV (720p)" tvg-logo="" group-title="DaddyLive - Sports",UniTV (720p)
+https://vcp6.myplaytv.com/unitv/unitv/playlist.m3u8
+#EXTINF:-1 tvg-id="V Sport Golf [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",V Sport Golf [Not 24/7]
+http://315e5a5d.ottrast.com/iptv/8XFKA8883W9M5K/12077/index.m3u8
+#EXTINF:-1 tvg-id="Viaplay TV (Finland) (720p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Viaplay TV (Finland) (720p) [Not 24/7]
+https://live-fi.tvkaista.net/viaplay-tv/live.m3u8?hd=true
+#EXTINF:-1 tvg-id="viju+ Sport" tvg-logo="" group-title="DaddyLive - Sports",viju+ Sport
+https://stream8.cinerama.uz/1229/tracks-v1a1/mono.m3u8
+#EXTINF:-1 tvg-id="VPItv (1080p)" tvg-logo="" group-title="DaddyLive - Sports",VPItv (1080p)
+https://ott3.streann.com/loadbalancer/services/public/channels/5d23d5882cdce61dae029fd8/playlist.m3u8
+#EXTINF:-1 tvg-id="WDR Fernsehen Düsseldorf (720p) [Geo-blocked]" tvg-logo="" group-title="DaddyLive - Sports",WDR Fernsehen Düsseldorf (720p) [Geo-blocked]
+https://wdrlokalzeit.akamaized.net/hls/live/2018023-b/wdrlz_duesseldorf/master.m3u8
+#EXTINF:-1 tvg-id="World of Freesports (1080p)" tvg-logo="" group-title="DaddyLive - Sports",World of Freesports (1080p)
+https://mainstreammedia-worldoffreesportsintl-rakuten.amagi.tv/hls/amagi_hls_data_rakutenAA-mainstreammediafreesportsintl-rakuten/CDN/master.m3u8
+#EXTINF:-1 tvg-id="World of Freesports (1080p)" tvg-logo="" group-title="DaddyLive - Sports",World of Freesports (1080p)
+https://mainstreammedia-worldoffreesportsintl-rakuten.amagi.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="Zoy TV Sports 1 (1080p) [Not 24/7]" tvg-logo="" group-title="DaddyLive - Sports",Zoy TV Sports 1 (1080p) [Not 24/7]
+https://mio.zoymilton.com/ZoyEventos/index.m3u8
+#EXTINF:-1 tvg-id="Астрахань.Ru Sport (720p)" tvg-logo="" group-title="DaddyLive - Sports",Астрахань.Ru Sport (720p)
+https://streaming.astrakhan.ru/astrakhanrusporthd/playlist.m3u8
 #EXTINF:-1 tvg-id="" tvg-logo="" group-title="Famelack - UK",BBC News Europe
 https://dash2.antik.sk/live/test_bbc_world/playlist.m3u8
 #EXTINF:-1 tvg-id="" tvg-logo="" group-title="Famelack - UK",Def Jam
