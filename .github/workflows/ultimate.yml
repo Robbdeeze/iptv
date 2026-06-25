@@ -1,7 +1,7 @@
 name: Ultimate Playlist Update
 on:
   schedule:
-    - cron: '0 0 */3 * *' # Every 72 hours (at 00:00 every 3 days)
+    - cron: '0 0 */1 * *' # Every 24 hours (at 00:00 daily)
   workflow_dispatch: # Allows manual trigger
 
 permissions:
@@ -22,6 +22,9 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium
 
       - name: Generate Ultimate Playlist
         run: npm run playlist:ultimate

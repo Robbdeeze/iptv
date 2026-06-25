@@ -1,6 +1,7 @@
 import { Logger } from '@freearhey/core'
 import { Stream } from '../../models'
 import axios from 'axios'
+import { chromium } from 'playwright'
 
 const GROUP_TITLE = 'DaddyLive - Sports'
 
@@ -197,6 +198,101 @@ function findMatch(data: PlayerEntry[], title: string): PlayerEntry | null {
   return null
 }
 
+// Browser-based extraction: loads the embed page in a headless Chromium
+// and intercepts network requests to capture the actual m3u8 stream URL.
+let browserInstance: import('playwright').Browser | null = null
+
+async function getBrowser(): Promise<import('playwright').Browser> {
+  if (!browserInstance) {
+    browserInstance = await chromium.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    })
+  }
+  return browserInstance
+}
+
+async function extractStreamWithBrowser(
+  embedUrl: string,
+  logger: Logger
+): Promise<string | null> {
+  const browser = await getBrowser()
+  const context = await browser.newContext({
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+  })
+
+  const m3u8Urls: string[] = []
+
+  // Intercept all network responses to capture m3u8 URLs
+  await context.route('**/*', async (route) => {
+    const request = route.request()
+    const url = request.url()
+    if (url.includes('.m3u8') || url.includes('.mpd')) {
+      m3u8Urls.push(url)
+    }
+    // Also check redirect chain
+    const redirectChain = request.redirectedFrom()
+    if (redirectChain) {
+      let r = redirectChain
+      while (r) {
+        if (r.url().includes('.m3u8')) m3u8Urls.push(r.url())
+        r = r.redirectedFrom()
+      }
+    }
+    await route.continue()
+  })
+
+  // Intercept responses to check for m3u8 URLs in redirects
+  context.on('response', (response) => {
+    const url = response.url()
+    if (url.includes('.m3u8')) {
+      m3u8Urls.push(url)
+    }
+  })
+
+  try {
+    const page = await context.newPage()
+
+    // Navigate and wait for network to settle
+    await page.goto(embedUrl, {
+      waitUntil: 'networkidle',
+      timeout: 20000
+    }).catch(() => {})
+
+    // Give extra time for delayed player initialization
+    await page.waitForTimeout(5000)
+
+    // Check page for video/iframe sources
+    const pageM3u8 = await page.evaluate(() => {
+      const found: string[] = []
+      // Check video elements
+      document.querySelectorAll('video').forEach(v => {
+        if (v.src && v.src.includes('.m3u8')) found.push(v.src)
+        v.querySelectorAll('source').forEach(s => {
+          if (s.src && s.src.includes('.m3u8')) found.push(s.src)
+        })
+      })
+      // Check iframes
+      document.querySelectorAll('iframe').forEach(iframe => {
+        if (iframe.src && iframe.src.includes('.m3u8')) found.push(iframe.src)
+      })
+      return found
+    })
+    m3u8Urls.push(...pageM3u8)
+
+    // Deduplicate and return the first valid URL
+    const unique = [...new Set(m3u8Urls)]
+    if (unique.length > 0) return unique[0]
+
+  } catch {
+    return null
+  } finally {
+    await context.close()
+  }
+
+  return null
+}
+
 async function extractStreamFromEventEmbed(
   embedUrl: string,
   player9Data: PlayerEntry[],
@@ -222,7 +318,6 @@ async function extractStreamFromEventEmbed(
 
     let title: string
     if (hasTvSource) {
-      // Extract channelData and look up title
       const cdMatch = html.match(
         /(?:var|let|const)\s+channelData\s*=\s*(\[[\s\S]*?\])\s*;/
       )
@@ -240,22 +335,27 @@ async function extractStreamFromEventEmbed(
         title = channelId.replace(/-/g, ' ')
       }
     } else {
-      // For event-specific links, title is the channel_id with dashes replaced
       title = channelId.replace(/-/g, ' ')
     }
 
-    // Try findMatch against player9Data
+    // Try findMatch against player9Data first (works for standard TV channels)
     const match = findMatch(player9Data, title)
     if (match?.url) return match.url
 
-    // Also try extracting playerLinksOrder and trying dlhd sources
+    // For event-specific links, try headless browser
+    if (!hasTvSource) {
+      logger.info(`  launching browser for ${embedUrl.substring(0, 80)}...`)
+      const browserUrl = await extractStreamWithBrowser(embedUrl, logger)
+      if (browserUrl) return browserUrl
+    }
+
+    // Fallback: try dlhd sources via HTTP
     const linkOrderMatch = html.match(
       /const\s+playerLinksOrder\s*=\s*(\[[\s\S]*?\])\s*;/
     )
     if (linkOrderMatch) {
       const linkOrder: string[] = JSON.parse(linkOrderMatch[1])
       for (const sourceId of linkOrder) {
-        // dlhd sources construct URLs from channel_id
         if (sourceId.startsWith('dlhd')) {
           const num = sourceId.replace('dlhd', '')
           const dlhdUrls: Record<string, string> = {
@@ -272,25 +372,23 @@ async function extractStreamFromEventEmbed(
             try {
               const dlhdResp = await axios.get(dlhdUrl, {
                 timeout: 10000,
-                maxRedirects: 5,
+                maxRedirects: 10,
                 headers: {
                   'User-Agent':
                     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
                 }
               })
-              // Check if the response contains an m3u8 URL
               const m3u8Match = dlhdResp.data.match(
                 /https?:\/\/[^\s"']+\.m3u8[^\s"']*/
               )
               if (m3u8Match) return m3u8Match[0]
-              // Check if it redirects to an m3u8
               if (
                 dlhdResp.request?.res?.responseUrl?.includes('.m3u8')
               ) {
                 return dlhdResp.request.res.responseUrl
               }
             } catch {
-              // dlhd source failed, continue to next
+              // dlhd source failed, continue
             }
           }
         }
@@ -300,6 +398,13 @@ async function extractStreamFromEventEmbed(
     return null
   } catch {
     return null
+  }
+}
+
+async function closeBrowser(): Promise<void> {
+  if (browserInstance) {
+    await browserInstance.close()
+    browserInstance = null
   }
 }
 
@@ -477,6 +582,9 @@ export async function scrapeDaddylive(
   if (streams.length > 0) {
     result.push({ groupTitle: GROUP_TITLE, streams })
   }
+
+  // Close headless browser if it was opened
+  await closeBrowser()
 
   return result
 }
