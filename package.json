@@ -14,6 +14,7 @@
     "playlist:edit": "tsx scripts/commands/playlist/edit.ts",
     "playlist:export": "tsx scripts/commands/playlist/export.ts",
     "playlist:ultimate": "tsx scripts/commands/playlist/generateUltimate.ts",
+    "playlist:mergeAll": "tsx scripts/commands/playlist/mergeAllM3u.ts",
     "readme:update": "tsx scripts/commands/readme/update.ts",
     "report:create": "tsx scripts/commands/report/create.ts",
     "lint": "npx eslint \"scripts/**/*.{ts,js}\" \"tests/**/*.{ts,js}\"",

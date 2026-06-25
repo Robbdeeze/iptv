@@ -1,0 +1,43 @@
+name: Merge All M3U
+
+on:
+  schedule:
+    - cron: "0 0 */4 * *"
+  workflow_dispatch:
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - run: npm run playlist:mergeAll
+
+      - name: Validate links
+        run: |
+          echo "Validating links in playlist..."
+          total=$(grep -c '^http' Robbdeeze_UltimateTV_AllM3uMerged.m3u || true)
+          dead=0
+          grep '^http' Robbdeeze_UltimateTV_AllM3uMerged.m3u | sort -R | head -100 | while IFS= read -r url; do
+            code=$(curl -sL --max-time 8 -o /dev/null -w '%{http_code}' "$url" -H 'User-Agent: Mozilla/5.0' 2>/dev/null)
+            if [ "$code" = "000" ]; then
+              dead=$((dead+1))
+            fi
+          done
+          echo "Total: $total | Sampled: 100 | Dead in sample: $dead"
+
+      - run: |
+          git config user.name "Robbdeeze"
+          git config user.email "robbdeeze@gmail.com"
+          git add Robbdeeze_UltimateTV_AllM3uMerged.m3u
+          git diff --cached --quiet || git commit -m "[Bot] Update Robbdeeze_UltimateTV_AllM3uMerged.m3u"
+          git push
