@@ -53,6 +53,7 @@ type EventChannel = {
   channel_id?: string | number
   url?: string
   source?: string
+  eventName?: string
 }
 
 type EventItem = {
@@ -332,8 +333,12 @@ async function fetchEvents(
 
         for (const event of events) {
           if (!event.channels || !Array.isArray(event.channels)) continue
+          const eventName = event.event || ''
           for (const channel of event.channels) {
-            allChannels.push(channel)
+            allChannels.push({
+              ...channel,
+              eventName
+            })
           }
         }
       }
@@ -411,6 +416,9 @@ export async function scrapeDaddylive(
       const hasRealName =
         channelName && !channelName.match(/^Link\s*-\s*\d+$/i)
 
+      const eventName = channel.eventName || ''
+      const liveTitle = eventName ? `${eventName} - ${channelName}` : channelName
+
       if (hasRealName) {
         // Standard channel with a real name - use findMatch against player9Data
         const match = findMatch(player9Data, channelName)
@@ -419,7 +427,7 @@ export async function scrapeDaddylive(
           const stream = new Stream({
             channel: null,
             feed: null,
-            title: channelName,
+            title: liveTitle,
             url: match.url,
             quality: null,
             referrer: null,
@@ -444,14 +452,14 @@ export async function scrapeDaddylive(
           const stream = new Stream({
             channel: null,
             feed: null,
-            title: channel.event || channelName,
+            title: liveTitle,
             url: m3u8Url,
             quality: null,
             referrer: null,
             user_agent: null,
             label: null
           })
-          stream.tvgId = channel.event || channelName
+          stream.tvgId = channelName
           stream.tvgLogo = ''
           stream.groupTitle = GROUP_TITLE
           streams.push(stream)
