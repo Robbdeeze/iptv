@@ -7,6 +7,7 @@ import { Stream, Playlist } from '../../models'
 import iptvParser from 'iptv-playlist-parser'
 import { Collection } from '@freearhey/core'
 import { eachLimit } from 'async'
+import { scrapeDaddylive } from './daddyliveScraper'
 import path from 'node:path'
 import fs from 'node:fs'
 import axios from 'axios'
@@ -216,6 +217,19 @@ async function main() {
   }
   if (allFamelackStreams.length) {
     logger.info(`total streams after famelack additions: ${combinedStreams.count()}`)
+  }
+
+  // Add daddylive sports streams
+  logger.info('scraping daddylive sports streams...')
+  const allDaddyliveStreams = await scrapeDaddylive(logger)
+  for (const { groupTitle, streams } of allDaddyliveStreams) {
+    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
+    streams.forEach((stream: Stream) => {
+      combinedStreams.add(stream)
+    })
+  }
+  if (allDaddyliveStreams.length) {
+    logger.info(`total streams after daddylive additions: ${combinedStreams.count()}`)
   }
 
   logger.info(`loaded ${combinedStreams.count()} total streams`)
