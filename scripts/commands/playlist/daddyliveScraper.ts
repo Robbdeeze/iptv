@@ -3,7 +3,7 @@ import { Stream } from '../../models'
 import axios from 'axios'
 import { chromium } from 'playwright'
 
-const GROUP_TITLE = 'DaddyLive - Sports'
+const GROUP_TITLE = '! Sports - DaddyLive'
 
 // Known sports channel name patterns (lowercase) used to filter player9Data
 const SPORTS_PATTERNS = [

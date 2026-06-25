@@ -3,7 +3,7 @@ import { Stream } from '../../models'
 import axios from 'axios'
 import { chromium } from 'playwright'
 
-const GROUP_TITLE = 'Streamed - Sports'
+const GROUP_TITLE = '! Sports - Streamed'
 
 interface MatchSource {
   source: string
