@@ -734,6 +734,16 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 
 ## 11. Recent Improvements
 
+### June 26, 2026 — Playlist & EPG Refresh
+
+| Change | File | Description |
+|--------|------|-------------|
+| Refreshed playlist | `Robbdeeze_UltimateTV.m3u` | Regenerated with 17,790 streams total |
+| Regenerated EPG | `Robbdeeze_UltimateTV_Epg.xml` | Updated EPG data from guide sources |
+| Updated Famelack data | `streams/us_famelack.m3u`, `streams/uk_famelack.m3u` | Refreshed US (1,547) and UK (239) channels |
+| Streamed.pk sports | `streamedScraper.ts` | Scraped 108 live sports streams |
+| Updated IPTV_VERSION.md | `IPTV_VERSION.md` | Documented latest run
+
 ### EPG Automation Enhancements
 
 | Change | File | Before | After |
