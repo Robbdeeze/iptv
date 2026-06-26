@@ -9,6 +9,11 @@ import { Collection } from '@freearhey/core'
 import { eachLimit } from 'async'
 import { scrapeDaddylive } from './daddyliveScraper'
 import { scrapeStreamed } from './streamedScraper'
+import { scrapeNtv } from './ntvScraper'
+import { scrapeSportsBite } from './sportsBiteScraper'
+import { scrapePpvTo } from './ppvToScraper'
+import { scrapeRoxie } from './roxieScraper'
+import { scrapeSportyHunter } from './sportyHunterScraper'
 import path from 'node:path'
 import fs from 'node:fs'
 import axios from 'axios'
@@ -67,7 +72,9 @@ async function main() {
   const externalPlaylists: { url: string; groupTitle: string }[] = [
     { url: 'https://raw.githubusercontent.com/YueChan/Live/main/Global.m3u', groupTitle: 'YueChan - Global' },
     { url: 'https://raw.githubusercontent.com/YueChan/Live/main/Radio.m3u', groupTitle: 'YueChan - Radio' },
-    { url: 'https://raw.githubusercontent.com/iptvjs/iptv/main/adultiptv_all.m3u', groupTitle: 'IPTVjs - Adult' }
+    { url: 'https://raw.githubusercontent.com/iptvjs/iptv/main/adultiptv_all.m3u', groupTitle: 'IPTVjs - Adult' },
+    { url: 'https://raw.githubusercontent.com/eradhossain/DrewLive/main/PPVLand.m3u8', groupTitle: '! DrewLive - PPVLand' },
+    { url: 'https://raw.githubusercontent.com/eradhossain/DrewLive/main/TheTVApp.m3u8', groupTitle: '! DrewLive - TheTVApp' }
   ]
 
   let allExternalStreams: { groupTitle: string; streams: Stream[] }[] = []
@@ -244,6 +251,71 @@ async function main() {
   }
   if (allStreamedStreams.length) {
     logger.info(`total streams after streamed additions: ${combinedStreams.count()}`)
+  }
+
+  // Add NTV sports streams
+  logger.info('scraping NTV sports streams...')
+  const ntvResults = await scrapeNtv(logger)
+  for (const { groupTitle, streams } of ntvResults) {
+    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
+    streams.forEach((stream: Stream) => {
+      combinedStreams.add(stream)
+    })
+  }
+  if (ntvResults.length) {
+    logger.info(`total streams after NTV additions: ${combinedStreams.count()}`)
+  }
+
+  // Add SportsBite streams
+  logger.info('scraping SportsBite streams...')
+  const sportsBiteResults = await scrapeSportsBite(logger)
+  for (const { groupTitle, streams } of sportsBiteResults) {
+    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
+    streams.forEach((stream: Stream) => {
+      combinedStreams.add(stream)
+    })
+  }
+  if (sportsBiteResults.length) {
+    logger.info(`total streams after SportsBite additions: ${combinedStreams.count()}`)
+  }
+
+  // Add PPV.TO streams
+  logger.info('scraping PPV.TO streams...')
+  const ppvResults = await scrapePpvTo(logger)
+  for (const { groupTitle, streams } of ppvResults) {
+    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
+    streams.forEach((stream: Stream) => {
+      combinedStreams.add(stream)
+    })
+  }
+  if (ppvResults.length) {
+    logger.info(`total streams after PPV.TO additions: ${combinedStreams.count()}`)
+  }
+
+  // Add RoxieStreams streams
+  logger.info('scraping RoxieStreams streams...')
+  const roxieResults = await scrapeRoxie(logger)
+  for (const { groupTitle, streams } of roxieResults) {
+    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
+    streams.forEach((stream: Stream) => {
+      combinedStreams.add(stream)
+    })
+  }
+  if (roxieResults.length) {
+    logger.info(`total streams after RoxieStreams additions: ${combinedStreams.count()}`)
+  }
+
+  // Add SportyHunter streams
+  logger.info('scraping SportyHunter streams...')
+  const sportyResults = await scrapeSportyHunter(logger)
+  for (const { groupTitle, streams } of sportyResults) {
+    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
+    streams.forEach((stream: Stream) => {
+      combinedStreams.add(stream)
+    })
+  }
+  if (sportyResults.length) {
+    logger.info(`total streams after SportyHunter additions: ${combinedStreams.count()}`)
   }
 
   logger.info(`loaded ${combinedStreams.count()} total streams`)

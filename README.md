@@ -33,6 +33,13 @@ https://raw.githubusercontent.com/Robbdeeze/iptv/master/Robbdeeze_UltimateTV_All
 
 [Electronic Program Guide](https://en.wikipedia.org/wiki/Electronic_program_guide) for most of the channels can be downloaded using utilities published in the [iptv-org/epg](https://github.com/iptv-org/epg) repository.
 
+EPG is automatically generated daily using iptv-org/epg with 3-day coverage.
+
+```
+https://raw.githubusercontent.com/Robbdeeze/iptv/master/Robbdeeze_UltimateTV_Epg.xml
+https://raw.githubusercontent.com/Robbdeeze/iptv/master/Robbdeeze_UltimateTV_Epg.xml.gz
+```
+
 ## Database
 
 All channel data is taken from the [iptv-org/database](https://github.com/iptv-org/database) repository. If you find any errors please open a new [issue](https://github.com/iptv-org/database/issues) there.

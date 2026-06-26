@@ -40,28 +40,29 @@ jobs:
             -v $PWD:/epg/public:Z \
             -p 3000:3000 \
             -e MAX_CONNECTIONS=5 \
-            -e DAYS=1 \
+            -e DAYS=3 \
             ghcr.io/iptv-org/epg:master
 
           echo "Waiting for EPG generation to complete..."
-          for i in $(seq 1 180); do
+          for i in $(seq 1 240); do
             sleep 60
             if curl -sI http://localhost:3000/guide.xml 2>/dev/null | head -1 | grep -q "200"; then
-              echo "EPG generated successfully in ${i} minutes"
+              echo "EPG generated successfully after ${i} minutes"
               curl -s -o guide.xml http://localhost:3000/guide.xml
               break
             fi
-            echo "Waiting... (${i}/180 minutes)"
+            echo "Waiting... (${i}/240)"
           done
 
           if [ ! -f guide.xml ]; then
-            echo "EPG generation did not complete within timeout"
-            docker logs epg --tail 50
-            docker stop epg
+            echo "❌ EPG generation failed or timed out"
+            docker logs epg --tail 100
+            docker stop epg || true
             exit 1
           fi
 
-          docker stop epg
+          docker stop epg || true
+          echo "✅ EPG build completed"
 
       - name: Process and compress EPG
         run: npx tsx scripts/commands/playlist/generateEpg.ts --process-guide guide.xml
@@ -76,7 +77,7 @@ jobs:
         if: steps.git-check.outputs.changes != '0'
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: "[Bot] Update Robbdeeze_UltimateTV playlist, EPG, and imported streams"
+          commit_message: "[Bot] Update Robbdeeze_UltimateTV playlist and EPG"
           commit_user_name: "github-actions[bot]"
           commit_user_email: "github-actions[bot]@users.noreply.github.com"
           file_pattern: Robbdeeze_UltimateTV.m3u Robbdeeze_UltimateTV_Epg.xml Robbdeeze_UltimateTV_Epg.xml.gz streams/*.m3u

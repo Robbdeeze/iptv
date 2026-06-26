@@ -128,6 +128,10 @@ async function processGuide(guideXmlPath: string, m3uRelativePath: string, outpu
 
   logger.info(`Extracted ${matchedChannels.length} channels and ${matchedProgrammes.length} programmes matching ${allTvgIds.size} tvg-ids`)
 
+  if (matchedChannels.length === 0) {
+    logger.warn('No channels matched! Check tvg-id extraction.')
+  }
+
   let xmltv = '<?xml version="1.0" encoding="UTF-8"?>\n'
   xmltv += '<tv generator-info-name="Robbdeeze UltimateTV EPG Generator">\n'
   for (const channelXml of matchedChannels) {
