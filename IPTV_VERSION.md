@@ -760,6 +760,15 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 | Updated workflow paths | `ultimate.yml` | Changed `streams/*.m3u` → `streams/**/*.m3u` for commit patterns |
 | Updated famelack output path | `generateUltimate.ts` | Famelack files now write to `streams/generated/` |
 
+### June 27, 2026 — Performance Optimizations
+
+| Change | File | Description |
+|--------|------|-------------|
+| Parallel scrapers | `generateUltimate.ts` | All 7 sports scrapers now run concurrently via `Promise.allSettled` instead of sequentially |
+| Faster embed extraction | `aggregatorHelpers.ts` | Reduced `waitUntil: 'networkidle'` → `'domcontentloaded'`, 20s→15s timeout, removed 5s extra wait |
+| Shared helpers in streamedScraper | `streamedScraper.ts` | Replaced local `extractM3u8FromEmbed`/`getBrowser`/`closeBrowser` copies with shared imports from `aggregatorHelpers` |
+| Concurrent embed resolution | `streamedScraper.ts` | Stream embed URLs now resolved 5 at a time using `async.eachLimit` instead of one-by-one |
+
 ### EPG Automation Enhancements
 
 | Change | File | Before | After |

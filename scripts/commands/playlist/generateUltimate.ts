@@ -245,95 +245,32 @@ async function main() {
     logger.info(`total streams after famelack additions: ${combinedStreams.count()}`)
   }
 
-  // Add daddylive sports streams
-  logger.info('scraping daddylive sports streams...')
-  const allDaddyliveStreams = await scrapeDaddylive(logger)
-  for (const { groupTitle, streams } of allDaddyliveStreams) {
-    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
-    streams.forEach((stream: Stream) => {
-      combinedStreams.add(stream)
-    })
-  }
-  if (allDaddyliveStreams.length) {
-    logger.info(`total streams after daddylive additions: ${combinedStreams.count()}`)
-  }
+  // Run all sports scrapers in parallel
+  logger.info('scraping all sports streams (parallel)...')
+  const scraperResults = await Promise.allSettled([
+    scrapeDaddylive(logger),
+    scrapeStreamed(logger),
+    scrapeNtv(logger),
+    scrapeSportsBite(logger),
+    scrapePpvTo(logger),
+    scrapeRoxie(logger),
+    scrapeSportyHunter(logger)
+  ])
 
-  // Add streamed.pk sports streams
-  logger.info('scraping streamed.pk sports streams...')
-  const allStreamedStreams = await scrapeStreamed(logger)
-  for (const { groupTitle, streams } of allStreamedStreams) {
-    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
-    streams.forEach((stream: Stream) => {
-      combinedStreams.add(stream)
-    })
-  }
-  if (allStreamedStreams.length) {
-    logger.info(`total streams after streamed additions: ${combinedStreams.count()}`)
-  }
-
-  // Add NTV sports streams
-  logger.info('scraping NTV sports streams...')
-  const ntvResults = await scrapeNtv(logger)
-  for (const { groupTitle, streams } of ntvResults) {
-    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
-    streams.forEach((stream: Stream) => {
-      combinedStreams.add(stream)
-    })
-  }
-  if (ntvResults.length) {
-    logger.info(`total streams after NTV additions: ${combinedStreams.count()}`)
-  }
-
-  // Add SportsBite streams
-  logger.info('scraping SportsBite streams...')
-  const sportsBiteResults = await scrapeSportsBite(logger)
-  for (const { groupTitle, streams } of sportsBiteResults) {
-    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
-    streams.forEach((stream: Stream) => {
-      combinedStreams.add(stream)
-    })
-  }
-  if (sportsBiteResults.length) {
-    logger.info(`total streams after SportsBite additions: ${combinedStreams.count()}`)
-  }
-
-  // Add PPV.TO streams
-  logger.info('scraping PPV.TO streams...')
-  const ppvResults = await scrapePpvTo(logger)
-  for (const { groupTitle, streams } of ppvResults) {
-    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
-    streams.forEach((stream: Stream) => {
-      combinedStreams.add(stream)
-    })
-  }
-  if (ppvResults.length) {
-    logger.info(`total streams after PPV.TO additions: ${combinedStreams.count()}`)
-  }
-
-  // Add RoxieStreams streams
-  logger.info('scraping RoxieStreams streams...')
-  const roxieResults = await scrapeRoxie(logger)
-  for (const { groupTitle, streams } of roxieResults) {
-    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
-    streams.forEach((stream: Stream) => {
-      combinedStreams.add(stream)
-    })
-  }
-  if (roxieResults.length) {
-    logger.info(`total streams after RoxieStreams additions: ${combinedStreams.count()}`)
-  }
-
-  // Add SportyHunter streams
-  logger.info('scraping SportyHunter streams...')
-  const sportyResults = await scrapeSportyHunter(logger)
-  for (const { groupTitle, streams } of sportyResults) {
-    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
-    streams.forEach((stream: Stream) => {
-      combinedStreams.add(stream)
-    })
-  }
-  if (sportyResults.length) {
-    logger.info(`total streams after SportyHunter additions: ${combinedStreams.count()}`)
+  const scraperNames = ['DaddyLive', 'Streamed', 'NTV', 'SportsBite', 'PPV.TO', 'Roxie', 'SportyHunter']
+  for (let i = 0; i < scraperResults.length; i++) {
+    const result = scraperResults[i]
+    if (result.status === 'rejected') {
+      logger.error(`${scraperNames[i]} scraper failed: ${result.reason}`)
+      continue
+    }
+    const streamsList = result.value
+    for (const { groupTitle, streams } of streamsList) {
+      logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
+      streams.forEach((stream: Stream) => {
+        combinedStreams.add(stream)
+      })
+    }
   }
 
   logger.info(`loaded ${combinedStreams.count()} total streams`)

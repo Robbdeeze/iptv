@@ -50,8 +50,8 @@ export async function extractM3u8FromEmbed(
 
   try {
     const page = await context.newPage()
-    await page.goto(embedUrl, { waitUntil: 'networkidle', timeout: 20000 }).catch(() => {})
-    await page.waitForTimeout(5000)
+    await page.goto(embedUrl, { waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => {})
+    await page.waitForTimeout(3000)
 
     const pageM3u8 = await page.evaluate(() => {
       const found: string[] = []

@@ -1,7 +1,8 @@
 import { Logger } from '@freearhey/core'
 import { Stream } from '../../models'
 import axios from 'axios'
-import { chromium } from 'playwright'
+import { extractM3u8FromEmbed, closeBrowser } from '../../core/aggregatorHelpers'
+import { eachLimit } from 'async'
 
 const GROUP_TITLE = '! Sports - Streamed'
 
@@ -35,85 +36,7 @@ interface StreamOption {
   viewers: number
 }
 
-// Shared browser instance for embed extraction
-let browserInstance: import('playwright').Browser | null = null
-
-async function getBrowser(): Promise<import('playwright').Browser> {
-  if (!browserInstance) {
-    browserInstance = await chromium.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    })
-  }
-  return browserInstance
-}
-
-async function extractM3u8FromEmbed(
-  embedUrl: string,
-  logger: Logger
-): Promise<string | null> {
-  const browser = await getBrowser()
-  const context = await browser.newContext({
-    userAgent:
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-  })
-
-  const m3u8Urls: string[] = []
-
-  // Intercept network requests for m3u8 URLs
-  await context.route('**/*', async (route) => {
-    const url = route.request().url()
-    if (url.includes('.m3u8') || url.includes('.mpd')) {
-      m3u8Urls.push(url)
-    }
-    await route.continue()
-  })
-
-  context.on('response', (response) => {
-    const url = response.url()
-    if (url.includes('.m3u8')) {
-      m3u8Urls.push(url)
-    }
-  })
-
-  try {
-    const page = await context.newPage()
-    await page.goto(embedUrl, { waitUntil: 'networkidle', timeout: 20000 }).catch(() => {})
-    await page.waitForTimeout(5000)
-
-    // Check page for video/iframe sources
-    const pageM3u8 = await page.evaluate(() => {
-      const found: string[] = []
-      document.querySelectorAll('video').forEach((v) => {
-        if (v.src && v.src.includes('.m3u8')) found.push(v.src)
-        v.querySelectorAll('source').forEach((s) => {
-          if (s.src && s.src.includes('.m3u8')) found.push(s.src)
-        })
-      })
-      document.querySelectorAll('iframe').forEach((iframe) => {
-        if (iframe.src && iframe.src.includes('.m3u8')) found.push(iframe.src)
-      })
-      return found
-    })
-    m3u8Urls.push(...pageM3u8)
-
-    const unique = [...new Set(m3u8Urls)]
-    if (unique.length > 0) return unique[0]
-  } catch {
-    return null
-  } finally {
-    await context.close()
-  }
-
-  return null
-}
-
-async function closeBrowser(): Promise<void> {
-  if (browserInstance) {
-    await browserInstance.close()
-    browserInstance = null
-  }
-}
+const EMBED_CONCURRENCY = 5
 
 function isEnglishOrNoLanguage(lang: string): boolean {
   const lower = lang.toLowerCase()
@@ -168,68 +91,68 @@ export async function scrapeStreamed(
       return result
     }
 
-    // Step 3: For each match, get stream options and extract m3u8
+    // Step 3: Collect all stream options to resolve
+    interface EmbedJob {
+      embedUrl: string
+      title: string
+      label: string
+    }
+    const embedJobs: EmbedJob[] = []
+
     let matchCount = 0
     for (const match of allMatches) {
       matchCount++
       const title = match.title
-
-      // Process each source for this match
       for (const source of match.sources) {
         try {
           const streamResp = await axios.get(
             `${domain}/api/stream/${source.source}/${source.id}`,
-            {
-              timeout: 15000,
-              headers: { 'User-Agent': 'Mozilla/5.0' }
-            }
+            { timeout: 15000, headers: { 'User-Agent': 'Mozilla/5.0' } }
           )
           const options: StreamOption[] = streamResp.data
-
           if (!options || options.length === 0) continue
 
-          // Prefer English HD streams
-          const englishHD = options.filter(
-            (o) => isEnglishOrNoLanguage(o.language) && o.hd
-          )
-          const english = options.filter((o) =>
-            isEnglishOrNoLanguage(o.language)
-          )
-          const chosen =
-            englishHD.length > 0
-              ? englishHD[0]
-              : english.length > 0
-                ? english[0]
-                : options[0]
+          const englishHD = options.filter((o) => isEnglishOrNoLanguage(o.language) && o.hd)
+          const english = options.filter((o) => isEnglishOrNoLanguage(o.language))
+          const chosen = englishHD.length > 0 ? englishHD[0] : english.length > 0 ? english[0] : options[0]
 
-          // Extract m3u8 from the embed URL using Playwright
-          logger.info(
-            `  [${matchCount}/${allMatches.length}] ${title} - ${chosen.language}${chosen.hd ? ' HD' : ''}`
-          )
-          const m3u8Url = await extractM3u8FromEmbed(chosen.embedUrl, logger)
-          if (m3u8Url && !seenUrls.has(m3u8Url)) {
-            seenUrls.add(m3u8Url)
-            const stream = new Stream({
-              channel: null,
-              feed: null,
-              title,
-              url: m3u8Url,
-              quality: null,
-              referrer: null,
-              user_agent: null,
-              label: null
-            })
-            stream.tvgId = title
-            stream.tvgLogo = ''
-            stream.groupTitle = GROUP_TITLE
-            streams.push(stream)
-            logger.info(`    -> m3u8 found: ${m3u8Url.substring(0, 80)}...`)
-          }
+          embedJobs.push({
+            embedUrl: chosen.embedUrl,
+            title,
+            label: `${chosen.language}${chosen.hd ? ' HD' : ''}`
+          })
         } catch {
           // Source might not be available
         }
       }
     }
+
+    logger.info(`Resolving ${embedJobs.length} stream embeds (concurrency: ${EMBED_CONCURRENCY})...`)
+
+    let completed = 0
+    await eachLimit(embedJobs, EMBED_CONCURRENCY, async (job: EmbedJob) => {
+      completed++
+      logger.info(`  [${completed}/${embedJobs.length}] ${job.title} - ${job.label}`)
+      const m3u8Url = await extractM3u8FromEmbed(job.embedUrl, logger)
+      if (m3u8Url && !seenUrls.has(m3u8Url)) {
+        seenUrls.add(m3u8Url)
+        const stream = new Stream({
+          channel: null,
+          feed: null,
+          title: job.title,
+          url: m3u8Url,
+          quality: null,
+          referrer: null,
+          user_agent: null,
+          label: null
+        })
+        stream.tvgId = job.title
+        stream.tvgLogo = ''
+        stream.groupTitle = GROUP_TITLE
+        streams.push(stream)
+        logger.info(`    -> m3u8 found: ${m3u8Url.substring(0, 80)}...`)
+      }
+    })
 
     logger.info(
       `Total Streamed streams: ${streams.length}`
