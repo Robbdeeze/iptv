@@ -14,7 +14,7 @@ import { scrapeSportsBite } from './sportsBiteScraper'
 import { scrapePpvTo } from './ppvToScraper'
 import { scrapeRoxie } from './roxieScraper'
 import { scrapeSportyHunter } from './sportyHunterScraper'
-import { closeBrowser } from '../../core'
+import { closeBrowser, reorganizeStreams } from '../../core'
 import path from 'node:path'
 import fs from 'node:fs'
 import axios from 'axios'
@@ -77,7 +77,7 @@ async function main() {
     { url: 'http://drewlive2423.duckdns.org:8045/DrewLive/DrewLiveMergedPlaylist.m3u8', groupTitle: '' }
   ]
 
-  let allExternalStreams: { groupTitle: string; streams: Stream[] }[] = []
+  const allExternalStreams: { groupTitle: string; streams: Stream[] }[] = []
 
   const allowedCountries = new Set(['United States', 'United Kingdom', 'Canada', 'US', 'UK', 'CA'])
 
@@ -119,7 +119,7 @@ async function main() {
     { filepath: '/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U\'s /tv shows with posters.m3u', groupTitle: 'VOD - TV Shows' }
   ]
 
-  let allLocalStreams: { groupTitle: string; streams: Stream[] }[] = []
+  const allLocalStreams: { groupTitle: string; streams: Stream[] }[] = []
 
   for (const { filepath: localPath, groupTitle: overrideGroup } of localPlaylists) {
     logger.info(`reading local playlist: ${localPath}...`)
@@ -144,7 +144,7 @@ async function main() {
     { countryCode: 'uk', groupTitle: 'Famelack - UK' }
   ]
 
-  let allFamelackStreams: { groupTitle: string; streams: Stream[] }[] = []
+  const allFamelackStreams: { groupTitle: string; streams: Stream[] }[] = []
 
   for (const { countryCode, groupTitle } of famelackSources) {
     const url = `https://raw.githubusercontent.com/famelack/famelack-data/main/tv/raw/countries/${countryCode}.json`
@@ -283,16 +283,11 @@ async function main() {
 
   logger.info(`retained ${combinedStreams.count()} streams after deduplication`)
 
-  // Sort streams: Group Title (asc), Title (asc), Resolution (desc)
-  logger.info('sorting streams...')
-  combinedStreams = combinedStreams.sortBy(
-    [
-      (stream: Stream) => stream.groupTitle,
-      (stream: Stream) => stream.title,
-      (stream: Stream) => stream.getVerticalResolution()
-    ],
-    ['asc', 'asc', 'desc']
-  )
+  // Reorganize: reclassify group-titles and reorder into clean categories
+  logger.info('reorganizing streams into clean categories...')
+  combinedStreams = reorganizeStreams(combinedStreams)
+
+  logger.info(`reorganized ${combinedStreams.count()} streams`)
 
   // Write playlist to the root directory
   logger.info('generating Robbdeeze_UltimateTV.m3u...')
@@ -303,7 +298,7 @@ async function main() {
   // Replace the first line to point to our generated Robbdeeze_UltimateTV_Epg.xml.gz
   const firstLineEnd = playlistString.indexOf('\r\n')
   if (firstLineEnd !== -1) {
-    playlistString = `#EXTM3U x-tvg-url="Robbdeeze_UltimateTV_Epg.xml.gz"` + playlistString.substring(firstLineEnd)
+    playlistString = '#EXTM3U x-tvg-url="Robbdeeze_UltimateTV_Epg.xml.gz"' + playlistString.substring(firstLineEnd)
   }
 
   await rootStorage.save('Robbdeeze_UltimateTV.m3u', playlistString)

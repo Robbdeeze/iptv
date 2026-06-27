@@ -809,6 +809,19 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 | Integration | `scripts/commands/playlist/generateUltimate.ts` | All 5 new scrapers imported and called in the main UltimateTV pipeline |
 | Core re-exports | `scripts/core/index.ts` | Added `aggregatorHelpers` to public exports |
 
+### June 27, 2026 — Playlist Reorganization & Cleanup
+
+| Change | File | Description |
+|--------|------|-------------|
+| Reorganizer module | `scripts/core/reorganizer.ts` | New shared module that classifies all streams into clean hierarchical categories |
+| Pipeline integration | `generateUltimate.ts` | Reorganization runs automatically after dedup in the main pipeline |
+| Core re-export | `scripts/core/index.ts` | Added `reorganizer` to public exports |
+| Standalone reorg script | `scripts/commands/playlist/reorg.ts` | Can also be run standalone |
+| Clean output | `Robbdeeze_UltimateTV_Clean.m3u` | Generated with 26,388 entries across 19 category sections |
+| Section ordering | All streams | Sports Live/PPV/Events at top → News → US → Canada → UK → Other → VOD at bottom |
+| VOD TV Shows grouped | VOD section | TV show episodes organized under `VOD - TV Shows - {ShowName}` |
+| US before UK | Section order | US groups placed above UK groups throughout the playlist |
+
 ---
 
 ## 12. How to Run Locally
