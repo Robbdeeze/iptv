@@ -96,7 +96,8 @@ export class Stream extends sdk.Models.Stream {
 
     stream.tvgId = data.tvg.id
     stream.tvgLogo = data.tvg.logo || undefined
-    stream.groupTitle = typeof data.group === 'string' ? data.group : stream.groupTitle
+    const rawGroup = data.group
+    stream.groupTitle = typeof rawGroup === 'string' ? rawGroup : (rawGroup?.title || stream.groupTitle)
     stream.line = data.line
 
     return stream
