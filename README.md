@@ -30,6 +30,15 @@ https://raw.githubusercontent.com/Robbdeeze/iptv/master/Robbdeeze_UltimateTV_All
 https://raw.githubusercontent.com/Robbdeeze/iptv/master/Robbdeeze_UltimateTV_Clean.m3u
 ```
 
+## Movies & TV Shows (VOD)
+
+Separate VOD playlists (not included in the live TV playlists above):
+
+```
+https://raw.githubusercontent.com/Robbdeeze/iptv/master/streams/vod/movies.m3u
+https://raw.githubusercontent.com/Robbdeeze/iptv/master/streams/vod/tv-shows.m3u
+```
+
 ## EPG
 
 [Electronic Program Guide](https://en.wikipedia.org/wiki/Electronic_program_guide) for most of the channels can be downloaded using utilities published in the [iptv-org/epg](https://github.com/iptv-org/epg) repository.

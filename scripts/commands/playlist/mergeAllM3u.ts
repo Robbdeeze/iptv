@@ -103,33 +103,12 @@ async function main() {
 
   logger.info(`loaded ${streams.length} streams from streams/`)
 
-  // Step 2: Parse VOD files
-  const vodFiles: { filepath: string; groupTitle: string }[] = [
-    { filepath: "/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U's /movies_organized_poster_groups102925.m3u", groupTitle: 'VOD - Movies' },
-    { filepath: "/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U's /tv shows with posters.m3u", groupTitle: 'VOD - TV Shows' }
-  ]
+  // Note: VOD is no longer embedded in the merged playlist.
+  // VOD playlists are available separately under streams/vod/:
+  //   - streams/vod/movies.m3u
+  //   - streams/vod/tv-shows.m3u
 
-  for (const { filepath: vodPath, groupTitle } of vodFiles) {
-    logger.info(`reading VOD: ${vodPath} -> "${groupTitle}"...`)
-    try {
-      const content = fs.readFileSync(vodPath, 'utf8')
-      const parsed: iptvParser.Playlist = iptvParser.parse(content)
-      for (const item of parsed.items) {
-        const stream = Stream.fromPlaylistItem(item)
-        stream.groupTitle = groupTitle
-        if (!seenUrls.has(stream.url)) {
-          seenUrls.add(stream.url)
-          streams.push(stream)
-        }
-      }
-      const count = parsed.items.length
-      logger.info(`  added ${count} streams`)
-    } catch (err) {
-      logger.error(`  failed: ${err}`)
-    }
-  }
-
-  logger.info(`total streams before dedup: ${streams.length}`)
+  logger.info(`total streams: ${streams.length}`)
 
   // Step 3: Sort
   logger.info('sorting...')

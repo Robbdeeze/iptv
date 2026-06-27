@@ -125,30 +125,10 @@ async function main() {
     }
   }
 
-  // Local VOD files to include
-  const localPlaylists: { filepath: string; groupTitle?: string }[] = [
-    { filepath: '/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U\'s /movies_organized_poster_groups102925.m3u', groupTitle: 'VOD - Movies' },
-    { filepath: '/Users/robbdeeze/Documents/Movies:TV with Posters_LiveTV M3U\'s /tv shows with posters.m3u', groupTitle: 'VOD - TV Shows' }
-  ]
-
-  const allLocalStreams: { groupTitle: string; streams: Stream[] }[] = []
-
-  for (const { filepath: localPath, groupTitle: overrideGroup } of localPlaylists) {
-    logger.info(`reading local playlist: ${localPath}...`)
-    try {
-      const content = fs.readFileSync(localPath, 'utf8')
-      const parsed: iptvParser.Playlist = iptvParser.parse(content)
-      const streams = parsed.items.map((item: iptvParser.PlaylistItem) => {
-        const stream = Stream.fromPlaylistItem(item)
-        stream.groupTitle = overrideGroup
-        return stream
-      })
-      allLocalStreams.push({ groupTitle: overrideGroup || '', streams })
-      logger.info(`loaded ${streams.length} streams from local file`)
-    } catch (err) {
-      logger.error(`failed to read local file ${localPath}: ${err}`)
-    }
-  }
+  // Note: VOD is no longer embedded in the main playlist.
+  // VOD playlists are available separately under streams/vod/:
+  //   - streams/vod/movies.m3u
+  //   - streams/vod/tv-shows.m3u
 
   // Famelack data: fetch US/UK channel JSON, convert to M3U, and save to streams/
   const famelackSources: { countryCode: string; groupTitle: string }[] = [
@@ -235,17 +215,7 @@ async function main() {
     logger.info(`total streams after external additions: ${combinedStreams.count()}`)
   }
 
-  // Add all local VOD streams (group-titles already set from source file)
-  for (const { streams } of allLocalStreams) {
-    logger.info(`adding ${streams.length} local VOD streams...`)
-    streams.forEach((stream: Stream) => {
-      stream.setGuides(data.guidesGroupedByStreamId.get(stream.getId()))
-      combinedStreams.add(stream)
-    })
-  }
-  if (allLocalStreams.length) {
-    logger.info(`total streams after local VOD additions: ${combinedStreams.count()}`)
-  }
+  // VOD is no longer embedded here — available separately in streams/vod/
 
   // Add all famelack streams
   for (const { groupTitle, streams } of allFamelackStreams) {
