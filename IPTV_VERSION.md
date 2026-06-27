@@ -809,6 +809,15 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 | Integration | `scripts/commands/playlist/generateUltimate.ts` | All 5 new scrapers imported and called in the main UltimateTV pipeline |
 | Core re-exports | `scripts/core/index.ts` | Added `aggregatorHelpers` to public exports |
 
+### June 27, 2026 — Successful Pipeline Run
+
+| Change | File | Description |
+|--------|------|-------------|
+| Generated playlist | `Robbdeeze_UltimateTV.m3u` | Regenerated with 26,409 streams after dedup |
+| Sports scrapers | daddyliveScraper, streamedScraper, roxieScraper | DaddyLive: 425, Streamed: 101, Roxie: 1 live event streams |
+| Clean URL in README | `README.md` | Added `Robbdeeze_UltimateTV_Clean.m3u` to Playlists section |
+| Updated IPTV_VERSION.md | `IPTV_VERSION.md` | Documented latest run |
+
 ### June 27, 2026 — Auto-Update Reliability Fixes
 
 | Change | File | Description |
