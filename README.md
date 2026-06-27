@@ -27,6 +27,7 @@ Simply paste the link to one of the playlists into [any video player](https://gi
 ```
 https://raw.githubusercontent.com/Robbdeeze/iptv/master/Robbdeeze_UltimateTV.m3u
 https://raw.githubusercontent.com/Robbdeeze/iptv/master/Robbdeeze_UltimateTV_AllM3uMerged.m3u
+https://raw.githubusercontent.com/Robbdeeze/iptv/master/Robbdeeze_UltimateTV_Clean.m3u
 ```
 
 ## EPG
