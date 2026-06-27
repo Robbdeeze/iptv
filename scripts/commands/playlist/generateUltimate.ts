@@ -20,6 +20,18 @@ import fs from 'node:fs'
 import axios from 'axios'
 import zlib from 'node:zlib'
 
+const SCRAPER_TIMEOUT = 5 * 60 * 1000 // 5 minutes per scraper
+const GLOBAL_TIMEOUT = 55 * 60 * 1000  // 55 minutes total
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms / 1000}s`)), ms)
+    )
+  ])
+}
+
 function getGroupTitle(filename: string): string {
   const nameWithoutExt = filename.replace(/\.m3u$/i, '')
   const parts = nameWithoutExt.split('_')
@@ -246,16 +258,16 @@ async function main() {
     logger.info(`total streams after famelack additions: ${combinedStreams.count()}`)
   }
 
-  // Run all sports scrapers in parallel
+  // Run all sports scrapers in parallel (with individual timeouts)
   logger.info('scraping all sports streams (parallel)...')
   const scraperResults = await Promise.allSettled([
-    scrapeDaddylive(logger),
-    scrapeStreamed(logger),
-    scrapeNtv(logger),
-    scrapeSportsBite(logger),
-    scrapePpvTo(logger),
-    scrapeRoxie(logger),
-    scrapeSportyHunter(logger)
+    withTimeout(scrapeDaddylive(logger), SCRAPER_TIMEOUT, 'DaddyLive'),
+    withTimeout(scrapeStreamed(logger), SCRAPER_TIMEOUT, 'Streamed'),
+    withTimeout(scrapeNtv(logger), SCRAPER_TIMEOUT, 'NTV'),
+    withTimeout(scrapeSportsBite(logger), SCRAPER_TIMEOUT, 'SportsBite'),
+    withTimeout(scrapePpvTo(logger), SCRAPER_TIMEOUT, 'PPV.TO'),
+    withTimeout(scrapeRoxie(logger), SCRAPER_TIMEOUT, 'Roxie'),
+    withTimeout(scrapeSportyHunter(logger), SCRAPER_TIMEOUT, 'SportyHunter')
   ])
 
   const scraperNames = ['DaddyLive', 'Streamed', 'NTV', 'SportsBite', 'PPV.TO', 'Roxie', 'SportyHunter']
@@ -410,7 +422,7 @@ async function main() {
   logger.info('done! EPG and playlist generated successfully.')
 }
 
-main().catch(err => {
+withTimeout(main(), GLOBAL_TIMEOUT, 'Ultimate playlist generation').catch(err => {
   console.error(err)
   process.exit(1)
 })

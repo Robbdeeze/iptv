@@ -809,6 +809,14 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 | Integration | `scripts/commands/playlist/generateUltimate.ts` | All 5 new scrapers imported and called in the main UltimateTV pipeline |
 | Core re-exports | `scripts/core/index.ts` | Added `aggregatorHelpers` to public exports |
 
+### June 27, 2026 — Auto-Update Reliability Fixes
+
+| Change | File | Description |
+|--------|------|-------------|
+| Scraper timeouts | `generateUltimate.ts` | Added 5-minute timeout per scraper via `withTimeout()` — prevents a single hung scraper from blocking the entire pipeline |
+| Global timeout | `generateUltimate.ts` | Added 55-minute global timeout wrapper around `main()` — prevents 6-hour workflow runs from hitting GitHub's job timeout |
+| Robust git diff | `check.yml` | Fixed "Get list of changed files" step to handle detached HEAD and fetch failures gracefully |
+
 ### June 27, 2026 — Playlist Reorganization & Cleanup
 
 | Change | File | Description |
