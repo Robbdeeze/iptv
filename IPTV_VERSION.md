@@ -760,6 +760,19 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 | Updated workflow paths | `ultimate.yml` | Changed `streams/*.m3u` → `streams/**/*.m3u` for commit patterns |
 | Updated famelack output path | `generateUltimate.ts` | Famelack files now write to `streams/generated/` |
 
+### June 27, 2026 — Bug Fix: Group-Title Parsing
+
+| Change | File | Description |
+|--------|------|-------------|
+| Fixed group-title extraction | `stream.ts` | `data.group` from `iptv-playlist-parser` is an object `{title: string}`, not a plain string. `typeof check` was causing all DrewLive streams to get group-title `"Undefined"`. Now handles both formats. |
+
+### June 27, 2026 — Bug Fix: Shared Browser Race Condition
+
+| Change | File | Description |
+|--------|------|-------------|
+| Centralized browser lifecycle | `roxieScraper.ts`, `sportyHunterScraper.ts`, `ntvScraper.ts`, `sportsBiteScraper.ts`, `ppvToScraper.ts`, `streamedScraper.ts` | Removed `closeBrowser()` from all 6 scrapers using the shared singleton browser. The first scraper to finish was closing the browser for all others still running, causing `browser.newContext: Target page, context or browser has been closed`. |
+| Centralized cleanup | `generateUltimate.ts` | Added single `await closeBrowser()` after `Promise.allSettled()` completes |
+
 ### June 27, 2026 — Performance Optimizations
 
 | Change | File | Description |
