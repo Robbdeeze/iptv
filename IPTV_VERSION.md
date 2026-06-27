@@ -97,7 +97,7 @@ Step 4: npx playwright install chromium
 Step 5: npm run playlist:ultimate
     - Loads API data (channels, streams, guides from iptv-org)
     - Parses US/CA/UK M3U files from streams/
-     - Fetches external playlists (YueChan Global, Radio, IPTVjs Adult, DrewLive PPVLand, DrewLive TheTVApp)
+     - Fetches external playlists (YueChan Global, Radio, IPTVjs Adult, DrewLive Merged)
     - Reads local VOD files (movies & TV shows with posters)
     - Fetches Famelack US/UK channel data, saves to streams/
     - Scrapes DaddyLive sports streams via Playwright
@@ -197,8 +197,7 @@ This is the **core custom script** that builds the Robbdeeze UltimateTV experien
    - `YueChan Live/Global.m3u` → group: `"YueChan - Global"`
    - `YueChan Live/Radio.m3u` → group: `"YueChan - Radio"`
    - `iptvjs/adultiptv_all.m3u` → group: `"IPTVjs - Adult"`
-   - `DrewLive/PPVLand.m3u8` → group: `"! DrewLive - PPVLand"` (PPV/sports events)
-   - `DrewLive/TheTVApp.m3u8` → group: `"! DrewLive - TheTVApp"` (live US TV channels)
+    - `DrewLiveMergedPlaylist.m3u8` → preserves original group titles (A1xmedia, PlutoTV, SamsungTVPlus, etc.)
 
 4. **Read local VOD files** (from user's local filesystem):
    - Movies playlist → group: `"VOD - Movies"`
@@ -559,6 +558,7 @@ iptv/
 │   ├── merge-all.yml         # Every 3 days: merge all streams
 │   └── check.yml             # PR validation (lint + validate)
 ├── .readme/
+├── .readme/
 │   ├── template.md           # Template for PLAYLISTS.md
 │   ├── preview.png           # README preview image
 │   └── config.json           # Markdown-include config
@@ -618,12 +618,10 @@ iptv/
 │       ├── categoriesTable.ts, countriesTable.ts
 │       ├── languagesTable.ts, regionsTable.ts
 │       └── table.ts
-├── streams/                  # ~300 M3U files (one per country + sources)
-│   ├── us.m3u
-│   ├── us_pluto.m3u
-│   ├── us_famelack.m3u
-│   ├── fr.m3u
-│   ├── uk.m3u
+├── streams/                  # 325 M3U files organized into subdirectories
+│   ├── countries/            # 200 base per-country files (e.g., us.m3u, fr.m3u)
+│   ├── sources/              # 123 source-specific files (e.g., us_pluto.m3u, fr_samsung.m3u)
+│   └── generated/            # 2 auto-generated files (e.g., us_famelack.m3u)
 │   └── ...
 ├── tests/
 │   ├── commands/playlist/
@@ -743,6 +741,24 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 | Updated Famelack data | `streams/us_famelack.m3u`, `streams/uk_famelack.m3u` | Refreshed US (1,547) and UK (239) channels |
 | Streamed.pk sports | `streamedScraper.ts` | Scraped 108 live sports streams |
 | Updated IPTV_VERSION.md | `IPTV_VERSION.md` | Documented latest run
+
+### June 27, 2026 — DrewLive Source Update
+
+| Change | File | Description |
+|--------|------|-------------|
+| Replaced dead DrewLive URLs | `generateUltimate.ts` | Replaced broken `eradhossain/DrewLive` PPVLand/TheTVApp URLs with working `drewlive2423.duckdns.org:8045/DrewLive/DrewLiveMergedPlaylist.m3u8` |
+| Preserve original group titles | `stream.ts` | `Stream.fromPlaylistItem()` now preserves `group-title` from M3U files |
+| Conditional group override | `generateUltimate.ts` | External playlists with no override group-title keep their original internal groups |
+| Filter non-US/UK/CA regions | `generateUltimate.ts` | Filtered out PlutoTV/SamsungTVPlus/PlexTV entries for countries other than US, UK, and Canada |
+
+### June 27, 2026 — File System Restructure
+
+| Change | File | Description |
+|--------|------|-------------|
+| Organized `streams/` into subdirs | `streams/` | Moved 325 files into `countries/` (200), `sources/` (123), and `generated/` (2) |
+| Updated linter glob | `m3u-linter.json` | Changed `streams/*.m3u` → `streams/**/*.m3u` for recursive matching |
+| Updated workflow paths | `ultimate.yml` | Changed `streams/*.m3u` → `streams/**/*.m3u` for commit patterns |
+| Updated famelack output path | `generateUltimate.ts` | Famelack files now write to `streams/generated/` |
 
 ### EPG Automation Enhancements
 

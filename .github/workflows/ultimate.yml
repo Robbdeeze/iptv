@@ -80,4 +80,4 @@ jobs:
           commit_message: "[Bot] Update Robbdeeze_UltimateTV playlist and EPG"
           commit_user_name: "github-actions[bot]"
           commit_user_email: "github-actions[bot]@users.noreply.github.com"
-          file_pattern: Robbdeeze_UltimateTV.m3u Robbdeeze_UltimateTV_Epg.xml Robbdeeze_UltimateTV_Epg.xml.gz streams/*.m3u
+          file_pattern: Robbdeeze_UltimateTV.m3u Robbdeeze_UltimateTV_Epg.xml Robbdeeze_UltimateTV_Epg.xml.gz streams/**/*.m3u

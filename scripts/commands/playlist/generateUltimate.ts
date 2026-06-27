@@ -73,20 +73,38 @@ async function main() {
     { url: 'https://raw.githubusercontent.com/YueChan/Live/main/Global.m3u', groupTitle: 'YueChan - Global' },
     { url: 'https://raw.githubusercontent.com/YueChan/Live/main/Radio.m3u', groupTitle: 'YueChan - Radio' },
     { url: 'https://raw.githubusercontent.com/iptvjs/iptv/main/adultiptv_all.m3u', groupTitle: 'IPTVjs - Adult' },
-    { url: 'https://raw.githubusercontent.com/eradhossain/DrewLive/main/PPVLand.m3u8', groupTitle: '! DrewLive - PPVLand' },
-    { url: 'https://raw.githubusercontent.com/eradhossain/DrewLive/main/TheTVApp.m3u8', groupTitle: '! DrewLive - TheTVApp' }
+    { url: 'http://drewlive2423.duckdns.org:8045/DrewLive/DrewLiveMergedPlaylist.m3u8', groupTitle: '' }
   ]
 
   let allExternalStreams: { groupTitle: string; streams: Stream[] }[] = []
+
+  const allowedCountries = new Set(['United States', 'United Kingdom', 'Canada', 'US', 'UK', 'CA'])
+
+  function keepStream(stream: Stream): boolean {
+    const gt = String(stream.groupTitle || '')
+    for (const prefix of ['PlutoTV - ', 'SamsungTVPlus - ', 'PlexTV - ']) {
+      if (gt.startsWith(prefix)) {
+        const country = gt.slice(prefix.length)
+        if (!allowedCountries.has(country)) return false
+      }
+    }
+    return true
+  }
 
   for (const { url, groupTitle } of externalPlaylists) {
     logger.info(`fetching external playlist: ${url}...`)
     try {
       const response = await axios.get(url, { timeout: 15000 })
       const parsed: iptvParser.Playlist = iptvParser.parse(response.data)
-      const streams = parsed.items.map((item: iptvParser.PlaylistItem) =>
+      let streams = parsed.items.map((item: iptvParser.PlaylistItem) =>
         Stream.fromPlaylistItem(item)
       )
+      if (!groupTitle) {
+        const before = streams.length
+        streams = streams.filter(keepStream)
+        const removed = before - streams.length
+        if (removed > 0) logger.info(`filtered out ${removed} streams (non-US/UK/CA PlutoTV/SamsungTVPlus/PlexTV)`)
+      }
       allExternalStreams.push({ groupTitle, streams })
       logger.info(`loaded ${streams.length} streams from ${url} -> group: "${groupTitle}"`)
     } catch (err) {
@@ -160,9 +178,9 @@ async function main() {
         }
       }
 
-      // Save individual M3U file to streams/ folder
+      // Save individual M3U file to streams/generated/ folder
       const m3uFilename = `${countryCode}_famelack.m3u`
-      const m3uFilepath = path.join(STREAMS_DIR, m3uFilename)
+      const m3uFilepath = path.join(STREAMS_DIR, 'generated', m3uFilename)
       fs.writeFileSync(m3uFilepath, m3uContent)
       logger.info(`saved ${streams.length} streams to streams/${m3uFilename}`)
 
@@ -193,10 +211,10 @@ async function main() {
 
   // Add all external streams with their group-titles
   for (const { groupTitle, streams } of allExternalStreams) {
-    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
+    logger.info(`adding ${streams.length} streams to group "${groupTitle || '(from file)'}"...`)
     streams.forEach((stream: Stream) => {
       stream.setGuides(data.guidesGroupedByStreamId.get(stream.getId()))
-      stream.groupTitle = groupTitle
+      if (groupTitle) stream.groupTitle = groupTitle
       combinedStreams.add(stream)
     })
   }
