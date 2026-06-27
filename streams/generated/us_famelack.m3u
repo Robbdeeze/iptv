@@ -384,9 +384,9 @@ https://videostack1.cdnstream1.com:1936/binge-tv/binge-tv/playlist.m3u8
 #EXTINF:-1 tvg-id="gfSMFDCvU4APL3" group-title="Famelack - US",Biography The Icons
 https://dkaiai6digij6.cloudfront.net/Lights_Legends_Icons.m3u8
 #EXTINF:-1 tvg-id="JLfNH2O2h1Ue2z" group-title="Famelack - US",Biz TV
-https://2-fss-1.streamhoster.com/pl_154/205722-2251224-1/playlist.m3u8
-#EXTINF:-1 tvg-id="JLfNH2O2h1Ue2z" group-title="Famelack - US",Biz TV
 https://thegateway.app/BizAndYou/BizTV/playlist.m3u8
+#EXTINF:-1 tvg-id="JLfNH2O2h1Ue2z" group-title="Famelack - US",Biz TV
+https://2-fss-1.streamhoster.com/pl_154/205722-2251224-1/playlist.m3u8
 #EXTINF:-1 tvg-id="mqPbPz06M0HExZ" group-title="Famelack - US",BizaarTV
 https://d3s08lnvd4zcd7.cloudfront.net/webvtt/v1/18584c3f3a2a4df8/88886061/master.m3u8
 #EXTINF:-1 tvg-id="kzhUKZ3lt4Im23" group-title="Famelack - US",Black News Channel
@@ -473,6 +473,10 @@ https://stream.ads.ottera.tv/playlist.m3u8?network_id=269
 https://d1bcz21zn68he1.cloudfront.net/playlist.m3u8
 #EXTINF:-1 tvg-id="UdwLrkNBomgYFb" group-title="Famelack - US",CAN TV19
 https://cantv.streamguys1.com/cantv/cantv19hls/playlist.m3u8
+#EXTINF:-1 tvg-id="fOG1qbogQZTVfu" group-title="Famelack - US",CAN TV21
+https://cantv.streamguys1.com/cantv/cantv21hls/playlist.m3u8
+#EXTINF:-1 tvg-id="8Cr0FQW3gzyE90" group-title="Famelack - US",CAN TV27
+https://cantv.streamguys1.com/cantv/cantv27hls/playlist.m3u8
 #EXTINF:-1 tvg-id="ShieRphx7QNWj7" group-title="Famelack - US",Canela TV
 https://d3cx6yargdnl7q.cloudfront.net/canelatv.m3u8
 #EXTINF:-1 tvg-id="tHu1Wqu4FkVfeh" group-title="Famelack - US",Capital City Connection Montgomery
@@ -489,8 +493,6 @@ https://fastly.live.brightcove.com/6383462549112/us-east-1/734546207001/eyJhbGci
 https://fastly.live.brightcove.com/6380399588112/us-east-1/734546207001/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJob3N0IjoiczFpM3ZpLmVncmVzcy50N2M3emwiLCJhY2NvdW50X2lkIjoiNzM0NTQ2MjA3MDAxIiwiZWhuIjoiZmFzdGx5LmxpdmUuYnJpZ2h0Y292ZS5jb20iLCJpc3MiOiJibGl2ZS1wbGF5YmFjay1zb3VyY2UtYXBpIiwic3ViIjoicGF0aG1hcHRva2VuIiwiYXVkIjpbIjczNDU0NjIwNzAwMSJdLCJqdGkiOiI2MzgwMzk5NTg4MTEyIn0.LYfIeObmX4AEStY_xCnPZwMJHXgOAPFMTKfztq-9F8U/playlist-hls.m3u8
 #EXTINF:-1 tvg-id="iRdZJjQEPZeAvk" group-title="Famelack - US",CBN News
 https://fastly.live.brightcove.com/6380396819112/us-east-1/734546207001/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJob3N0IjoiczFpM3ZpLmVncmVzcy50N2M3emwiLCJhY2NvdW50X2lkIjoiNzM0NTQ2MjA3MDAxIiwiZWhuIjoiZmFzdGx5LmxpdmUuYnJpZ2h0Y292ZS5jb20iLCJpc3MiOiJibGl2ZS1wbGF5YmFjay1zb3VyY2UtYXBpIiwic3ViIjoicGF0aG1hcHRva2VuIiwiYXVkIjpbIjczNDU0NjIwNzAwMSJdLCJqdGkiOiI2MzgwMzk2ODE5MTEyIn0.GDYp4IWtzwPkupEWeeOavnioVknO-Ev3UGlHvM1rE6I/playlist-hls.m3u8
-#EXTINF:-1 tvg-id="EjpRhv3IpwoZE6" group-title="Famelack - US",CBS East
-https://trs1.aynaott.com/cbs/index.m3u8
 #EXTINF:-1 tvg-id="1sgSucEcZPpZQV" group-title="Famelack - US",CBS News 24/7
 https://cbsn-us.cbsnstream.cbsnews.com/out/v1/55a8648e8f134e82a470f83d562deeca/master.m3u8
 #EXTINF:-1 tvg-id="1sgSucEcZPpZQV" group-title="Famelack - US",CBS News 24/7
@@ -558,9 +560,9 @@ https://d1si3n1st4nkgb.cloudfront.net/10502/88886011/hls/master.m3u8?ads.xumo_ch
 #EXTINF:-1 tvg-id="PGCEtKFHRk5CDn" group-title="Famelack - US",Circle
 https://amg00432-circletvfast-amg00432c1-cineverse-us-1112.playouts.now.amagi.tv/playlist/amg00432-circletv-circletv-cineverseus/playlist.m3u8
 #EXTINF:-1 tvg-id="PGCEtKFHRk5CDn" group-title="Famelack - US",Circle
-https://circle-xumo.amagi.tv/playlist.m3u8
+https://circle-roku.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="PGCEtKFHRk5CDn" group-title="Famelack - US",Circle
-https://circle-samsung.amagi.tv/playlist.m3u8
+https://circle-xumo.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="tyxoA6ZQgEjDGD" group-title="Famelack - US",Cirque du Soleil
 https://amg01439-amg01439c1-amgplt0081.playout.now3.amagi.tv/playlist/amg01439-amg01439c1-amgplt0081/playlist.m3u8
 #EXTINF:-1 tvg-id="jBe008vis1MIBq" group-title="Famelack - US",City of Fort Pierce
@@ -634,11 +636,11 @@ https://d32e935uzaanj4.cloudfront.net/e66911c8_a9c5_4206_979f_1ad694dcb8ad/hls/p
 #EXTINF:-1 tvg-id="5ymwJKVoGafdCH" group-title="Famelack - US",COStv
 https://irctv.cablecast.tv/live/stream-1/live.m3u8
 #EXTINF:-1 tvg-id="sm6jSJZU2R13Dv" group-title="Famelack - US",Court TV
-https://content.uplynk.com/channel/6c0bd0f94b1d4526a98676e9699a10ef.m3u8
-#EXTINF:-1 tvg-id="sm6jSJZU2R13Dv" group-title="Famelack - US",Court TV
 https://aegis-cloudfront-1.tubi.video/661c498b-4af0-4ba9-ae1c-4081340ee085/playlist.m3u8
 #EXTINF:-1 tvg-id="sm6jSJZU2R13Dv" group-title="Famelack - US",Court TV
 https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg01438-ewscrippscompan-courttv-tablo/playlist.m3u8
+#EXTINF:-1 tvg-id="sm6jSJZU2R13Dv" group-title="Famelack - US",Court TV
+https://content.uplynk.com/channel/6c0bd0f94b1d4526a98676e9699a10ef.m3u8
 #EXTINF:-1 tvg-id="92KK6TWkV8ygOi" group-title="Famelack - US",Cozi TV
 https://173.225.32.123/Cozi-2358/index.m3u8
 #EXTINF:-1 tvg-id="26MdQFnvi68n3Z" group-title="Famelack - US",Cozy Vibes
@@ -767,14 +769,18 @@ https://reflect-detroit-vod.cablecast.tv/live-3/live/stream-3/live.m3u8
 https://reflect-detroit-vod.cablecast.tv/live-10/live/stream-5/live.m3u8
 #EXTINF:-1 tvg-id="PVurk6G9GoFuh2" group-title="Famelack - US",Dhar Mann TV
 https://d3p03mkvhnk6ll.cloudfront.net/playlist.m3u8
+#EXTINF:-1 tvg-id="0FuWq196TQcNUR" group-title="Famelack - US",Didgah TV
+https://media.streambrothers.com:1936/8276/8276/playlist.m3u8
 #EXTINF:-1 tvg-id="y7BiZbsEAuVYD8" group-title="Famelack - US",Dinos 24/7
 https://d3jxyaglfha0h3.cloudfront.net/Dinos_247.m3u8
+#EXTINF:-1 tvg-id="W96nD2jfO547gK" group-title="Famelack - US",Disney Channel East
+https://cors-proxy.cooks.fyi/http://212.5.144.156:8080/disney/index.m3u8
 #EXTINF:-1 tvg-id="U8REylkpG4igqA" group-title="Famelack - US",Disney Junior East
-https://trs1.aynaott.com/disneyjr/index.m3u8
-#EXTINF:-1 tvg-id="Fh4EovXVeHABlc" group-title="Famelack - US",Disney XD East
-https://trs1.aynaott.com/disneyxd/index.m3u8
+https://cors-proxy.cooks.fyi/http://212.5.144.156:8080/disneyjr/index.m3u8
 #EXTINF:-1 tvg-id="Ge1ZHaFi4hsusD" group-title="Famelack - US",District of Columbia Network
 https://video.oct.dc.gov/out/u/DCN.m3u8
+#EXTINF:-1 tvg-id="UsfL1P0B59uvuE" group-title="Famelack - US",Diva Adria
+https://lb.dstvmultimedia.com/Diva/index.m3u8
 #EXTINF:-1 tvg-id="jwwDG8QgvAkpNW" group-title="Famelack - US",Divorce Court
 https://d2ydcdd81wyosr.cloudfront.net/playlist.m3u8
 #EXTINF:-1 tvg-id="eLA4bv6WnWPRvW" group-title="Famelack - US",DKN
@@ -882,7 +888,7 @@ https://cdn-uw2-prod.tsv2.amagi.tv/linear/amg00567-estrellamedia-estrellatv-dist
 #EXTINF:-1 tvg-id="Kp20aQaqiYKihA" group-title="Famelack - US",Estrella TV
 https://d1accqs1infy2u.cloudfront.net/EstrellaTV.m3u8
 #EXTINF:-1 tvg-id="Kp20aQaqiYKihA" group-title="Famelack - US",Estrella TV
-https://estrellatv-glewed.amagi.tv/playlist.m3u8
+https://estrellatv-oando.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="K259Wbeo8YCpaP" group-title="Famelack - US",ETV Telugu USA
 https://livegeorouus.akamaized.net/100823/etvhd_2500/playlist.m3u8?hdnts=st=1735898689~exp=1835898688~acl=*~hmac=f5fe24724fe05481e3841f9eb5ab8efdee0a3dd83645ae9dcf45703f525bab7b
 #EXTINF:-1 tvg-id="e6UF4T188q2EVa" group-title="Famelack - US",Everyday Refresh
@@ -967,12 +973,10 @@ https://yuppmedtaorire.akamaized.net/v1/master/a0d007312bfd99c47f76b77ae26b1ccda
 https://fnx.lls.pbs.org/index.m3u8
 #EXTINF:-1 tvg-id="Sb6GvEdU1AtYzB" group-title="Famelack - US",Forged In Fire
 https://pb-7zbm16kmdn8iw.akamaized.net/v1/aenetworks_forgedinfire_1/samsungheadend_us/latest/main/hls/playlist.m3u8
-#EXTINF:-1 tvg-id="eNOYZvW4v10TNt" group-title="Famelack - US",Fox Business Network
-https://trs1.aynaott.com/foxbusiness/index.m3u8
 #EXTINF:-1 tvg-id="vJVb5mO9wEX9a8" group-title="Famelack - US",Fox Deportes
 https://live-manifest.production-public.tubi.io/live/d906efca-1302-4e29-b0d9-9a1d7a305d69/playlist.m3u8
-#EXTINF:-1 tvg-id="D3ewYOL47RSJW0" group-title="Famelack - US",Fox News Channel
-https://trs1.aynaott.com/foxnews/index.m3u8
+#EXTINF:-1 tvg-id="vJVb5mO9wEX9a8" group-title="Famelack - US",Fox Deportes
+https://cors-proxy.cooks.fyi/http://23.237.104.106:8080/USA_FOX_DEPORTES/index.m3u8
 #EXTINF:-1 tvg-id="X8x8lf41oMyfZ4" group-title="Famelack - US",Fox News Radio
 https://radiovid.foxnews.com/hls/live/661547/RADIOVID/index.m3u8
 #EXTINF:-1 tvg-id="2QHwYMt2XZKYvG" group-title="Famelack - US",Fox Soul
@@ -1021,8 +1025,12 @@ https://ads.its-newid.net/api/manifest.m3u8?ads.service_id=US200001137&channel_i
 https://a-cdn.klowdtv.com/live2/greattv_720p/playlist.m3u8
 #EXTINF:-1 tvg-id="9eVtjqkBHb6wI7" group-title="Famelack - US",Ghost Stories
 https://d3qindbjv75wld.cloudfront.net/v1/ae_networks_unxplainedzonehauntings_1/samsungheadend_us/latest/main/hls/playlist.m3u8
+#EXTINF:-1 tvg-id="zgZETkiLQsKXGO" group-title="Famelack - US",Glendale 11 AZ
+https://edge-f.swagit.com/live/glendaleaz/live-1-a-1/playlist.m3u8
 #EXTINF:-1 tvg-id="oA2uTAVn9Fd59h" group-title="Famelack - US",Global Fashion Channel
 https://pubgfc.teleosmedia.com/linear/globalfashionchannel/globalfashionchannel/playlist.m3u8
+#EXTINF:-1 tvg-id="M9ZizPzrBmpHYv" group-title="Famelack - US",GlobalWorldTV
+https://media.streambrothers.com:1936/8052/8052/playlist.m3u8
 #EXTINF:-1 tvg-id="LHaPUbDQkhl20K" group-title="Famelack - US",Go2Travel
 https://go2thls.wns.live/hls/stream.m3u8
 #EXTINF:-1 tvg-id="iVtfQksWyo6zdY" group-title="Famelack - US",GOD TV
@@ -1185,8 +1193,6 @@ https://itiswrittentv.akamaized.net/xR8gyATuHMVx69u9G79DXnpNRL/playlist.m3u8
 https://d1isoijd9dbbf7.cloudfront.net/playlist.m3u8
 #EXTINF:-1 tvg-id="tWp8ArZ0mW78rn" group-title="Famelack - US",It's Supernatural! Network
 https://content.uplynk.com/channel/fbc0f835332e476397b12216f9042f78.m3u8
-#EXTINF:-1 tvg-id="DTrA30XU0Iez6A" group-title="Famelack - US",JBS
-https://uni8rtmp.tulix.tv/shalomtv-pc/smil:shalomtv.smil/master.m3u8
 #EXTINF:-1 tvg-id="FGH9HpUyD4gX0R" group-title="Famelack - US",Jewelry Television Espanol
 https://82934cf9c8696bd2.mediapackage.us-east-1.amazonaws.com/out/v1/72b5a55e4c35445f9e742871aa0aefa2/index.m3u8
 #EXTINF:-1 tvg-id="2ZxD1tHZuInNcl" group-title="Famelack - US",Jewish Life Television
@@ -1391,8 +1397,6 @@ https://live20.bozztv.com/giatvplayout7/giatv-208429/playlist.m3u8
 https://reflect-channel36-la.cablecast.tv/live-3/live/stream-1/live.m3u8
 #EXTINF:-1 tvg-id="wiIsgplTccLk32" group-title="Famelack - US",Lacrosse TV
 https://1840769862.rsc.cdn77.org/FTF/LSN_SCTE.m3u8
-#EXTINF:-1 tvg-id="BuvrzlOygGxrJ9" group-title="Famelack - US",Laff
-https://trs1.aynaott.com/laff/index.m3u8
 #EXTINF:-1 tvg-id="pnZpx3JDwAuIsQ" group-title="Famelack - US",Laff More
 https://d3tf2qfyke992n.cloudfront.net/v1/scripps_laffmore_1/samsungheadend_us/latest/main/hls/playlist.m3u8
 #EXTINF:-1 tvg-id="QCanIPPvtrIdKY" group-title="Famelack - US",Lake Havasu City 4
@@ -1630,8 +1634,6 @@ https://aegis-cloudfront-1.tubi.video/99c48388-377e-4f2c-ad8e-33d0dee33bc3/playl
 #EXTINF:-1 tvg-id="D0c4Jvigf5dKNp" group-title="Famelack - US",Mystery Science Theater 3000
 https://amg00163-shoutfactory-mst3k-xumo-r2pwd.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="dsB3T5PdHI29GO" group-title="Famelack - US",Mystery Science Theater 3000
-https://mst3k-vizio.amagi.tv/playlist.m3u8
-#EXTINF:-1 tvg-id="dsB3T5PdHI29GO" group-title="Famelack - US",Mystery Science Theater 3000
 https://d1c73nj8qxp55a.cloudfront.net/Mystery_Science_Theater_3000.m3u8
 #EXTINF:-1 tvg-id="ZjOvUH6J5YHTQw" group-title="Famelack - US",Mythical 24/7
 https://pb-dq7godyssgjuz.akamaized.net/Mythical247.m3u8
@@ -1693,16 +1695,18 @@ https://nbcu-telemundotexas-firetv.amagi.tv/playlist.m3u8
 https://nbcu-telemundowest-firetv.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="R9ZMdsUMPYPTON" group-title="Famelack - US",NCTV79
 https://livestream.telvue.com/nctv791/f7b44cfafd5c52223d5498196c8a2e7b.sdp/playlist.m3u8
-#EXTINF:-1 tvg-id="w0WczLx6RVHex0" group-title="Famelack - US",NESN Nation
-https://d1yhx4ygpfwmgm.cloudfront.net/v1/fast/nesnsamsungtvplus/772bf582-9476-4a30-a4c4-ba1c0839f167.m3u8
 #EXTINF:-1 tvg-id="UdDdokFxt0qifA" group-title="Famelack - US",NEW K.MOVIES
 https://ads.its-newid.net/api/manifest.m3u8?ads.service_id=GB1700007PK&channel_id=newid_343&tp=samsung_tvplus
 #EXTINF:-1 tvg-id="UdDdokFxt0qifA" group-title="Famelack - US",NEW K.MOVIES
 https://ads.its-newid.net/api/manifest.m3u8?ads.service_id=USAJ30000122O&channel_id=newid_342&tp=samsung_tvplus
-#EXTINF:-1 tvg-id="EtiKHivASIxm20" group-title="Famelack - US",News12 Conneticut
-https://mdc.ott.alticeusa.net/live4.ott.optimum.net/live4-uploads/N12CH_FFLD_MILF_A1/index_new.m3u8?omap=https
+#EXTINF:-1 tvg-id="yJ6qb835TTUKh1" group-title="Famelack - US",News12 Bronx
+https://mdc.ott.alticeusa.net/live4.ott.optimum.net/live4-uploads/N12XH_A1/index_new.m3u8?omap=https
+#EXTINF:-1 tvg-id="kStaIms86sY53l" group-title="Famelack - US",News12 Hudson Valley
+https://mdc.ott.alticeusa.net/live4.ott.optimum.net/live4-uploads/N12HH_A1/index_new.m3u8?omap=https
 #EXTINF:-1 tvg-id="zP30wxA2G2PSK5" group-title="Famelack - US",News12 New York
 https://aegis-cloudfront-1.tubi.video/97fbb992-c212-4164-8406-abb6f731e517/playlist.m3u8
+#EXTINF:-1 tvg-id="q8agflF5shjdE5" group-title="Famelack - US",News12 Westchester
+https://mdc.ott.alticeusa.net/live4.ott.optimum.net/live4-uploads/N12WH_A1/index_new.m3u8?omap=https
 #EXTINF:-1 tvg-id="sC9M3r1TmNFg0s" group-title="Famelack - US",Newsmax 2
 https://amg00217-newsmax-newsmax-rokuus-dur76.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="sC9M3r1TmNFg0s" group-title="Famelack - US",Newsmax 2
@@ -1811,8 +1815,6 @@ https://outsidetv-outsidetv-mgsp6.amagi.tv/playlist/outsidetv-outsidetv/playlist
 https://desdobebr2wri.cloudfront.net/Outside.m3u8
 #EXTINF:-1 tvg-id="65eh9swPR37KYj" group-title="Famelack - US",Overtime
 https://d1a8aq6t30gkqj.cloudfront.net/v1/amc_overtime_1/samsungheadend_us/latest/main/hls/playlist_hd.m3u8
-#EXTINF:-1 tvg-id="waNiTP0zBhMtU6" group-title="Famelack - US",Pac-12 Insider
-https://pac12-roku-us.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="waNiTP0zBhMtU6" group-title="Famelack - US",Pac-12 Insider
 https://pac12-samsungus.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="H2I3G9vUtdy0Ar" group-title="Famelack - US",Pacific Island Network
@@ -1995,6 +1997,8 @@ https://xumo-xumoent-vc-123-8gq0q.fast.nbcuni.com/live/master.m3u8
 https://cdn-apse1-prod.tsv2.amagi.tv/linear/amg00426-littledotstudio-realwildnz-samsungnz/playlist.m3u8
 #EXTINF:-1 tvg-id="wEvx40zXiwaQMx" group-title="Famelack - US",Real Wild
 https://lds-realwild-rakuten.amagi.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="wEvx40zXiwaQMx" group-title="Famelack - US",Real Wild
+https://lds-realwild-samsungau.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="uOeqeeP7q9Tix0" group-title="Famelack - US",Red Apple 21
 https://cs.ebmcdn.net/eastbay-live-hs-1/fcps/mp4:fcps/playlist.m3u8
 #EXTINF:-1 tvg-id="fZLQtMM93iPa4e" group-title="Famelack - US",Red Bull TV US
@@ -2043,8 +2047,6 @@ https://pb-vbv1er6nemjg9.akamaized.net/Rovr_Pets.m3u8
 https://2-fss-2.streamhoster.com/pl_120/amlst:206708-4203440/playlist.m3u8
 #EXTINF:-1 tvg-id="y0L2gqmk53MfUg" group-title="Famelack - US",RTR-Planeta US
 https://stream.smotrim.ru/hls2/planeta_rtr_usa/playlist_4.m3u8
-#EXTINF:-1 tvg-id="umGNcTv4RDojAI" group-title="Famelack - US",RTVi US
-https://adpnetworkhd-cmd.github.io/iptv/RTViUS.m3u8
 #EXTINF:-1 tvg-id="umGNcTv4RDojAI" group-title="Famelack - US",RTVi US
 https://amg17233-amg17233c1-wisptv-us-6409.playouts.now.amagi.tv/ts-us-w2-n2/playlist/amg17233-rtvi-rtvius-wisptvus/cb573d19736c648d9cd43b66cef94682847b3dcb0e6c886470af4a9765d97800dbe8ae84ae5b910c4c9e1fc061017d360439cd1dd56c49c1da63b820743c4b21fdcde00080dd0d0cb1df11292ca36265299a7369cc350f7bd2ec5a2f803ebe764c53cb017c593f88f258a97e4cc59e0a957f39e8fc8b307b24455a9c5a43e6a64cb7acb35544d865a4e7014e942843fa83439fd501e983800f834a8022f1469d96f58385168b8caa599d00e6241b2a4117f8d023e0a331b1de8a7b069f7e26551b5bf2d1f0942f6ddc2b2939fbf0dbaf648d70a4e875db0c5dd804914bf655e008844686bb38cac0bacf527e2ab0cb496418b5f7acf89e5f509329daf890b7017f96f8007d49dd52d42b3d3d83e9d91185ce67f5dc42d4ee3b775bd58349e9d6d8cae7a4995a8f7f8588fe9a2f4d4f6706038859ec8e7b942ad579a6c0162d125d4cbdc556cd82840a643415f5ea34d5030b86d99e8ddb023eb8057139c62ff8016f06af306268974e93fb6d36f84c60902602eb4a3c9643ffa15e96cdbab45c4adfb6c652ef50e1b407d78467c30e121623e998463c494169a28d0c6c604bd12f95bb4d153d7362d9d68f99f5582a063019577efa888555aefe0cad8074bb350375661f07937eba014bb2037248e61ad6bf1a75c77649bf54ed4d3f0f3decae9e8582c5d945ff18b9aaab6c7e6b0831fc5b64576966318712a31f6b07d0fea2c26d9de3271029cf80dbea898521e59561bc02af7509cadd185b005e7f6245cede389716d59a13bd94dd4f8cc1b95214d572f35a50a9d9d23aacb6c1df195bd9ea7609779bd610c07106ce039b7edb853e8be6154e37147465eec214f356b2dadae02e9927a206435de26ab491e6fc87320ea9c104637d5915247e54773e05f78f86334e28bace528c37d1e25bad4d43207f168ef06770b2a8264cd2650423cfc6ec84a2cd0f15b01ed77ddb6f0ea317406ed6c536ee8ca5e0b8e04b5113d2a2a45cb1c3dfd02cb749c991ba0a0f9cf6941b545b5e693352c474c72f94/71/1280x720_3572008/index.m3u8
 #EXTINF:-1 tvg-id="18JmrTzb6X8HlM" group-title="Famelack - US",Runtime Espanol
@@ -2132,9 +2134,9 @@ https://linear-1312.frequency.stream/dist/stirr/1312/hls/master/playlist.m3u8
 #EXTINF:-1 tvg-id="RIicoz1oemLhlJ" group-title="Famelack - US",Shop LC
 https://cdn-shop-lc-01.akamaized.net/Content/HLS_HLS/Live/channel(ott)/master.m3u8
 #EXTINF:-1 tvg-id="RIicoz1oemLhlJ" group-title="Famelack - US",Shop LC
-https://cdn-shop-lc-01.vos360.video/Content/HLS_HLS/Live/channel(ShopLCStirrTV)/master.m3u8
-#EXTINF:-1 tvg-id="RIicoz1oemLhlJ" group-title="Famelack - US",Shop LC
 https://cdn-shop-lc-01.akamaized.net/Content/HLS_HLS/Live/channel(xumo)/index.m3u8
+#EXTINF:-1 tvg-id="RIicoz1oemLhlJ" group-title="Famelack - US",Shop LC
+https://cdn-shop-lc-01.vos360.video/Content/HLS_HLS/Live/channel(ShopLCStirrTV)/master.m3u8
 #EXTINF:-1 tvg-id="NWy9nIb5pzfPfk" group-title="Famelack - US",Shout! Factory TV
 https://d1s1wrpgemt9re.cloudfront.net/Shout_TV.m3u8
 #EXTINF:-1 tvg-id="vJNZUrLQivlSX7" group-title="Famelack - US",Silent Witness and New Tricks
@@ -2181,8 +2183,6 @@ https://linear-599.frequency.stream/dist/stirr/599/hls/master/playlist.m3u8
 https://cdnlive.myspirit.tv/LS-ATL-43240-2/index.m3u8
 #EXTINF:-1 tvg-id="c5a2LfkYZW8M0J" group-title="Famelack - US",Sports First
 https://d4ddgdmj1cvnm.cloudfront.net/scheduler/scheduleMaster/409.m3u8
-#EXTINF:-1 tvg-id="QwsKOZxcusvvv2" group-title="Famelack - US",SportsGrid
-https://sportsgrid-plex.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="QwsKOZxcusvvv2" group-title="Famelack - US",SportsGrid
 https://sportsgrid-tribal.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="QwsKOZxcusvvv2" group-title="Famelack - US",SportsGrid
@@ -2291,8 +2291,6 @@ https://amg01416-amg01416c4-firetv-us-4522.playouts.now.amagi.tv/playlist.m3u8
 https://d8b6mh9us4zvx.cloudfront.net/TEAM_USA_TV.m3u8
 #EXTINF:-1 tvg-id="U2WDeNFgBupdk9" group-title="Famelack - US",TED
 https://d1b16tvvxk3tnu.cloudfront.net/TED.m3u8
-#EXTINF:-1 tvg-id="tJbJDDKt3d57P6" group-title="Famelack - US",TeenNick East
-https://trs1.aynaott.com/teennick/index.m3u8
 #EXTINF:-1 tvg-id="ZzjAbSJ99PhCGg" group-title="Famelack - US",Tele Boston
 https://tv2.fastcast4u.com:3238/live/radiotelebostonlive.m3u8
 #EXTINF:-1 tvg-id="AQeWbLOE28icaP" group-title="Famelack - US",Tele Pam
@@ -2485,10 +2483,10 @@ https://amg00376-magellan-amg00376c11-rakuten-us-1700.playouts.now.amagi.tv/play
 https://linear-188.frequency.stream/dist/glewedtv/188/hls/master/playlist.m3u8
 #EXTINF:-1 tvg-id="qtPCZamFtdj6Xa" group-title="Famelack - US",True History Channel
 https://linear-188.frequency.stream/dist/xumo/188/hls/master/playlist.m3u8
-#EXTINF:-1 tvg-id="YW2wRZp3wabzWm" group-title="Famelack - US",TSTV
-https://reflector.watchtstv.com/hls/livestream.m3u8
 #EXTINF:-1 tvg-id="ze4RtbCsxvd8VM" group-title="Famelack - US",TUDN
 https://streaming-live-fcdn.api.prd.univisionnow.com/tudn/tudn.isml/hls/tudn.m3u8
+#EXTINF:-1 tvg-id="8gDhBhIUOnWA6L" group-title="Famelack - US",Turismo HD
+https://live20.bozztv.com/giatvplayout7/giatv-208343/playlist.m3u8
 #EXTINF:-1 tvg-id="t0egfkOjbwVtc1" group-title="Famelack - US",TUTV
 https://livestream.telvue.com/templeuni1/f7b44cfafd5c52223d5498196c8a2e7b.sdp/playlist.m3u8
 #EXTINF:-1 tvg-id="CfzacOg5g8Yoqk" group-title="Famelack - US",TV Blossom
@@ -2599,8 +2597,6 @@ https://amg26269-dogtv-amg26269c2-stirr-us-8504.playouts.now.amagi.tv/playlist.m
 https://d31z96rdrmwfsp.cloudfront.net/master.m3u8
 #EXTINF:-1 tvg-id="RGAPKbEXUKrvud" group-title="Famelack - US",Untold Stories of the E.R.
 https://aegis-cloudfront-1.tubi.video/a0b550d8-29c6-49f5-a4f7-939d9eeec962/master.m3u8
-#EXTINF:-1 tvg-id="lKPGETEt2FJ6ge" group-title="Famelack - US",USA Network East
-https://trs1.aynaott.com/usa/index.m3u8
 #EXTINF:-1 tvg-id="P0h4bvO7NJJFnP" group-title="Famelack - US",USA TODAY
 https://amg00457-amg00457c1-stirr-us-8143.playouts.now.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="P0h4bvO7NJJFnP" group-title="Famelack - US",USA TODAY
@@ -2612,9 +2608,9 @@ https://dfis0p7athkt.cloudfront.net/Van_Helsing.m3u8
 #EXTINF:-1 tvg-id="TJSrDwkBKMXx01" group-title="Famelack - US",VBS TV
 https://tgn.bozztv.com/vbstvcdn/vbstv/ngrp:vbstv_all/playlist.m3u8
 #EXTINF:-1 tvg-id="fnsN4s1Nk39gF9" group-title="Famelack - US",Vegas Life TV
-https://streams.comclark.com/pknsd/vegaslifetv/playlist.m3u8
-#EXTINF:-1 tvg-id="fnsN4s1Nk39gF9" group-title="Famelack - US",Vegas Life TV
 https://cdn.vegasplus.us/vegas/vltv/playlist.m3u8
+#EXTINF:-1 tvg-id="fnsN4s1Nk39gF9" group-title="Famelack - US",Vegas Life TV
+https://streams.comclark.com/pknsd/vegaslifetv/playlist.m3u8
 #EXTINF:-1 tvg-id="OC4IguEAZH56es" group-title="Famelack - US",Velayat TV Network
 https://nl.livekadeh.com/hls2/velayattv.m3u8
 #EXTINF:-1 tvg-id="5x4W6LuBAy9tMn" group-title="Famelack - US",Vevo '70s
@@ -2851,8 +2847,6 @@ https://dhiy0zcig7ty1.cloudfront.net/scheduler/scheduleMaster/491.m3u8
 https://linear-799.frequency.stream/dist/xumo/799/hls/master/playlist.m3u8
 #EXTINF:-1 tvg-id="P39HTorTLRCAt5" group-title="Famelack - US",Wild West TV
 https://pb-7m2kwpwgu3dqf.akamaized.net/playlist.m3u8
-#EXTINF:-1 tvg-id="eiMNDNqakzRMns" group-title="Famelack - US",Willow
-https://trs1.aynaott.com/willowhd/index.m3u8
 #EXTINF:-1 tvg-id="d0G4zB6FBlCOOM" group-title="Famelack - US",Willow Sports
 https://amg01269-amg01269c1-distrotv-us-5379.playouts.now.amagi.tv/playlist/amg01269-willowtvfast-willowplus-distrotvus/playlist.m3u8
 #EXTINF:-1 tvg-id="d0G4zB6FBlCOOM" group-title="Famelack - US",Willow Sports
@@ -2907,8 +2901,6 @@ https://2-fss-2.streamhoster.com/pl_140/amlst:200914-1315484/playlist.m3u8
 https://2-fss-2.streamhoster.com/pl_132/amlst:200914-1315486/playlist.m3u8
 #EXTINF:-1 tvg-id="Vk1TP9UaRApc2F" group-title="Famelack - US",WKRC-TV 12.1
 https://linear-691.frequency.stream/dist/stirr/691/hls/master/playlist.m3u8
-#EXTINF:-1 tvg-id="XRcjXT3ZrEQSky" group-title="Famelack - US",WLIO 8.1
-https://live.field59.com/wlio/wlio1/playlist.m3u8
 #EXTINF:-1 tvg-id="utikPKT8agEDAK" group-title="Famelack - US",WLMB
 https://rpn.bozztv.com/wlmb/wlmb/wlmb/index.m3u8
 #EXTINF:-1 tvg-id="lc1V6mIAvUs1tG" group-title="Famelack - US",WLOS 13.1
@@ -2957,10 +2949,6 @@ https://tuvideoonline.com.ar:3332/live/xlevelmedialive.m3u8
 https://linear-696.frequency.stream/dist/stirr/696/hls/master/playlist.m3u8
 #EXTINF:-1 tvg-id="kYPwdIfG3DgYZh" group-title="Famelack - US",WPEC 12.1
 https://linear-692.frequency.stream/dist/stirr/692/hls/master/playlist.m3u8
-#EXTINF:-1 tvg-id="WLPHP6A3yzJxyN" group-title="Famelack - US",WPIX-HD
-https://trs1.aynaott.com/pix11/index.m3u8
-#EXTINF:-1 tvg-id="pvxpjJZ1DkpUbg" group-title="Famelack - US",WPS-TV
-https://2-fss-2.streamhoster.com/pl_120/amlst:203530-1426406/playlist.m3u8
 #EXTINF:-1 tvg-id="kSwnkTYOJctve4" group-title="Famelack - US",WPTV-TV 5.1
 https://content.uplynk.com/channel/b02350ef854c4eef8358eead1f59a5cc.m3u8
 #EXTINF:-1 tvg-id="t7xbgXxkpTgjoX" group-title="Famelack - US",WPXI 11.1
@@ -2981,8 +2969,6 @@ https://amg00327-coxmediagroup-wsocbreaking-plex-t51et.amagi.tv/playlist/amg0032
 https://aegis-cloudfront-1.tubi.video/d864a20b-85bb-41bc-8fbe-6c9d8a88a32d/playlist.m3u8
 #EXTINF:-1 tvg-id="sWAKjOfp82OvGO" group-title="Famelack - US",WSOC-TV 9.1
 https://cdn-ue1-prod.tsv2.amagi.tv/linear/amg00327-coxmediagroup-wsocbreaking-ono/playlist.m3u8
-#EXTINF:-1 tvg-id="sWAKjOfp82OvGO" group-title="Famelack - US",WSOC-TV 9.1
-https://d1q60ra9vxbqm1.cloudfront.net/playlist.m3u8
 #EXTINF:-1 tvg-id="zDupf1iSyC8X2I" group-title="Famelack - US",WSYX 6.1
 https://linear-689.frequency.stream/dist/stirr/689/hls/master/playlist.m3u8
 #EXTINF:-1 tvg-id="wBfXVaMdXlJPgX" group-title="Famelack - US",WTMJ-TV 4.1
@@ -3058,7 +3044,7 @@ https://d1xc25jm9e0l4b.cloudfront.net/XITE_Siempre_Latino.m3u8
 #EXTINF:-1 tvg-id="mlYGFmcfU8XZ1f" group-title="Famelack - US",Xplore TV
 https://aegis-cloudfront-1.tubi.video/4cfc30dc-1431-46b6-aea7-89a2e7d35823/playlist.m3u8
 #EXTINF:-1 tvg-id="mlYGFmcfU8XZ1f" group-title="Famelack - US",Xplore TV
-https://amg00111-hearstmediaprod-xploreintlse-samsungse-lvo6s.amagi.tv/playlist/amg00111-hearstmediaprod-xploreintlse-samsungse/playlist.m3u8
+https://xplore-vizio.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="mlYGFmcfU8XZ1f" group-title="Famelack - US",Xplore TV
 https://depdwjha9qyli.cloudfront.net/Xplore.m3u8
 #EXTINF:-1 tvg-id="ofazP0ZT911Zqk" group-title="Famelack - US",Xtreme Outdoor Presented by HISTORY
