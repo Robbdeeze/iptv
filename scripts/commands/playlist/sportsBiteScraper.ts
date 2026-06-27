@@ -145,6 +145,5 @@ export async function scrapeSportsBite(
     result.push({ groupTitle: GROUP_TITLE, streams })
   }
 
-  await closeBrowser()
   return result
 }

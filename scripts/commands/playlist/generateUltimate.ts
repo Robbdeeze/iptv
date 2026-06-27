@@ -14,6 +14,7 @@ import { scrapeSportsBite } from './sportsBiteScraper'
 import { scrapePpvTo } from './ppvToScraper'
 import { scrapeRoxie } from './roxieScraper'
 import { scrapeSportyHunter } from './sportyHunterScraper'
+import { closeBrowser } from '../../core'
 import path from 'node:path'
 import fs from 'node:fs'
 import axios from 'axios'
@@ -273,6 +274,7 @@ async function main() {
     }
   }
 
+  await closeBrowser()
   logger.info(`loaded ${combinedStreams.count()} total streams`)
 
   // Deduplicate streams by URL

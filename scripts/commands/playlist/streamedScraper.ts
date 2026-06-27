@@ -1,7 +1,7 @@
 import { Logger } from '@freearhey/core'
 import { Stream } from '../../models'
 import axios from 'axios'
-import { extractM3u8FromEmbed, closeBrowser } from '../../core/aggregatorHelpers'
+import { extractM3u8FromEmbed } from '../../core/aggregatorHelpers'
 import { eachLimit } from 'async'
 
 const GROUP_TITLE = '! Sports - Streamed'
@@ -159,8 +159,6 @@ export async function scrapeStreamed(
     )
   } catch (err: any) {
     logger.error(`Streamed scraper failed: ${err.message || err}`)
-  } finally {
-    await closeBrowser()
   }
 
   if (streams.length > 0) {

@@ -166,6 +166,5 @@ export async function scrapeSportyHunter(
     result.push({ groupTitle: GROUP_TITLE, streams })
   }
 
-  await closeBrowser()
   return result
 }

@@ -127,6 +127,5 @@ export async function scrapePpvTo(
     result.push({ groupTitle: GROUP_TITLE, streams })
   }
 
-  await closeBrowser()
   return result
 }

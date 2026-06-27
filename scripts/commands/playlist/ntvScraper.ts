@@ -142,6 +142,5 @@ export async function scrapeNtv(
     result.push({ groupTitle: GROUP_TITLE, streams })
   }
 
-  await closeBrowser()
   return result
 }
