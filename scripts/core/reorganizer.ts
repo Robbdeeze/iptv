@@ -16,11 +16,11 @@ const SECTION_ORDER = [
   'drew',
   'music',
   'international',
-  'adult',
   'other',
   'vod-movies',
   'vod-tv',
-  'vod-other'
+  'vod-other',
+  'adult'
 ]
 
 function extractShowName(raw: string): string | null {
