@@ -8,6 +8,7 @@ on:
 jobs:
   merge:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v6
         with:
@@ -46,15 +47,16 @@ jobs:
           done
 
           if [ ! -f guide.xml ]; then
-            echo "EPG generation did not complete within timeout"
-            docker logs epg --tail 50
-            docker stop epg
-            exit 1
+            echo "EPG generation did not complete within timeout, skipping EPG"
+            docker logs epg --tail 50 || true
+            docker stop epg || true
+            echo "NO_EPG=true" >> $GITHUB_ENV
           fi
 
-          docker stop epg
+          docker stop epg || true
 
       - name: Process and compress EPG
+        if: env.NO_EPG != 'true'
         run: npx tsx scripts/commands/playlist/generateEpg.ts Robbdeeze_UltimateTV_AllM3uMerged.m3u --process-guide guide.xml --output-name Robbdeeze_UltimateTV_AllM3uMerged_Epg
 
       - name: Validate links
@@ -76,3 +78,4 @@ jobs:
           commit_user_name: "Robbdeeze"
           commit_user_email: "robbdeeze@gmail.com"
           file_pattern: Robbdeeze_UltimateTV_AllM3uMerged.m3u Robbdeeze_UltimateTV_AllM3uMerged_Epg.xml Robbdeeze_UltimateTV_AllM3uMerged_Epg.xml.gz
+          skip_dirty_check: ${{ env.NO_EPG == 'true' }}
