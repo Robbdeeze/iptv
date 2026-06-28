@@ -19,8 +19,7 @@ const SECTION_ORDER = [
   'other',
   'vod-movies',
   'vod-tv',
-  'vod-other',
-  'adult'
+  'vod-other'
 ]
 
 function extractShowName(raw: string): string | null {
@@ -68,11 +67,6 @@ function classifyStream(stream: Stream): { section: string; subGroup: string } {
   // Sports scraper channels
   if (gt.includes('! sports -')) {
     return { section: 'sports-events', subGroup: 'Sports - Live / PPV / Events' }
-  }
-
-  // Adult
-  if (gt.includes('! adult')) {
-    return { section: 'adult', subGroup: stream.groupTitle }
   }
 
   // PowerSports / StreamBTW / StreamEast / Roxiestream
@@ -141,9 +135,6 @@ function classifyStream(stream: Stream): { section: string; subGroup: string } {
 
   // YueChan
   if (gt.includes('yuechan')) return { section: 'international', subGroup: stream.groupTitle }
-
-  // IPTVjs
-  if (gt.includes('iptvjs')) return { section: 'adult', subGroup: stream.groupTitle }
 
   // Famelack
   if (gt.includes('famelack')) return { section: 'famelack', subGroup: stream.groupTitle }

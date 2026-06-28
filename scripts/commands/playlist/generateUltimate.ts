@@ -82,24 +82,10 @@ async function main() {
 
   logger.info(`found ${targetFiles.length} matching m3u files`)
 
-  const ADULT_GROUP = '! Adult'
-
-  const adultIptvCategories = [
-    'livecams', 'milf', 'bigdick', 'bigtits', 'fetish', 'pornstar', 'bigass',
-    'interracial', 'latina', 'pov', 'blowjob', 'teen', 'hardcore', 'cuckold',
-    'threesome', 'russian', 'lesbian', 'rough', 'gangbang', 'anal',
-    'compilation', 'brunette', 'blonde', 'gay', 'asian'
-  ]
-
   // External playlists to fetch and include
   const externalPlaylists: { url: string; groupTitle: string }[] = [
     { url: 'https://raw.githubusercontent.com/YueChan/Live/main/Global.m3u', groupTitle: 'YueChan - Global' },
     { url: 'https://raw.githubusercontent.com/YueChan/Live/main/Radio.m3u', groupTitle: 'YueChan - Radio' },
-    { url: 'https://raw.githubusercontent.com/iptvjs/iptv/main/adultiptv_all.m3u', groupTitle: ADULT_GROUP },
-    ...adultIptvCategories.map(cat => ({
-      url: `https://live.adultiptv.net/${cat}.m3u8`,
-      groupTitle: ADULT_GROUP
-    })),
     { url: 'http://drewlive2423.duckdns.org:8045/DrewLive/DrewLiveMergedPlaylist.m3u8', groupTitle: '' }
   ]
 

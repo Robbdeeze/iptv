@@ -184,9 +184,6 @@ function classify(gt: string, title: string): { section: string; subGroup: strin
   // YueChan
   if (g.includes('yuechan')) return { section: 'international', subGroup: gt }
 
-  // IPTVjs 
-  if (g.includes('iptvjs')) return { section: 'adult', subGroup: gt }
-
   // Famelack
   if (g.includes('famelack')) return { section: 'famelack', subGroup: gt }
 
@@ -243,7 +240,6 @@ const SECTION_ORDER = [
   'drew',
   'music',
   'international',
-  'adult',
   'other',
   'vod-movies',
   'vod-tv',
@@ -349,7 +345,6 @@ async function main() {
     'drew': sortBySubGroupThenTitle,
     'music': sortByTitle,
     'international': sortBySubGroupThenTitle,
-    'adult': sortByTitle,
     'other': sortBySubGroupThenTitle,
     'vod-movies': sortByTitle,
     'vod-tv': sortBySubGroupThenTitle,
