@@ -1,10 +1,11 @@
 import { ROOT_DIR, STREAMS_DIR } from '../../constants'
 import { Storage } from '@freearhey/storage-js'
-import { Logger, Collection } from '@freearhey/core'
-import { Stream, Playlist } from '../../models'
+import { Logger } from '@freearhey/core'
+import { Stream } from '../../models'
 import iptvParser from 'iptv-playlist-parser'
 import path from 'node:path'
 import fs from 'node:fs'
+import axios from 'axios'
 
 const COUNTRY_NAMES: Record<string, string> = {
   AD: 'Andorra', AE: 'United Arab Emirates', AF: 'Afghanistan', AG: 'Antigua and Barbuda',
@@ -102,6 +103,37 @@ async function main() {
   }
 
   logger.info(`loaded ${streams.length} streams from streams/`)
+
+  // Fetch adult IPTV sources
+  const ADULT_GROUP = '! Adult'
+  const adultIptvCategories = [
+    'livecams', 'milf', 'bigdick', 'bigtits', 'fetish', 'pornstar', 'bigass',
+    'interracial', 'latina', 'pov', 'blowjob', 'teen', 'hardcore', 'cuckold',
+    'threesome', 'russian', 'lesbian', 'rough', 'gangbang', 'anal',
+    'compilation', 'brunette', 'blonde', 'gay', 'asian'
+  ]
+  const adultUrls = [
+    'https://raw.githubusercontent.com/iptvjs/iptv/main/adultiptv_all.m3u',
+    ...adultIptvCategories.map(cat => `https://live.adultiptv.net/${cat}.m3u8`)
+  ]
+
+  for (const url of adultUrls) {
+    try {
+      const response = await axios.get(url, { timeout: 15000 })
+      const parsed: iptvParser.Playlist = iptvParser.parse(response.data)
+      for (const item of parsed.items) {
+        const stream = Stream.fromPlaylistItem(item)
+        stream.groupTitle = ADULT_GROUP
+        if (!seenUrls.has(stream.url)) {
+          seenUrls.add(stream.url)
+          streams.push(stream)
+        }
+      }
+      logger.info(`  loaded ${parsed.items.length} streams from adult source: ${url}`)
+    } catch (err) {
+      logger.error(`  failed to fetch adult source ${url}: ${err}`)
+    }
+  }
 
   // Note: VOD is no longer embedded in the merged playlist.
   // VOD playlists are available separately under streams/vod/:

@@ -101,6 +101,25 @@ export function createStream(
   return stream
 }
 
+export function formatTimePT(ts: number): string | null {
+  try {
+    return new Date(ts).toLocaleTimeString('en-US', {
+      timeZone: 'America/Los_Angeles',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    })
+  } catch {
+    return null
+  }
+}
+
+export function extractTimeFromText(text: string): string | null {
+  const m = text.match(/(\d{1,2}:\d{2})\s*(am|pm|AM|PM)?/i)
+  if (!m) return null
+  return m[0].trim()
+}
+
 export async function fetchWithTimeout(
   url: string,
   timeout = 15000

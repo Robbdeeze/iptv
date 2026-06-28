@@ -24,6 +24,8 @@ export type StreamTesterProps = {
   options: OptionValues
 }
 
+const QUICK_CHECK_TIMEOUT = 5000
+
 export class StreamTester {
   client: AxiosInstance
   options: OptionValues
@@ -53,6 +55,41 @@ export class StreamTester {
     this.options = options
   }
 
+  async quickCheck(url: string): Promise<{ ok: boolean; code?: string }> {
+    try {
+      const headRes = await this.client.head(url, {
+        signal: AbortSignal.timeout(QUICK_CHECK_TIMEOUT),
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+      })
+      if (headRes.status === 200 || headRes.status === 206) return { ok: true }
+
+      const rangeRes = await this.client.get(url, {
+        signal: AbortSignal.timeout(QUICK_CHECK_TIMEOUT),
+        headers: { 'User-Agent': 'Mozilla/5.0', 'Range': 'bytes=0-1023' }
+      })
+      if (rangeRes.status === 200 || rangeRes.status === 206) return { ok: true }
+
+      return { ok: false, code: `HTTP_${rangeRes.status}` }
+    } catch (err) {
+      const error = err as StreamTesterError
+      let code = 'UNREACHABLE'
+      if (error.name === 'CanceledError') {
+        code = 'TIMEOUT'
+      } else if (error.name === 'AxiosError') {
+        if (error.response) {
+          const status = error.response.status
+          const statusText = error.response.statusText.toUpperCase().replace(/\s+/, '_')
+          code = `HTTP_${status}_${statusText}`
+        } else {
+          code = `AXIOS_${error.code || 'UNKNOWN'}`
+        }
+      } else if (error.cause) {
+        code = error.cause.code || error.cause.name || code
+      }
+      return { ok: false, code }
+    }
+  }
+
   async test(stream: Stream): Promise<StreamTesterResult> {
     if (TESTING) {
       const results = (await import('../../tests/__data__/input/playlist_test/results.js')).default
@@ -60,6 +97,11 @@ export class StreamTester {
       return results[stream.url as keyof typeof results]
     } else {
       try {
+        const quickResult = await this.quickCheck(stream.url)
+        if (!quickResult.ok) {
+          return { status: { ok: false, code: quickResult.code || 'UNREACHABLE' } }
+        }
+
         const res = await this.client(stream.url, {
           signal: AbortSignal.timeout(this.options.timeout),
           headers: {

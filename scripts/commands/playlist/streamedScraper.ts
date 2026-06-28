@@ -1,7 +1,7 @@
 import { Logger } from '@freearhey/core'
 import { Stream } from '../../models'
 import axios from 'axios'
-import { extractM3u8FromEmbed } from '../../core/aggregatorHelpers'
+import { extractM3u8FromEmbed, formatTimePT } from '../../core/aggregatorHelpers'
 import { eachLimit } from 'async'
 
 const GROUP_TITLE = '! Sports - Streamed'
@@ -99,10 +99,9 @@ export async function scrapeStreamed(
     }
     const embedJobs: EmbedJob[] = []
 
-    let matchCount = 0
     for (const match of allMatches) {
-      matchCount++
-      const title = match.title
+      const timePrefix = formatTimePT(match.date)
+      const title = timePrefix ? `[${timePrefix}] ${match.title}` : match.title
       for (const source of match.sources) {
         try {
           const streamResp = await axios.get(

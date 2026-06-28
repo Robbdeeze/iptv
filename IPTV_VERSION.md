@@ -1,19 +1,55 @@
 # IPTV Version & Architecture Document
 
+**Version:** 1.0.0
+
 ## Repository: Robbdeeze/iptv
 
 A forked/cloned IPTV project based on [iptv-org/iptv](https://github.com/iptv-org/iptv) that collects publicly available IPTV stream URLs and generates custom playlists with Electronic Program Guide (EPG) data. This document provides a detailed breakdown of every component, how they work, and how the entire pipeline fits together.
+
+## 0. Pipeline Architecture
+
+```
+iptv-org API (channels, streams, guides)
+        │
+        ▼
+  loadData() ────────────────────────────┐
+        │                                │
+        ▼                                ▼
+  streams/*.m3u                  External M3U sources
+  (countries/ + sources/)         (YueChan, DrewLive, IPTVjs)
+        │                                │
+        └──────────┬─────────────────────┘
+                   │
+                   ▼
+              Famelack data
+                   │
+                   ▼
+           Sports scrapers (8x parallel)
+           DaddyLive | Streamed | NTV | SportsBite
+           PPV.TO    | Roxie    | SportyHunter | VIPRow
+                   │
+                   ▼
+            Dedup by URL → Reorganize → 19 sections
+                   │
+       ┌───────────┼───────────┐──────────────────┐
+       ▼           ▼           ▼                  ▼
+  UltimateTV   Clean.m3u    EPG builder    Health Check
+     .m3u                   (built-in +     (hourly, HTTP
+                             Docker)        only, --fix)
+```
 
 ---
 
 ## Table of Contents
 
+0. [Pipeline Architecture](#0-pipeline-architecture)
 1. [Project Overview](#1-project-overview)
 2. [Key Output Files](#2-key-output-files)
 3. [GitHub Actions Workflows](#3-github-actions-workflows)
    - [ultimate.yml (Daily)](#31-ultimateyml---daily-ultimate-playlist--epg)
    - [merge-all.yml (Every 3 Days)](#32-merge-allyml---every-3-days)
    - [check.yml (PR Validation)](#33-checkyml---pr-validation)
+   - [health-check.yml (Every 60 min)](#34-health-checkyml---every-60-minutes)
 4. [Playlist Generation Scripts](#4-playlist-generation-scripts)
    - [generateUltimate.ts](#41-generateultimatets)
    - [mergeAllM3u.ts](#42-mergeallm3uts)
@@ -30,13 +66,15 @@ A forked/cloned IPTV project based on [iptv-org/iptv](https://github.com/iptv-or
    - [sportsBiteScraper.ts](#65-sportsbitescraperts)
    - [ppvToScraper.ts](#66-ppvtoscraperts)
    - [roxieScraper.ts](#67-roxiescraperts)
-   - [sportyHunterScraper.ts](#68-sportyhunterscraperts)
-7. [Project File Structure](#7-project-file-structure)
+    - [sportyHunterScraper.ts](#68-sportyhunterscraperts)
+    - [vipboxScraper.ts](#69-vipboxscraperts)
+ 7. [Project File Structure](#7-project-file-structure)
 8. [Script Reference (npm commands)](#8-script-reference)
 9. [Dependencies](#9-dependencies)
 10. [Testing](#10-testing)
 11. [Recent Improvements](#11-recent-improvements)
-12. [How to Run Locally](#12-how-to-run-locally)
+12. [Stream Health Check System](#12-stream-health-check-system)
+13. [How to Run Locally](#13-how-to-run-locally)
 
 ---
 
@@ -177,6 +215,28 @@ Step 3: If any changed:
     - Blocks merge if errors found
 ```
 
+### 3.4 `health-check.yml` — Every 60 Minutes
+
+**Trigger:** Every 60 minutes (`0 * * * *`) + manual `workflow_dispatch`.
+
+**Pipeline:**
+
+```
+Step 1: Checkout repository
+Step 2: Setup Node.js 22 with npm caching
+Step 3: npm install --ignore-scripts
+Step 4: npm run playlist:health:fix
+    - Parses all M3U files in streams/**/*.m3u
+    - For each stream: HEAD request (10s timeout) → GET with Range fallback
+    - 50 concurrent workers
+    - Removes streams that fail with ECONNREFUSED, ENOTFOUND, 404, 410, etc.
+    - Rewrites modified files via Playlist.toString()
+Step 5: Check for git changes (git status --porcelain)
+Step 6: If changes exist, commit and push:
+    - Commit message: "[Bot] Remove dead streams (health check)"
+    - Files: streams/**/*.m3u
+```
+
 ---
 
 ## 4. Playlist Generation Scripts
@@ -201,8 +261,9 @@ This is the **core custom script** that builds the Robbdeeze UltimateTV experien
 3. **Fetch external playlists** (with 15s timeout per URL):
    - `YueChan Live/Global.m3u` → group: `"YueChan - Global"`
    - `YueChan Live/Radio.m3u` → group: `"YueChan - Radio"`
-   - `iptvjs/adultiptv_all.m3u` → group: `"IPTVjs - Adult"`
-    - `DrewLiveMergedPlaylist.m3u8` → preserves original group titles (A1xmedia, PlutoTV, SamsungTVPlus, etc.)
+   - `iptvjs/adultiptv_all.m3u` → group: `"! Adult"`
+   - 25 `live.adultiptv.net/{category}.m3u8` URLs → group: `"! Adult"`
+   - `DrewLiveMergedPlaylist.m3u8` → preserves original group titles (A1xmedia, PlutoTV, SamsungTVPlus, etc.)
 
 4. **VOD available separately** — VOD playlists are no longer embedded in the main playlist. They are distributed independently as separate files under `streams/vod/movies.m3u` and `streams/vod/tv-shows.m3u` and linked from README.
 
@@ -552,6 +613,30 @@ Scrapes sports events and schedules from SportyHunter.
 
 ---
 
+### 6.9 `vipboxScraper.ts`
+
+**Location:** `scripts/commands/playlist/vipboxScraper.ts` (155 lines)
+
+**Group title:** `"! Sports - VIPRow - {Sport}"`
+
+**Base URL:** `https://www.viprow.nu`
+
+Scrapes niche sports events (tennis, rugby, motorsports, volleyball, other) from VIPBox/VIPRow aggregator.
+
+**Architecture:**
+
+1. **Build sport URLs** — Constructs URLs like `https://www.viprow.nu/{sport}` for tennis, rugby, motorsports, volleyball, and "other"
+2. **Fetch event page** — HTTP GET each sport page, parse HTML for event links with unix timestamps in `<span class='dt TIMESTAMP'>` elements
+3. **Resolve stream URLs** — For each event link:
+   - Follows the link to the event page
+   - Extracts the embed iframe URL (pointing to third-party players like `dungatv.xyz`, `vipboxi.net`, etc.)
+   - Uses `extractM3u8FromEmbed()` with Playwright to intercept m3u8/mpd URLs
+4. **Limits** — Max 15 streams per sport (75 total) to bound runtime
+5. **Deduplication** — By URL
+6. **Focus** — Niche sports not already covered by the 7 existing scrapers (DaddyLive, Streamed, NTV, SportsBite, PPV.TO, Roxie, SportyHunter)
+
+---
+
 ## 7. Project File Structure
 
 ```
@@ -574,6 +659,8 @@ iptv/
 │   │   ├── playlist/
 │   │   │   ├── generateUltimate.ts  # UltimateTV playlist + built-in EPG
 │   │   │   ├── mergeAllM3u.ts       # Merge all streams/ into one playlist
+│   │   │   ├── quickHealthCheck.ts  # HTTP-only health check (no mediainfo)
+│   │   │   ├── reorg.ts             # Standalone playlist reorganization
 │   │   │   ├── generateEpg.ts       # EPG channels XML + guide processing
 │   │   │   ├── generate.ts          # Full public playlist generation
 │   │   │   ├── format.ts            # URL normalization, dedup, sort
@@ -588,8 +675,9 @@ iptv/
 │   │   │   ├── ntvScraper.ts        # NTV (ntvs.cx) live sports scraper
 │   │   │   ├── sportsBiteScraper.ts # SportsBite event scraper
 │   │   │   ├── ppvToScraper.ts      # PPV.TO scraper
-│   │   │   ├── roxieScraper.ts      # RoxieStreams scraper
-│   │   │   └── sportyHunterScraper.ts # SportyHunter scraper
+   │   │   │   ├── roxieScraper.ts      # RoxieStreams scraper
+   │   │   │   ├── sportyHunterScraper.ts # SportyHunter scraper
+   │   │   │   └── vipboxScraper.ts     # VIPRow/VIPBox niche sports scraper
 │   │   ├── readme/update.ts  # Update PLAYLISTS.md with stats
 │   │   └── report/create.ts  # Create issue/discussion reports
 │   ├── core/
@@ -853,9 +941,46 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 | Added VOD to README | `README.md` | New "Movies & TV Shows (VOD)" section with raw GitHub URLs to `streams/vod/movies.m3u` and `streams/vod/tv-shows.m3u` |
 | Documented VOD separation | `IPTV_VERSION.md` | Updated project overview, output files table, file structure, and workflow descriptions to reflect VOD-isolated architecture |
 
+### June 27, 2026 — Stream Health Check System
+
+| Change | File | Description |
+|--------|------|-------------|
+| Quick pre-check in stream tester | `scripts/core/streamTester.ts` | Added `quickCheck()` method that does HEAD (5s) → GET with Range fallback before mediainfo.js analysis. Dead streams (ECONNREFUSED, ENOTFOUND, 404, 410, timeout) return immediately, skipping expensive mediainfo — speeds up `playlist:test --fix` significantly |
+| Lightweight health check script | `scripts/commands/playlist/quickHealthCheck.ts` | New HTTP-only validator (no mediainfo) inspired by `iptv-m3u-bot`. 10s timeout, 50 concurrent workers. Identifies dead streams fast for frequent runs |
+| npm scripts | `package.json` | Added `playlist:health` (check only) and `playlist:health:fix` (auto-remove dead streams) |
+| Continuous health check workflow | `.github/workflows/health-check.yml` | Runs every 60 minutes via cron, executes `quickHealthCheck.ts --fix`, commits/pushes any pruned streams. Keeps playlist healthy between full daily regenerations |
+
+### June 27, 2026 — Sports Event Start Times + Adult Sources
+
+| Change | File | Description |
+|--------|------|-------------|
+| Start time in stream titles | `scripts/core/aggregatorHelpers.ts` | Added `formatTimePT()` (converts unix ts → Pacific) and `extractTimeFromText()` (extracts time from raw text) helpers |
+| DaddyLive time prefix | `scripts/commands/playlist/daddyliveScraper.ts` | Passes `event.time` through to stream titles as `[HH:MM] Event - Channel` |
+| Streamed time prefix | `scripts/commands/playlist/streamedScraper.ts` | Converts `match.date` (unix ts) to PT and prepends `[HH:MM am/pm PT]` to titles |
+| SportsBite time prefix | `scripts/commands/playlist/sportsBiteScraper.ts` | Extracts time from link text, prepends `[HH:MM]` to titles |
+| PPV.TO time prefix | `scripts/commands/playlist/ppvToScraper.ts` | Extracts time from link text, prepends `[HH:MM]` to titles |
+| Roxie time prefix | `scripts/commands/playlist/roxieScraper.ts` | Extracts time from link text, prepends `[HH:MM]` to titles |
+| SportyHunter time prefix | `scripts/commands/playlist/sportyHunterScraper.ts` | Extracts time from link text, prepends `[HH:MM]` to titles |
+| Adult IPTV sources | `scripts/commands/playlist/generateUltimate.ts`, `mergeAllM3u.ts` | Added 25 adultiptv.net categories + IPTVjs Adult under `! Adult` group |
+| Adult section in reorganizer | `scripts/core/reorganizer.ts` | Classifies `! Adult` group into the `adult` section for proper ordering |
+| NTV dependency cleanup | `scripts/commands/playlist/ntvScraper.ts` | Removed unused `closeBrowser` import |
+| Version tracking | `IPTV_VERSION.md` | Added `Version: 1.0.0` header, documented all changes |
+
 ---
 
-## 12. How to Run Locally
+### June 27, 2026 — VIPBox/VIPRow Niche Sports Scraper
+
+| Change | File | Description |
+|--------|------|-------------|
+| VIPRow scraper | `scripts/commands/playlist/vipboxScraper.ts` | New scraper for `viprow.nu` — scrapes tennis, rugby, motorsports, volleyball, and other niche sports |
+| Pipeline integration | `scripts/commands/playlist/generateUltimate.ts` | Added `scrapeVipbox` as 8th sports scraper in the parallel pipeline |
+| VIPRow group classification | `scripts/core/reorganizer.ts` | Preserves per-sport grouping for VIPRow streams (e.g. `! Sports - VIPRow - Tennis`) |
+| Unused import cleanup | Various scrapers | Removed unused `closeBrowser` imports from SportsBite, PPV.TO, Roxie, SportyHunter scrapers |
+| Lint fix | `vipboxScraper.ts` | Fixed CRLF line endings to match project convention |
+
+---
+
+## 13. How to Run Locally
 
 ```bash
 # Clone and install
@@ -883,6 +1008,13 @@ npx tsx scripts/commands/playlist/generateEpg.ts --process-guide guide.xml
 
 # Merge all streams
 npm run playlist:mergeAll
+
+# Quick health check (HTTP-only, no mediainfo)
+npm run playlist:health          # Check only
+npm run playlist:health:fix      # Check + remove dead streams
+
+# Full stream testing (with mediainfo analysis)
+npm run playlist:test -- --fix
 
 # Run tests
 npm test

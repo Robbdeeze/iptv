@@ -1,6 +1,6 @@
 import { Logger } from '@freearhey/core'
 import { Stream } from '../../models'
-import { extractM3u8FromEmbed, createStream, closeBrowser } from '../../core'
+import { extractM3u8FromEmbed, createStream, extractTimeFromText } from '../../core'
 import { fetchWithTimeout } from '../../core'
 
 const GROUP_TITLE = '! Sports - Roxie'
@@ -152,7 +152,11 @@ export async function scrapeRoxie(
     const m3u8Url = await resolveStreamUrl(event.url, logger)
     if (m3u8Url && !seenUrls.has(m3u8Url)) {
       seenUrls.add(m3u8Url)
-      const title = event.sport ? `[${event.sport}] ${event.title}` : event.title
+      const timePrefix = extractTimeFromText(event.title)
+      const sportPrefix = event.sport ? `[${event.sport}] ` : ''
+      const title = timePrefix
+        ? `[${timePrefix}] ${sportPrefix}${event.title.replace(/\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?/i, '').trim()}`
+        : `${sportPrefix}${event.title}`
       streams.push(createStream(title, m3u8Url, GROUP_TITLE))
       logger.info(`  Roxie: ${title.substring(0, 60)}...`)
     }

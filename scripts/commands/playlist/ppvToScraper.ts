@@ -1,6 +1,6 @@
 import { Logger } from '@freearhey/core'
 import { Stream } from '../../models'
-import { extractM3u8FromEmbed, createStream, closeBrowser } from '../../core'
+import { extractM3u8FromEmbed, createStream, extractTimeFromText } from '../../core'
 import { fetchWithTimeout } from '../../core'
 
 const GROUP_TITLE = '! Sports - PPV'
@@ -115,7 +115,11 @@ export async function scrapePpvTo(
     const m3u8Url = await extractM3u8FromPage(event.url, logger)
     if (m3u8Url && !seenUrls.has(m3u8Url)) {
       seenUrls.add(m3u8Url)
-      const title = event.category ? `[${event.category}] ${event.title}` : event.title
+      const timePrefix = extractTimeFromText(event.title)
+      const categoryPrefix = event.category ? `[${event.category}] ` : ''
+      const title = timePrefix
+        ? `[${timePrefix}] ${categoryPrefix}${event.title.replace(/\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?/i, '').trim()}`
+        : `${categoryPrefix}${event.title}`
       streams.push(createStream(title, m3u8Url, GROUP_TITLE))
       logger.info(`  PPV.TO: ${title.substring(0, 60)}...`)
     }

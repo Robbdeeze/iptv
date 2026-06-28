@@ -1,6 +1,6 @@
 import { Logger } from '@freearhey/core'
 import { Stream } from '../../models'
-import { extractM3u8FromEmbed, createStream, closeBrowser } from '../../core'
+import { extractM3u8FromEmbed, createStream, extractTimeFromText } from '../../core'
 import { fetchWithTimeout } from '../../core'
 
 const GROUP_TITLE = '! Sports - SportyHunter'
@@ -64,7 +64,7 @@ async function extractEvents(domain: string, logger: Logger): Promise<SportyEven
         seen.add(fullUrl)
 
         let league = ''
-        let sport = ''
+        const sport = ''
         const pathParts = href.split('/').filter(Boolean)
         if (pathParts.length > 1) {
           const possibleLeague = pathParts[pathParts.length - 2].replace(/[-_]/g, ' ')
@@ -153,8 +153,11 @@ export async function scrapeSportyHunter(
     const m3u8Url = await resolveEventStream(event.url, logger)
     if (m3u8Url && !seenUrls.has(m3u8Url)) {
       seenUrls.add(m3u8Url)
-      const prefix = event.league ? `[${event.league}]` : event.sport ? `[${event.sport}]` : ''
-      const title = prefix ? `${prefix} ${event.title}` : event.title
+      const timePrefix = extractTimeFromText(event.title)
+      const leaguePrefix = event.league ? `[${event.league}] ` : event.sport ? `[${event.sport}] ` : ''
+      const title = timePrefix
+        ? `[${timePrefix}] ${leaguePrefix}${event.title.replace(/\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?/i, '').trim()}`
+        : `${leaguePrefix}${event.title}`
       streams.push(createStream(title, m3u8Url, GROUP_TITLE))
       logger.info(`  SportyHunter: ${title.substring(0, 60)}...`)
     }

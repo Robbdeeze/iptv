@@ -60,9 +60,19 @@ function classifyStream(stream: Stream): { section: string; subGroup: string } {
     return { section: 'vod-other', subGroup: stream.groupTitle }
   }
 
+  // VIPRow - preserve per-sport grouping
+  if (gt.includes('! sports - viprow')) {
+    return { section: 'sports-events', subGroup: stream.groupTitle }
+  }
+
   // Sports scraper channels
   if (gt.includes('! sports -')) {
     return { section: 'sports-events', subGroup: 'Sports - Live / PPV / Events' }
+  }
+
+  // Adult
+  if (gt.includes('! adult')) {
+    return { section: 'adult', subGroup: stream.groupTitle }
   }
 
   // PowerSports / StreamBTW / StreamEast / Roxiestream

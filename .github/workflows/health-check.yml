@@ -1,0 +1,42 @@
+name: Health Check
+on:
+  schedule:
+    - cron: '0 * * * *' # Every 60 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+
+      - name: Quick stream health check
+        run: npm run playlist:health:fix
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git status --porcelain
+          echo "changes=$(git status --porcelain | wc -l | tr -d ' ')" >> $GITHUB_OUTPUT
+
+      - name: Commit and push changes
+        if: steps.git-check.outputs.changes != '0'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "[Bot] Remove dead streams (health check)"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          file_pattern: streams/**/*.m3u

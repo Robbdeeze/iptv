@@ -1,5 +1,6 @@
 import { Logger } from '@freearhey/core'
 import { Stream } from '../../models'
+import { extractTimeFromText } from '../../core/aggregatorHelpers'
 import axios from 'axios'
 import { chromium } from 'playwright'
 
@@ -55,6 +56,7 @@ type EventChannel = {
   url?: string
   source?: string
   eventName?: string
+  eventTime?: string
 }
 
 type EventItem = {
@@ -439,10 +441,12 @@ async function fetchEvents(
         for (const event of events) {
           if (!event.channels || !Array.isArray(event.channels)) continue
           const eventName = event.event || ''
+          const eventTime = event.time || ''
           for (const channel of event.channels) {
             allChannels.push({
               ...channel,
-              eventName
+              eventName,
+              eventTime
             })
           }
         }
@@ -522,7 +526,9 @@ export async function scrapeDaddylive(
         channelName && !channelName.match(/^Link\s*-\s*\d+$/i)
 
       const eventName = channel.eventName || ''
-      const liveTitle = eventName ? `${eventName} - ${channelName}` : channelName
+      const timePrefix = channel.eventTime ? extractTimeFromText(channel.eventTime) : null
+      const timeStr = timePrefix ? `[${timePrefix}] ` : ''
+      const liveTitle = eventName ? `${timeStr}${eventName} - ${channelName}` : channelName
 
       if (hasRealName) {
         // Standard channel with a real name - use findMatch against player9Data
