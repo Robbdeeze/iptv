@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -24,9 +24,10 @@ iptv-org API (channels, streams, guides)
               Famelack data
                    │
                    ▼
-           Sports scrapers (8x parallel)
-           DaddyLive | Streamed | NTV | SportsBite
-           PPV.TO    | Roxie    | SportyHunter | VIPRow
+            Sports scrapers (11x parallel)
+            DaddyLive | Streamed | NTV | SportsBite
+            PPV.TO    | Roxie    | SportyHunter | VIPRow
+            Sportsurge | StreamEast | LiveTV
                    │
                    ▼
             Dedup by URL → Reorganize → 19 sections
@@ -58,16 +59,19 @@ iptv-org API (channels, streams, guides)
    - [Path A: Built-in EPG (in generateUltimate.ts)](#51-path-a-built-in-epg)
    - [Path B: Docker-based EPG (generateEpg.ts + iptv-org/epg)](#52-path-b-docker-based-epg)
    - [generateEpg.ts Details](#53-generateepgts-details)
-6. [Sports Scrapers](#6-sports-scrapers)
-   - [daddyliveScraper.ts](#61-daddylivescraperts)
-   - [streamedScraper.ts](#62-streamedscraperts)
-   - [aggregatorHelpers.ts](#63-aggregatorhelpersts)
-   - [ntvScraper.ts](#64-ntvscraperts)
-   - [sportsBiteScraper.ts](#65-sportsbitescraperts)
-   - [ppvToScraper.ts](#66-ppvtoscraperts)
-   - [roxieScraper.ts](#67-roxiescraperts)
+ 6. [Sports Scrapers](#6-sports-scrapers)
+    - [daddyliveScraper.ts](#61-daddylivescraperts)
+    - [streamedScraper.ts](#62-streamedscraperts)
+    - [aggregatorHelpers.ts](#63-aggregatorhelpersts)
+    - [ntvScraper.ts](#64-ntvscraperts)
+    - [sportsBiteScraper.ts](#65-sportsbitescraperts)
+    - [ppvToScraper.ts](#66-ppvtoscraperts)
+    - [roxieScraper.ts](#67-roxiescraperts)
     - [sportyHunterScraper.ts](#68-sportyhunterscraperts)
     - [vipboxScraper.ts](#69-vipboxscraperts)
+    - [sportsurgeScraper.ts](#610-sportsurgescraperts)
+    - [streamEastScraper.ts](#611-streameastscraperts)
+    - [liveTvScraper.ts](#612-livetvscraperts)
  7. [Project File Structure](#7-project-file-structure)
 8. [Script Reference (npm commands)](#8-script-reference)
 9. [Dependencies](#9-dependencies)
@@ -140,7 +144,7 @@ Step 4: npx playwright install chromium
 Step 5: npm run playlist:ultimate
     - Loads API data (channels, streams, guides from iptv-org)
     - Parses US/CA/UK M3U files from streams/
-     - Fetches external playlists (YueChan Global, Radio, IPTVjs Adult, DrewLive Merged)
+     - Fetches external playlists (YueChan Global, Radio, IPTVjs Adult, DrewLive Merged, MadTitan, PixelSport, TVPass)
     - VOD playlists available separately under streams/vod/ (not embedded in main playlist)
     - Fetches Famelack US/UK channel data, saves to streams/
     - Scrapes DaddyLive sports streams via Playwright
@@ -150,6 +154,9 @@ Step 5: npm run playlist:ultimate
     - Scrapes PPV.TO live event streams via Playwright
     - Scrapes RoxieStreams sports via Playwright
     - Scrapes SportyHunter events via Playwright
+    - Scrapes Sportsurge events via Playwright
+    - Scrapes StreamEast events via Playwright
+    - Scrapes LiveTV events via Playwright
     - Deduplicates by URL
     - Sorts by group-title, title, resolution (desc)
     - Writes Robbdeeze_UltimateTV.m3u with x-tvg-url header
@@ -264,6 +271,9 @@ This is the **core custom script** that builds the Robbdeeze UltimateTV experien
    - `iptvjs/adultiptv_all.m3u` → group: `"! Adult"`
    - 25 `live.adultiptv.net/{category}.m3u8` URLs → group: `"! Adult"`
    - `DrewLiveMergedPlaylist.m3u8` → preserves original group titles (A1xmedia, PlutoTV, SamsungTVPlus, etc.)
+   - `MadTitan.m3u8` → preserves original group titles (24/7 shows, UFC, kids)
+   - `Pixelsports.m3u8` → preserves original group titles (NBA, NHL, NFL, MLB live games)
+   - `TVPass.m3u` → preserves original group titles (US cable/network channels)
 
 4. **VOD available separately** — VOD playlists are no longer embedded in the main playlist. They are distributed independently as separate files under `streams/vod/movies.m3u` and `streams/vod/tv-shows.m3u` and linked from README.
 
@@ -637,6 +647,73 @@ Scrapes niche sports events (tennis, rugby, motorsports, volleyball, other) from
 
 ---
 
+### 6.10 `sportsurgeScraper.ts`
+
+**Location:** `scripts/commands/playlist/sportsurgeScraper.ts`
+
+**Group title:** `"! Sports - Sportsurge - {Sport}"`
+
+**Mirrors:** `sportsurge.net`, `sportsurge.club`, `sportsurge.name`
+
+Scrapes live sports event streams from Sportsurge.
+
+**Architecture:**
+
+1. **Find active mirror** — Probes each mirror URL until one responds
+2. **Fetch event page** — HTTP GET the homepage, parses HTML for event links with sport categories (NBA, NFL, MLB, NHL, UFC, Soccer, etc.)
+3. **Resolve stream URLs** — For each event link:
+   - Uses Playwright headless browser to navigate to the event page
+   - Intercepts network requests for `.m3u8` and `.mpd` URLs
+   - Falls back to DOM inspection for video/iframe sources
+4. **Deduplication** — By URL
+
+---
+
+### 6.11 `streamEastScraper.ts`
+
+**Location:** `scripts/commands/playlist/streamEastScraper.ts`
+
+**Group title:** `"! Sports - StreamEast - {Sport}"`
+
+**Mirrors:** `thestreameast.lol`, `streameast.app`, `streameast.xyz`
+
+Scrapes live sports streams from StreamEast.
+
+**Architecture:**
+
+1. **Find active mirror** — Probes each mirror URL
+2. **Fetch event page** — HTTP GET homepage, parses HTML for event links grouped by sport
+3. **Resolve stream URLs** — For each event:
+   - Playwright headless browser navigates to the event page
+   - Intercepts network traffic for m3u8/mpd URLs
+   - DOM inspection fallback for video/iframe sources
+4. **Deduplication** — By URL
+
+---
+
+### 6.12 `liveTvScraper.ts`
+
+**Location:** `scripts/commands/playlist/liveTvScraper.ts`
+
+**Group title:** `"! Sports - LiveTV - {Sport}"`
+
+**Base URL:** `https://livetv.sx/enx/`
+
+Scrapes live sports events from LiveTV aggregator.
+
+**Architecture:**
+
+1. **Build sport URLs** — Constructs URLs for 24 sport keywords (e.g., `nba`, `nfl`, `mlb`, `nhl`, `ufc`, `soccer`, `tennis`, `boxing`, etc.)
+2. **Fetch event pages** — HTTP GET each sport page, parse HTML for event listings with teams, start times, and stream links
+3. **Resolve stream URLs** — For each event:
+   - Follows the event link
+   - Extracts embed iframe URLs pointing to third-party players
+   - Uses `extractM3u8FromEmbed()` with Playwright to intercept m3u8/mpd URLs
+4. **Limits** — Processes events from each sport page with `eachLimit` concurrency of 5
+5. **Deduplication** — By URL
+
+---
+
 ## 7. Project File Structure
 
 ```
@@ -677,7 +754,10 @@ iptv/
 │   │   │   ├── ppvToScraper.ts      # PPV.TO scraper
    │   │   │   ├── roxieScraper.ts      # RoxieStreams scraper
    │   │   │   ├── sportyHunterScraper.ts # SportyHunter scraper
-   │   │   │   └── vipboxScraper.ts     # VIPRow/VIPBox niche sports scraper
+    │   │   │   └── vipboxScraper.ts     # VIPRow/VIPBox niche sports scraper
+    │   │   │   ├── sportsurgeScraper.ts  # Sportsurge scraper
+    │   │   │   ├── streamEastScraper.ts  # StreamEast scraper
+    │   │   │   └── liveTvScraper.ts      # LiveTV scraper
 │   │   ├── readme/update.ts  # Update PLAYLISTS.md with stats
 │   │   └── report/create.ts  # Create issue/discussion reports
 │   ├── core/
@@ -823,6 +903,20 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 ---
 
 ## 11. Recent Improvements
+
+### June 28, 2026 — Sportsurge, StreamEast, LiveTV Scrapers + DrewLive Playlists
+
+| Change | File | Description |
+|--------|------|-------------|
+| Sportsurge scraper | `scripts/commands/playlist/sportsurgeScraper.ts` | New scraper for sportsurge.net + 2 mirrors — Playwright page parse + network intercept for m3u8 |
+| StreamEast scraper | `scripts/commands/playlist/streamEastScraper.ts` | New scraper for thestreameast.lol + 2 mirrors — same Playwright pattern |
+| LiveTV scraper | `scripts/commands/playlist/liveTvScraper.ts` | New scraper for livetv.sx/enx/ — scrapes 24 sport keywords, eachLimit 5 for resolution |
+| Pipeline integration | `generateUltimate.ts` | All 3 new scrapers registered in imports, Promise.allSettled, and scraperNames array |
+| Group classification | `scripts/core/reorganizer.ts` | Preserves per-sport grouping for Sportsurge/StreamEast/LiveTV (e.g. `! Sports - Sportsurge - NBA`) |
+| Added MadTitan playlist | `generateUltimate.ts` | Fetches MadTitan.m3u8 from DrewLive repo — ~1400 streams (24/7 shows, UFC, kids) from lucidhosting.xyz |
+| Added PixelSport playlist | `generateUltimate.ts` | Fetches Pixelsports.m3u8 from DrewLive repo — ~200+ live sports streams (NBA, NHL, NFL, MLB) |
+| Added TVPass playlist | `generateUltimate.ts` | Fetches TVPass.m3u from DrewLive repo — ~500+ US cable/network channels (ABC, CNN, ESPN, HBO, etc.) |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.2.0 |
 
 ### June 28, 2026 — GitHub Actions Workflow Fixes
 

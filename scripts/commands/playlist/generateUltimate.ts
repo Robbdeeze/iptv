@@ -15,6 +15,9 @@ import { scrapePpvTo } from './ppvToScraper'
 import { scrapeRoxie } from './roxieScraper'
 import { scrapeSportyHunter } from './sportyHunterScraper'
 import { scrapeVipbox } from './vipboxScraper'
+import { scrapeSportsurge } from './sportsurgeScraper'
+import { scrapeStreamEast } from './streamEastScraper'
+import { scrapeLiveTV } from './liveTvScraper'
 import { closeBrowser, reorganizeStreams } from '../../core'
 import path from 'node:path'
 import fs from 'node:fs'
@@ -120,6 +123,29 @@ async function main() {
       }
       allExternalStreams.push({ groupTitle, streams })
       logger.info(`loaded ${streams.length} streams from ${url} -> group: "${groupTitle}"`)
+    } catch (err) {
+      logger.error(`failed to fetch ${url}: ${err}`)
+    }
+  }
+
+  // DrewLive-generated playlists (MadTitan, PixelSport, TVPass)
+  const drewLivePlaylists: { url: string }[] = [
+    { url: 'https://raw.githubusercontent.com/Robbdeeze/DrewLive/main/MadTitan.m3u8' },
+    { url: 'https://raw.githubusercontent.com/Robbdeeze/DrewLive/main/Pixelsports.m3u8' },
+    { url: 'https://raw.githubusercontent.com/Robbdeeze/DrewLive/main/TVPass.m3u' }
+  ]
+
+  for (const { url } of drewLivePlaylists) {
+    logger.info(`fetching DrewLive playlist: ${url}...`)
+    try {
+      const response = await axios.get(url, { timeout: 15000 })
+      const parsed: iptvParser.Playlist = iptvParser.parse(response.data)
+      const streams = parsed.items.map((item: iptvParser.PlaylistItem) =>
+        Stream.fromPlaylistItem(item)
+      )
+      // Preserve original group titles from these playlists
+      allExternalStreams.push({ groupTitle: '', streams })
+      logger.info(`loaded ${streams.length} streams from ${url}`)
     } catch (err) {
       logger.error(`failed to fetch ${url}: ${err}`)
     }
@@ -238,10 +264,13 @@ async function main() {
     withTimeout(scrapePpvTo(logger), SCRAPER_TIMEOUT, 'PPV.TO'),
     withTimeout(scrapeRoxie(logger), SCRAPER_TIMEOUT, 'Roxie'),
     withTimeout(scrapeSportyHunter(logger), SCRAPER_TIMEOUT, 'SportyHunter'),
-    withTimeout(scrapeVipbox(logger), SCRAPER_TIMEOUT, 'VIPRow')
+    withTimeout(scrapeVipbox(logger), SCRAPER_TIMEOUT, 'VIPRow'),
+    withTimeout(scrapeSportsurge(logger), SCRAPER_TIMEOUT, 'Sportsurge'),
+    withTimeout(scrapeStreamEast(logger), SCRAPER_TIMEOUT, 'StreamEast'),
+    withTimeout(scrapeLiveTV(logger), SCRAPER_TIMEOUT, 'LiveTV')
   ])
 
-  const scraperNames = ['DaddyLive', 'Streamed', 'NTV', 'SportsBite', 'PPV.TO', 'Roxie', 'SportyHunter', 'VIPRow']
+  const scraperNames = ['DaddyLive', 'Streamed', 'NTV', 'SportsBite', 'PPV.TO', 'Roxie', 'SportyHunter', 'VIPRow', 'Sportsurge', 'StreamEast', 'LiveTV']
   for (let i = 0; i < scraperResults.length; i++) {
     const result = scraperResults[i]
     if (result.status === 'rejected') {
