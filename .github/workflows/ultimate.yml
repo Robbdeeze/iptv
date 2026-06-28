@@ -10,6 +10,7 @@ permissions:
 jobs:
   update-playlist:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -55,16 +56,17 @@ jobs:
           done
 
           if [ ! -f guide.xml ]; then
-            echo "❌ EPG generation failed or timed out"
-            docker logs epg --tail 100
+            echo "❌ EPG generation failed or timed out, skipping EPG"
+            docker logs epg --tail 100 || true
             docker stop epg || true
-            exit 1
+            echo "NO_EPG=true" >> $GITHUB_ENV
           fi
 
           docker stop epg || true
           echo "✅ EPG build completed"
 
       - name: Process and compress EPG
+        if: env.NO_EPG != 'true'
         run: npx tsx scripts/commands/playlist/generateEpg.ts --process-guide guide.xml
 
       - name: Check for changes
@@ -81,3 +83,4 @@ jobs:
           commit_user_name: "github-actions[bot]"
           commit_user_email: "github-actions[bot]@users.noreply.github.com"
           file_pattern: Robbdeeze_UltimateTV.m3u Robbdeeze_UltimateTV_Epg.xml Robbdeeze_UltimateTV_Epg.xml.gz streams/**/*.m3u
+          skip_dirty_check: ${{ env.NO_EPG == 'true' }}
