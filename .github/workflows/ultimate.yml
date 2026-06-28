@@ -24,7 +24,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --ignore-scripts
 
       - name: Install Playwright browser
         run: npx playwright install chromium
@@ -44,26 +44,35 @@ jobs:
             -e DAYS=3 \
             ghcr.io/iptv-org/epg:master
 
+          sleep 5
+          if ! docker ps --format '{{.Names}}' | grep -q '^epg$'; then
+            echo "Docker container failed to start"
+            docker logs epg --tail 50 || true
+            docker rm epg 2>/dev/null || true
+            echo "NO_EPG=true" >> $GITHUB_ENV
+            exit 0
+          fi
+
           echo "Waiting for EPG generation to complete..."
-          for i in $(seq 1 240); do
+          for i in $(seq 1 90); do
             sleep 60
             if curl -sI http://localhost:3000/guide.xml 2>/dev/null | head -1 | grep -q "200"; then
               echo "EPG generated successfully after ${i} minutes"
               curl -s -o guide.xml http://localhost:3000/guide.xml
               break
             fi
-            echo "Waiting... (${i}/240)"
+            echo "Waiting... (${i}/90)"
           done
 
-          if [ ! -f guide.xml ]; then
-            echo "❌ EPG generation failed or timed out, skipping EPG"
-            docker logs epg --tail 100 || true
-            docker stop epg || true
-            echo "NO_EPG=true" >> $GITHUB_ENV
-          fi
-
           docker stop epg || true
-          echo "✅ EPG build completed"
+
+          if [ ! -f guide.xml ]; then
+            echo "EPG generation did not complete within timeout, skipping EPG"
+            docker logs epg --tail 50 || true
+            echo "NO_EPG=true" >> $GITHUB_ENV
+          else
+            echo "EPG build completed"
+          fi
 
       - name: Process and compress EPG
         if: env.NO_EPG != 'true'

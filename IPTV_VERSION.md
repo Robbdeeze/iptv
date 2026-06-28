@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -823,6 +823,17 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 ---
 
 ## 11. Recent Improvements
+
+### June 28, 2026 — GitHub Actions Workflow Fixes
+
+| Change | File | Description |
+|--------|------|-------------|
+| Fixed EPG Docker timeout | `.github/workflows/ultimate.yml` | Reduced wait loop from 240→90 iterations to fit within 120m job timeout |
+| Fixed EPG Docker timeout | `.github/workflows/merge-all.yml` | Reduced wait loop from 180→45 iterations, increased job timeout 60→90m |
+| Added Docker container check | `ultimate.yml`, `merge-all.yml` | Verifies container started (`docker ps`) before polling loop |
+| Fixed postinstall | `ultimate.yml` | Changed `npm install` → `npm install --ignore-scripts` to skip API download |
+| Fixed commit user | `merge-all.yml` | Changed from `Robbdeeze` to `github-actions[bot]` for GITHUB_TOKEN compat |
+| Fixed branch diff | `.github/workflows/check.yml` | Uses `pull_request.base.sha` when available, falls back to `origin/master` |
 
 ### June 26, 2026 — Playlist & EPG Refresh
 

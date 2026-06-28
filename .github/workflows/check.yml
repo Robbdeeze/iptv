@@ -16,8 +16,12 @@ jobs:
       - name: Get list of changed files
         id: files
         run: |
-          git fetch origin master:master 2>/dev/null || true
-          CHANGED=$(git diff --diff-filter=ACMRT --name-only origin/master -- streams/ 2>/dev/null || echo "")
+          BASE="${{ github.event.pull_request.base.sha || github.event.after }}"
+          if [ -z "$BASE" ]; then
+            git fetch origin master:master --depth=1 2>/dev/null || true
+            BASE="origin/master"
+          fi
+          CHANGED=$(git diff --diff-filter=ACMRT --name-only "$BASE" -- streams/ 2>/dev/null || echo "")
           echo "all_changed_files=$CHANGED" >> "$GITHUB_OUTPUT"
           if [ -n "$CHANGED" ]; then
             echo "any_changed=true" >> "$GITHUB_OUTPUT"
