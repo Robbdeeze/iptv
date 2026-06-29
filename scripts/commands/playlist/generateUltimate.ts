@@ -18,6 +18,7 @@ import { scrapeVipbox } from './vipboxScraper'
 import { scrapeSportsurge } from './sportsurgeScraper'
 import { scrapeStreamEast } from './streamEastScraper'
 import { scrapeLiveTV } from './liveTvScraper'
+import { scrapeSportsHD } from './sportshdScraper'
 import { closeBrowser, reorganizeStreams } from '../../core'
 import path from 'node:path'
 import fs from 'node:fs'
@@ -267,10 +268,11 @@ async function main() {
     withTimeout(scrapeVipbox(logger), SCRAPER_TIMEOUT, 'VIPRow'),
     withTimeout(scrapeSportsurge(logger), SCRAPER_TIMEOUT, 'Sportsurge'),
     withTimeout(scrapeStreamEast(logger), SCRAPER_TIMEOUT, 'StreamEast'),
-    withTimeout(scrapeLiveTV(logger), SCRAPER_TIMEOUT, 'LiveTV')
+    withTimeout(scrapeLiveTV(logger), SCRAPER_TIMEOUT, 'LiveTV'),
+    withTimeout(scrapeSportsHD(logger), SCRAPER_TIMEOUT, 'SportsHD')
   ])
 
-  const scraperNames = ['DaddyLive', 'Streamed', 'NTV', 'SportsBite', 'PPV.TO', 'Roxie', 'SportyHunter', 'VIPRow', 'Sportsurge', 'StreamEast', 'LiveTV']
+  const scraperNames = ['DaddyLive', 'Streamed', 'NTV', 'SportsBite', 'PPV.TO', 'Roxie', 'SportyHunter', 'VIPRow', 'Sportsurge', 'StreamEast', 'LiveTV', 'SportsHD']
   for (let i = 0; i < scraperResults.length; i++) {
     const result = scraperResults[i]
     if (result.status === 'rejected') {

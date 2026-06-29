@@ -59,8 +59,8 @@ function classifyStream(stream: Stream): { section: string; subGroup: string } {
     return { section: 'vod-other', subGroup: stream.groupTitle }
   }
 
-  // VIPRow / Sportsurge / StreamEast / LiveTV - preserve per-sport grouping
-  if (gt.includes('! sports - viprow') || gt.includes('! sports - sportsurge') || gt.includes('! sports - streameast') || gt.includes('! sports - livetv')) {
+  // VIPRow / Sportsurge / StreamEast / LiveTV / SportsHD - preserve per-sport grouping
+  if (gt.includes('! sports - viprow') || gt.includes('! sports - sportsurge') || gt.includes('! sports - streameast') || gt.includes('! sports - livetv') || gt.includes('! sports - sportshd')) {
     return { section: 'sports-events', subGroup: stream.groupTitle }
   }
 
