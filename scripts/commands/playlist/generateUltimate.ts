@@ -422,7 +422,9 @@ async function main() {
   logger.info('done! EPG and playlist generated successfully.')
 }
 
-withTimeout(main(), GLOBAL_TIMEOUT, 'Ultimate playlist generation').catch(err => {
+withTimeout(main(), GLOBAL_TIMEOUT, 'Ultimate playlist generation').then(() => {
+  process.exit(0)
+}).catch(err => {
   console.error(err)
   process.exit(1)
 })

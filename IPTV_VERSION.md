@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.2.0
+**Version:** 1.3.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -903,6 +903,15 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 ---
 
 ## 11. Recent Improvements
+
+### June 28, 2026 — Script Exit Fix (Workflow Reliability)
+
+| Change | File | Description |
+|--------|------|-------------|
+| Fixed process hang on success | `generateUltimate.ts` | Added `process.exit(0)` on successful completion — Node.js kept alive by leftover handles (Playwright, axios), causing workflow timeout |
+| Same fix | `mergeAllM3u.ts` | Added `.then(() => process.exit(0))` |
+| Same fix | `generateEpg.ts` | Added `.then(() => process.exit(0))` |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.3.0 |
 
 ### June 28, 2026 — Sportsurge, StreamEast, LiveTV Scrapers + DrewLive Playlists
 
