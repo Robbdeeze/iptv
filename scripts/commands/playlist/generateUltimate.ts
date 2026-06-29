@@ -129,29 +129,6 @@ async function main() {
     }
   }
 
-  // DrewLive-generated playlists (MadTitan, PixelSport, TVPass)
-  const drewLivePlaylists: { url: string }[] = [
-    { url: 'https://raw.githubusercontent.com/Robbdeeze/DrewLive/main/MadTitan.m3u8' },
-    { url: 'https://raw.githubusercontent.com/Robbdeeze/DrewLive/main/Pixelsports.m3u8' },
-    { url: 'https://raw.githubusercontent.com/Robbdeeze/DrewLive/main/TVPass.m3u' }
-  ]
-
-  for (const { url } of drewLivePlaylists) {
-    logger.info(`fetching DrewLive playlist: ${url}...`)
-    try {
-      const response = await axios.get(url, { timeout: 15000 })
-      const parsed: iptvParser.Playlist = iptvParser.parse(response.data)
-      const streams = parsed.items.map((item: iptvParser.PlaylistItem) =>
-        Stream.fromPlaylistItem(item)
-      )
-      // Preserve original group titles from these playlists
-      allExternalStreams.push({ groupTitle: '', streams })
-      logger.info(`loaded ${streams.length} streams from ${url}`)
-    } catch (err) {
-      logger.error(`failed to fetch ${url}: ${err}`)
-    }
-  }
-
   // Note: VOD is no longer embedded in the main playlist.
   // VOD playlists are available separately under streams/vod/:
   //   - streams/vod/movies.m3u

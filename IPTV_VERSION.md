@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.3.0
+**Version:** 1.4.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -903,6 +903,20 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 ---
 
 ## 11. Recent Improvements
+
+### June 28, 2026 — SportsHD Scraper + Dead DrewLive Removal
+
+| Change | File | Description |
+|--------|------|-------------|
+| SportsHD scraper | `scripts/commands/playlist/sportshdScraper.ts` | New scraper extracting events from super.league.st + 24/7 channels from one.sporthd.me TRPC API |
+| Pipeline integration | `generateUltimate.ts` | Added as 12th parallel scraper in Promise.allSettled |
+| Group classification | `scripts/core/reorganizer.ts` | Preserves per-sport grouping for SportsHD (e.g. `! Sports - SportsHD - NFL`) |
+| Removed MadTitan | `generateUltimate.ts` | All 482 streams returning 404 from lucidhosting.xyz:82 |
+| Removed PixelSport | `generateUltimate.ts` | All 78 streams returning 403 from locked.pixelpanel.online |
+| Removed TVPass | `generateUltimate.ts` | Domain tvpass.org unreachable (HTTP 000) |
+| Analyzed The Crew repo | `team-crew.github.io` | Sports section is RoxieStreams wrapper + bitbucket XMLs (auth-required); no new source value |
+| Analyzed Loop repo | `loopaddon.uk/theloop` | Behind OVH/Google anti-bot, unreachable for scraping; general media addon |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.4.0 |
 
 ### June 28, 2026 — Script Exit Fix (Workflow Reliability)
 
