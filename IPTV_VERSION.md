@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.5.0
+**Version:** 1.5.1
 
 ## Repository: Robbdeeze/iptv
 
@@ -917,14 +917,15 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 | Pre-write stream check | `scripts/commands/playlist/generateUltimate.ts` | Added `checkStreams()` — runs HEAD/GET Range on all streams (50 concurrent, 10s timeout) before writing final M3U, removes streams returning fatal errors (ECONNREFUSED, ENOTFOUND, 404, 410, 000) |
 | Version bump | `IPTV_VERSION.md` | Updated to 1.5.0 |
 
-### June 29, 2026 — Xtream-Codes Portal Scraper
+### June 29, 2026 — Xtream-Codes Portal Scraper (v1.5.1 — Bug Fix)
 
 | Change | File | Description |
 |--------|------|-------------|
-| Portal scraper | `scripts/commands/playlist/portalScraper.ts` | New scraper — scrapes Xtream-Codes portals from Reddit (IPTV_ZONENEW, FreeIPTV, iptvguru, IPTVfree via OAuth2) and GitHub XML2 dumps (akeotaseo/world_repo), verifies via player_api.php, fetches live streams from verified portals |
+| Portal scraper | `scripts/commands/playlist/portalScraper.ts` | New scraper — scrapes Xtream-Codes portals from GitHub XML2 dumps (akeotaseo/world_repo) and Reddit RSS, verifies via player_api.php, fetches live streams from verified portals |
 | Pipeline integration | `scripts/commands/playlist/generateUltimate.ts` | Added `scrapePortals()` before sports scrapers — runs every 24h during ultimate playlist generation |
 | Portal section at top | `scripts/core/reorganizer.ts` | Added `'portals'` as first entry in `SECTION_ORDER` — portal streams appear at the very top of the M3U |
-| Version bump | `IPTV_VERSION.md` | Updated to 1.5.0 |
+| Fixed JUNK_TOKENS filtering | `scripts/commands/playlist/portalScraper.ts` | Removed `type=m3u`, `output=ts`, `password=`, `username=` from JUNK_TOKENS — every legitimate portal URL was hitting ≥2 tokens, causing `isJunk()` to discard all GitHub XML2 content (2,579 portals found after fix). Also dropped OAuth2 Reddit (403 blocked), switched to direct JSON with proper UA. CORS proxies not needed in Node.js. |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.5.1 |
 
 ### June 28, 2026 — SportsHD Scraper + Dead DrewLive Removal
 

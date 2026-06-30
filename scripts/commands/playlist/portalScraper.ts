@@ -9,30 +9,14 @@ const FETCH_TIMEOUT = 15000
 const MAX_VERIFIED = 20
 const MAX_STREAMS_PER_PORTAL = 500
 
-const REDDIT_UA = 'PlayTorrio/1.3.6 (by /u/PlayTorrioApp)'
-const REDDIT_CLIENT_IDS = [
-  'ohXpoqrZYub1kg',
-  'NOe2iKrPPzwscA',
-  'JrPdG8Z6dkWNxA',
-]
+const UA = 'Mozilla/5.0 (Linux; Android 11; PlayTorrio) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36'
 
-const XML2_BASE = 'https://raw.githubusercontent.com/akeotaseo/world_repo/main/Updater_Matrix/XML2/'
-const XML2_LIST_API = 'https://api.github.com/repos/akeotaseo/world_repo/contents/Updater_Matrix/XML2?ref=main'
-
-const XML2_FALLBACK = [
-  '25.txt', '71.txt', 'ABN.txt', 'DOV.txt',
-  '%5BK_B_W_%20Client%5D.txt', 'br.txt',
-  'channels_fulltime%20(OR).txt', 'channels_fulltime.txt',
-  'kgen%20(4).txt', 'kgen.txt', 'rg.txt', 'x.txt',
-  '%7BAllTelegram%7D2.txt',
-]
-
-const CATALOG_SUBS = ['IPTV_ZONENEW', 'FreeIPTV', 'iptvguru', 'IPTVfree']
+const CATALOG_SUBS = ['IPTV_ZONENEW']
 
 const URL_PARAM = /(https?:\/\/[^?\s"'<]+)\?(?:[^\s"'<]*?&)?(?:username|user)=([^&\s"'<]+)\s*&(?:password|pass)=([^&\s"'<]+)/gi
 const LABEL = /(?:Portal|Host(?:\s*URL)?|Panel|Real|URL|🔗)\W*?(https?:\/\/[^<\s"']+)[\s\S]{1,500}?(?:Username|User|Usu[áa]rio|Usuario|👤)\W*?([^\s|<"'\n]+)[\s\S]{1,200}?(?:Password|Pass|Senha|Contrase[ñn]a|🔑)\W*?([^\s|<"'\n]+)/gi
 
-const JUNK_TOKENS = ['type=m3u', 'output=ts', 'password=', 'username=', 'Array.isArray', 'prototype.', 'function(']
+const JUNK_TOKENS = ['Array.isArray', 'prototype.', 'function(']
 
 const B64 = /aHR0c[a-zA-Z0-9+/=]{10,}/g
 const PASTE_DOMAINS = ['paste.sh', 'pastebin.com', 'justpaste.it', 'controlc.com', 'pastes.dev', 'text.is', 'rentry.co']
@@ -50,37 +34,7 @@ interface VerifiedPortal {
   name: string
 }
 
-let _redditToken: string | null = null
-let _redditTokenExpiry = 0
-let _redditClientIdx = 0
 
-async function getRedditToken(logger: Logger): Promise<string | null> {
-  if (_redditToken && Date.now() < _redditTokenExpiry) return _redditToken
-
-  for (let attempt = 0; attempt < REDDIT_CLIENT_IDS.length; attempt++) {
-    const idx = (_redditClientIdx + attempt) % REDDIT_CLIENT_IDS.length
-    const clientId = REDDIT_CLIENT_IDS[idx]
-    try {
-      const res = await axios.post(
-        'https://www.reddit.com/api/v1/access_token',
-        'grant_type=installed_client&device_id=10000000000000000000',
-        {
-          auth: { username: clientId, password: '' },
-          headers: { 'User-Agent': REDDIT_UA, 'Content-Type': 'application/x-www-form-urlencoded' },
-          timeout: 10000,
-        }
-      )
-      const data: any = res.data
-      _redditToken = data.access_token
-      _redditTokenExpiry = Date.now() + (data.expires_in || 3600) * 1000 - 60000
-      _redditClientIdx = idx
-      return _redditToken
-    } catch {
-      continue
-    }
-  }
-  return null
-}
 
 function isJunk(text: string): boolean {
   let hits = 0
@@ -150,32 +104,42 @@ function extractPortals(text: string, source: string): Portal[] {
   return portals
 }
 
-async function fetchRedditPortals(logger: Logger): Promise<Portal[]> {
-  const token = await getRedditToken(logger)
-  if (!token) {
-    logger.warn('Reddit OAuth2 failed, trying RSS fallback...')
-    const portals: Portal[] = []
-    for (const sub of CATALOG_SUBS) {
-      try {
-        const res = await axios.get(`https://www.reddit.com/r/${sub}/new/.rss?limit=25`, {
-          headers: { 'User-Agent': 'Mozilla/5.0' },
-          timeout: 10000,
-        })
-        portals.push(...extractPortals(res.data, `reddit/rss:${sub}`))
-      } catch { }
+async function fetchPasteContent(url: string): Promise<string | null> {
+  try {
+    if (url.includes('paste.sh'))
+      return null // paste.sh uses AES-256-CBC decryption, skip
+    if (url.includes('pastebin.com/') && !url.includes('/raw/')) {
+      const id = url.replace(/.*pastebin\.com\//, '').split(/[?#]/)[0]
+      return await axios.get(`https://pastebin.com/raw/${id}`, { timeout: 10000, headers: { 'User-Agent': UA } }).then(r => r.data)
     }
-    return portals
+    if (url.includes('pastes.dev/')) {
+      const id = url.replace(/.*pastes\.dev\//, '').split(/[?#]/)[0]
+      return await axios.get(`https://api.pastes.dev/${id}`, { timeout: 10000, headers: { 'User-Agent': UA } }).then(r => r.data)
+    }
+    if (url.includes('rentry.co/') && !url.includes('/raw')) {
+      const id = url.replace(/.*rentry\.co\//, '').split(/[?#]/)[0]
+      return await axios.get(`https://rentry.co/${id}/raw`, { timeout: 10000, headers: { 'User-Agent': UA } }).then(r => r.data)
+    }
+    return await axios.get(url, { timeout: 10000, headers: { 'User-Agent': UA } }).then(r => r.data)
+  } catch {
+    return null
   }
+}
 
+async function fetchRedditPortals(logger: Logger): Promise<Portal[]> {
   const portals: Portal[] = []
+  const seenPastes = new Set<string>()
+
   for (const sub of CATALOG_SUBS) {
     try {
-      const res = await axios.get(`https://oauth.reddit.com/r/${sub}/new?limit=100&sort=new&raw_json=1`, {
-        headers: { 'User-Agent': REDDIT_UA, Authorization: `Bearer ${token}` },
-        timeout: 10000,
+      logger.info(`  fetching r/${sub}...`)
+      const res = await axios.get(`https://www.reddit.com/r/${sub}/new/.json?limit=100&sort=new`, {
+        headers: { 'User-Agent': UA },
+        timeout: 15000,
       })
       const data: any = res.data
       const posts: any[] = data?.data?.children || []
+
       for (const post of posts) {
         const pdata = post?.data
         if (!pdata) continue
@@ -198,51 +162,58 @@ async function fetchRedditPortals(logger: Logger): Promise<Portal[]> {
           deepLinks.add(pm)
         }
 
-        const limit = 4
-        let count = 0
+        let dlCount = 0
         for (const dl of deepLinks) {
-          if (count >= limit) break
-          count++
-          try {
-            const dlRes = await axios.get(dl, { timeout: 10000, headers: { 'User-Agent': 'Mozilla/5.0' } })
-            portals.push(...extractPortals(dlRes.data, `reddit/deep:${sub}`))
-          } catch { }
+          if (dlCount >= 4) break
+          const pk = dl.replace(/\/+$/, '').toLowerCase()
+          if (seenPastes.has(pk)) continue
+          seenPastes.add(pk)
+          dlCount++
+          const text = await fetchPasteContent(dl)
+          if (text) portals.push(...extractPortals(text, `reddit/deep:${sub}`))
         }
       }
-    } catch { }
+    } catch (err: any) {
+      logger.warn(`  Reddit r/${sub} failed: ${err.message?.substring(0, 60) || err}`)
+    }
   }
 
   return portals
 }
 
 async function fetchGitHubPortals(logger: Logger): Promise<Portal[]> {
-  let files: string[] = []
+  let files: { url: string; name: string }[] = []
 
   try {
-    const res = await axios.get(XML2_LIST_API, {
-      headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/vnd.github+json' },
-      timeout: 12000,
+    const res = await axios.get('https://api.github.com/repos/akeotaseo/world_repo/contents/Updater_Matrix/XML2?ref=main', {
+      headers: { 'User-Agent': UA, Accept: 'application/vnd.github+json' },
+      timeout: 15000,
     })
     const entries: any[] = res.data
-    const valid = entries
-      .filter((e: any) => e.type === 'file' && e.name?.toString().toLowerCase().endsWith('.txt'))
+    files = entries
+      .filter((e: any) => e.type === 'file' && /\.txt$/i.test(e.name) && e.download_url)
       .sort((a: any, b: any) => (a.size || 0) - (b.size || 0))
-      .map((e: any) => encodeURIComponent(e.name))
-    if (valid.length) files = valid
-  } catch {
-    files = XML2_FALLBACK
+      .map((e: any) => ({ url: e.download_url, name: e.name }))
+    logger.info(`  listed ${files.length} XML2 files from GitHub`)
+  } catch (err: any) {
+    logger.warn(`  GitHub API failed: ${err.message?.substring(0, 60) || err}, using fallback`)
+    const base = 'https://raw.githubusercontent.com/akeotaseo/world_repo/main/Updater_Matrix/XML2/'
+    files = [
+      '25.txt', '71.txt', 'ABN.txt', 'DOV.txt',
+      '%5BK_B_W_%20Client%5D.txt', 'br.txt',
+      'channels_fulltime%20(OR).txt', 'channels_fulltime.txt',
+      'kgen%20(4).txt', 'kgen.txt', 'rg.txt', 'x.txt',
+      '%7BAllTelegram%7D2.txt',
+    ].map(n => ({ url: base + n, name: n }))
   }
-
-  if (!files.length) files = XML2_FALLBACK
 
   const portals: Portal[] = []
   const seen = new Set<string>()
 
   for (const file of files) {
     try {
-      const url = XML2_BASE + file
-      const res = await axios.get(url, { timeout: 10000, headers: { 'User-Agent': 'Mozilla/5.0' } })
-      const found = extractPortals(res.data, `github/xml2:${file}`)
+      const res = await axios.get(file.url, { timeout: 15000, headers: { 'User-Agent': UA } })
+      const found = extractPortals(res.data, `github/xml2:${file.name}`)
       for (const p of found) {
         const key = `${p.url}|${p.username}|${p.password}`
         if (seen.has(key)) continue
