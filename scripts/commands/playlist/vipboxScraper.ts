@@ -1,6 +1,6 @@
 import { Logger } from '@freearhey/core'
 import { Stream } from '../../models'
-import { extractM3u8FromEmbed, createStream, formatTimePT } from '../../core'
+import { extractM3u8FromEmbed, createStream, formatTimePT, isWithin24hrsPT } from '../../core'
 import { fetchWithTimeout } from '../../core'
 
 const MIRRORS = [
@@ -124,8 +124,14 @@ export async function scrapeVipbox(
     const streams: Stream[] = []
     const groupTitle = `! Sports - VIPRow - ${sport.name}`
 
+    // Filter to events within 24hrs of current Pacific time
+    const recentEvents = events.filter(e => isWithin24hrsPT(e.time))
+    if (recentEvents.length !== events.length) {
+      logger.info(`  ${sport.name}: ${recentEvents.length}/${events.length} events within 24hrs PT`)
+    }
+
     let maxResolve = 15
-    for (const event of events) {
+    for (const event of recentEvents) {
       if (maxResolve <= 0) break
       for (const link of event.links) {
         if (maxResolve <= 0) break

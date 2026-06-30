@@ -18,7 +18,7 @@ import { scrapeVipbox } from './vipboxScraper'
 import { scrapeSportsurge } from './sportsurgeScraper'
 import { scrapeStreamEast } from './streamEastScraper'
 import { scrapeLiveTV } from './liveTvScraper'
-import { scrapeSportsHD } from './sportshdScraper'
+
 import { closeBrowser, reorganizeStreams } from '../../core'
 import path from 'node:path'
 import fs from 'node:fs'
@@ -27,6 +27,12 @@ import zlib from 'node:zlib'
 
 const SCRAPER_TIMEOUT = 5 * 60 * 1000 // 5 minutes per scraper
 const GLOBAL_TIMEOUT = 55 * 60 * 1000  // 55 minutes total
+const CHECK_TIMEOUT = 10000
+const CHECK_CONCURRENCY = 50
+
+const FATAL_NETWORK_CODES = new Set([
+  'ECONNREFUSED', 'ENOTFOUND', 'ENETUNREACH', 'EAI_AGAIN', 'HTTP_000'
+])
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return Promise.race([
@@ -35,6 +41,68 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
       setTimeout(() => reject(new Error(`${label} timed out after ${ms / 1000}s`)), ms)
     )
   ])
+}
+
+async function checkStreams(
+  streams: Collection<Stream>,
+  logger: Logger
+): Promise<Collection<Stream>> {
+  const items = streams.all()
+  const kept: Stream[] = []
+  let checked = 0
+  let alive = 0
+  let dead = 0
+
+  logger.info(`checking ${items.length} streams (only removing unreachable hosts)...`)
+
+  await eachLimit(items, CHECK_CONCURRENCY, async (stream: Stream) => {
+    checked++
+    try {
+      const headRes = await axios.head(stream.url, {
+        signal: AbortSignal.timeout(CHECK_TIMEOUT),
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+      })
+      if (headRes.status === 200 || headRes.status === 206) {
+        alive++
+        kept.push(stream)
+        return
+      }
+
+      const rangeRes = await axios.get(stream.url, {
+        signal: AbortSignal.timeout(CHECK_TIMEOUT),
+        headers: { 'User-Agent': 'Mozilla/5.0', 'Range': 'bytes=0-1023' }
+      })
+      if (rangeRes.status === 200 || rangeRes.status === 206) {
+        alive++
+        kept.push(stream)
+        return
+      }
+
+      // Non-200 response but host is reachable — keep it (event may start later)
+      kept.push(stream)
+    } catch (err: unknown) {
+      const error = err as { name?: string; code?: string; response?: { status: number }; cause?: { code?: string; name?: string } }
+      let code = 'UNREACHABLE'
+      if (error.name === 'CanceledError') code = 'TIMEOUT'
+      else if (error.name === 'AxiosError' && error.response) code = `HTTP_${error.response.status}`
+      else if (error.cause) code = error.cause.code || error.cause.name || code
+
+      if (FATAL_NETWORK_CODES.has(code)) {
+        dead++
+        return
+      }
+
+      // Non-fatal error (timeout, 403, 404, 5xx, etc.) — keep it, event may start later
+      kept.push(stream)
+    }
+
+    if (checked % 200 === 0 || checked === items.length) {
+      logger.info(`  checked ${checked}/${items.length} (${alive} responding, ${dead} unreachable)`)
+    }
+  })
+
+  logger.info(`stream check complete: ${kept.length} kept (${dead} dead hosts removed)`)
+  return new Collection(kept)
 }
 
 function getGroupTitle(filename: string): string {
@@ -245,11 +313,10 @@ async function main() {
     withTimeout(scrapeVipbox(logger), SCRAPER_TIMEOUT, 'VIPRow'),
     withTimeout(scrapeSportsurge(logger), SCRAPER_TIMEOUT, 'Sportsurge'),
     withTimeout(scrapeStreamEast(logger), SCRAPER_TIMEOUT, 'StreamEast'),
-    withTimeout(scrapeLiveTV(logger), SCRAPER_TIMEOUT, 'LiveTV'),
-    withTimeout(scrapeSportsHD(logger), SCRAPER_TIMEOUT, 'SportsHD')
+    withTimeout(scrapeLiveTV(logger), SCRAPER_TIMEOUT, 'LiveTV')
   ])
 
-  const scraperNames = ['DaddyLive', 'Streamed', 'NTV', 'SportsBite', 'PPV.TO', 'Roxie', 'SportyHunter', 'VIPRow', 'Sportsurge', 'StreamEast', 'LiveTV', 'SportsHD']
+  const scraperNames = ['DaddyLive', 'Streamed', 'NTV', 'SportsBite', 'PPV.TO', 'Roxie', 'SportyHunter', 'VIPRow', 'Sportsurge', 'StreamEast', 'LiveTV']
   for (let i = 0; i < scraperResults.length; i++) {
     const result = scraperResults[i]
     if (result.status === 'rejected') {
@@ -279,6 +346,9 @@ async function main() {
   combinedStreams = reorganizeStreams(combinedStreams)
 
   logger.info(`reorganized ${combinedStreams.count()} streams`)
+
+  // Check streams before writing final playlist
+  combinedStreams = await checkStreams(combinedStreams, logger)
 
   // Write playlist to the root directory
   logger.info('generating Robbdeeze_UltimateTV.m3u...')

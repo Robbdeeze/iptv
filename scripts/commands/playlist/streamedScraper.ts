@@ -1,7 +1,7 @@
 import { Logger } from '@freearhey/core'
 import { Stream } from '../../models'
 import axios from 'axios'
-import { extractM3u8FromEmbed, formatTimePT } from '../../core/aggregatorHelpers'
+import { extractM3u8FromEmbed, formatTimePT, isWithin24hrsPT } from '../../core/aggregatorHelpers'
 import { eachLimit } from 'async'
 
 const GROUP_TITLE = '! Sports - Streamed'
@@ -85,9 +85,12 @@ export async function scrapeStreamed(
       }
     }
 
-    logger.info(`Total matches: ${allMatches.length}`)
+    // Filter to events within 24hrs of current Pacific time
+    const beforeFilter = allMatches.length
+    const recentMatches = allMatches.filter(m => isWithin24hrsPT(m.date))
+    logger.info(`Matches within 24hrs PT: ${recentMatches.length} (filtered from ${beforeFilter})`)
 
-    if (allMatches.length === 0) {
+    if (recentMatches.length === 0) {
       return result
     }
 
@@ -99,7 +102,7 @@ export async function scrapeStreamed(
     }
     const embedJobs: EmbedJob[] = []
 
-    for (const match of allMatches) {
+    for (const match of recentMatches) {
       const timePrefix = formatTimePT(match.date)
       const title = timePrefix ? `[${timePrefix}] ${match.title}` : match.title
       for (const source of match.sources) {

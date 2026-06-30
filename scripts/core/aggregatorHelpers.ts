@@ -101,6 +101,12 @@ export function createStream(
   return stream
 }
 
+export function isWithin24hrsPT(timestampMs: number): boolean {
+  const now = Date.now()
+  const diff = timestampMs - now
+  return diff >= -24 * 60 * 60 * 1000 && diff <= 24 * 60 * 60 * 1000
+}
+
 export function formatTimePT(ts: number): string | null {
   try {
     return new Date(ts).toLocaleTimeString('en-US', {

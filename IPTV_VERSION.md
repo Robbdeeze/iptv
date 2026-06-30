@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.4.0
+**Version:** 1.5.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -903,6 +903,19 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 ---
 
 ## 11. Recent Improvements
+
+### June 29, 2026 — Removed SportsHD Scraper + 24hr Pacific Time Filter + Pre-Write Stream Check
+
+| Change | File | Description |
+|--------|------|-------------|
+| Removed SportsHD scraper | `scripts/commands/playlist/sportshdScraper.ts` | Kodi addon-based scraper never produced working streams — removed entirely |
+| Removed from pipeline | `scripts/commands/playlist/generateUltimate.ts` | Removed import, scraper call, and 'SportsHD' from scraperNames |
+| Removed from reorganizer | `scripts/core/reorganizer.ts` | Removed SportsHD from per-sport grouping classification |
+| 24hr PT filter utility | `scripts/core/aggregatorHelpers.ts` | Added `isWithin24hrsPT(timestampMs)` — checks if a Unix timestamp is within 24 hours of current Pacific time |
+| Time filter Streamed | `scripts/commands/playlist/streamedScraper.ts` | Filters matches by `match.date` to only include events within 24hrs PT |
+| Time filter VIPRow | `scripts/commands/playlist/vipboxScraper.ts` | Filters events by `event.time` to only include within 24hrs PT |
+| Pre-write stream check | `scripts/commands/playlist/generateUltimate.ts` | Added `checkStreams()` — runs HEAD/GET Range on all streams (50 concurrent, 10s timeout) before writing final M3U, removes streams returning fatal errors (ECONNREFUSED, ENOTFOUND, 404, 410, 000) |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.5.0 |
 
 ### June 28, 2026 — SportsHD Scraper + Dead DrewLive Removal
 
