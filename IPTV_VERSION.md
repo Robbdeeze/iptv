@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.8.0
+**Version:** 1.9.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -903,6 +903,16 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 ---
 
 ## 11. Recent Improvements
+
+### June 30, 2026 — Portal Organization: Domain Grouping, Content Dedup, Dead Portal Detection (v1.9.0)
+
+| Change | File | Description |
+|--------|------|-------------|
+| Domain-based portal grouping | `scripts/commands/playlist/portalScraper.ts` | Portals grouped by `extractDomain()` instead of username. e.g., `! Portals - cord-cutter.net:8080` (merged 13 users), `! Portals - hardcoremedia.xyz` (merged 9 users) — 27 groups → 5 groups |
+| Title-based fingerprint dedup | `scripts/commands/playlist/portalScraper.ts` | Uses `jaccard()` similarity on first 25 channel titles. Portals with >70% identical channel names are duplicates — keeps only the one with the most streams |
+| Cross-portal URL dedup | `scripts/commands/playlist/portalScraper.ts` | Streams deduplicated by URL across all portals within a domain group — eliminates duplicate stream links |
+| Dead portal detection | `scripts/commands/playlist/portalScraper.ts` | `verifyPortal()` now rejects XUI.one debug pages (`<html>`, `XUI.one`, `Debug Mode`) and M3U responses with <5 real stream entries |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.9.0 |
 
 ### June 30, 2026 — English-Only Stream Filter + Domain-Level Adult Filter (v1.8.0)
 

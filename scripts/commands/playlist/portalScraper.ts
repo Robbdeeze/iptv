@@ -93,6 +93,7 @@ interface Portal {
 interface VerifiedPortal {
   portal: Portal
   name: string
+  domain: string
 }
 
 
@@ -193,6 +194,28 @@ const ADULT_DOMAIN_PATTERNS = [
   /(?:^|[.\-/])xxx\d*\./i, /\badult\./i, /\bporn\./i, /\bsex\./i,
   /\bonlyfans\./i,
 ]
+
+function extractDomain(url: string): string {
+  try {
+    const u = new URL(url)
+    return u.hostname + (u.port ? `:${u.port}` : '')
+  } catch {
+    return url.replace(/^https?:\/\//, '').split('/')[0]
+  }
+}
+
+function fingerprint(streams: Stream[]): Set<string> {
+  return new Set(streams.slice(0, 25).map(s => s.title.toLowerCase().trim()))
+}
+
+function jaccard(a: Set<string>, b: Set<string>): number {
+  let intersection = 0
+  for (const item of a) { if (b.has(item)) intersection++ }
+  const union = new Set([...a, ...b])
+  return union.size === 0 ? 0 : intersection / union.size
+}
+
+const DUPLICATE_SIMILARITY = 0.7
 
 async function fetchPortalCategories(p: Portal): Promise<{ id: string; name: string }[]> {
   try {
@@ -412,7 +435,7 @@ async function verifyPortal(p: Portal, logger: Logger): Promise<VerifiedPortal |
             return null
           }
         }
-        return { portal: p, name }
+        return { portal: p, name, domain: extractDomain(p.url) }
       }
     }
   } catch {}
@@ -426,6 +449,24 @@ async function verifyPortal(p: Portal, logger: Logger): Promise<VerifiedPortal |
       validateStatus: () => true,
     })
     if (res.status >= 200 && res.status < 300 && typeof res.data === 'string' && /#EXTM3U/i.test(res.data)) {
+      if (/<html|<head|<body|XUI\.one|Debug\s*Mode/i.test(res.data)) return null
+      const lines = res.data.split('\n')
+      let extinfCount = 0
+      let urlCount = 0
+      let afterExtinf = false
+      for (const line of lines) {
+        if (line.startsWith('#EXTINF')) {
+          extinfCount++
+          afterExtinf = true
+        } else if (afterExtinf && line.startsWith('http')) {
+          urlCount++
+          afterExtinf = false
+        } else if (!line.startsWith('#')) {
+          afterExtinf = false
+        }
+      }
+      if (urlCount < 5) return null
+
       const name = p.username
       const sample = res.data.split('\n').slice(0, 30).join('\n')
       let adultHits = 0
@@ -442,7 +483,7 @@ async function verifyPortal(p: Portal, logger: Logger): Promise<VerifiedPortal |
         logger.info(`  Skipped: ${name} — ${adultHits}/${totalLines} adult, ${nonEnglishHits}/${totalLines} non-English`)
         return null
       }
-      return { portal: p, name }
+      return { portal: p, name, domain: extractDomain(p.url) }
     }
   } catch {}
 
@@ -624,14 +665,60 @@ export async function scrapePortals(logger: Logger): Promise<{ groupTitle: strin
 
   logger.info(`Fetching live streams from ${verified.length} verified portals...`)
 
+  // Fetch all portal streams first
+  const portalStreams: { vp: VerifiedPortal; streams: Stream[] }[] = []
   await eachLimit(verified, 3, async (vp) => {
     const streams = await fetchPortalStreams(vp, logger)
-    if (streams.length > 0) {
-      const groupTitle = `! Portals - ${vp.name}`
-      result.push({ groupTitle, streams })
-      logger.info(`  ${vp.name}: ${streams.length} live streams`)
-    }
+    portalStreams.push({ vp, streams })
+    logger.info(`  ${vp.name} @ ${vp.domain}: ${streams.length} live streams`)
   })
+
+  // Group by domain
+  const domainMap = new Map<string, { vp: VerifiedPortal; streams: Stream[]; fprint: Set<string> }[]>()
+  for (const ps of portalStreams) {
+    if (ps.streams.length === 0) continue
+    const list = domainMap.get(ps.vp.domain) || []
+    list.push({ ...ps, fprint: fingerprint(ps.streams) })
+    domainMap.set(ps.vp.domain, list)
+  }
+
+  // For each domain: dedup, merge, deduplicate by URL
+  for (const [domain, entries] of domainMap) {
+    // Sort by stream count descending
+    entries.sort((a, b) => b.streams.length - a.streams.length)
+
+    // Pick non-duplicate entries
+    const accepted: typeof entries = []
+    for (const entry of entries) {
+      let isDuplicate = false
+      for (const acc of accepted) {
+        if (jaccard(entry.fprint, acc.fprint) > DUPLICATE_SIMILARITY) {
+          isDuplicate = true
+          break
+        }
+      }
+      if (!isDuplicate) accepted.push(entry)
+    }
+
+    // Merge streams from accepted entries, dedup by URL
+    const groupTitle = `! Portals - ${domain}`
+    const seenUrls = new Set<string>()
+    const merged: Stream[] = []
+    for (const entry of accepted) {
+      for (const s of entry.streams) {
+        if (seenUrls.has(s.url)) continue
+        seenUrls.add(s.url)
+        s.groupTitle = groupTitle
+        merged.push(s)
+      }
+    }
+
+    if (accepted.length < entries.length) {
+      logger.info(`  Merged ${entries.length} portals for ${domain} -> ${accepted.length} unique groups (${merged.length} unique streams)`)
+    }
+
+    result.push({ groupTitle, streams: merged })
+  }
 
   return result
 }
