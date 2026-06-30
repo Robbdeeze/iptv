@@ -18,6 +18,7 @@ import { scrapeVipbox } from './vipboxScraper'
 import { scrapeSportsurge } from './sportsurgeScraper'
 import { scrapeStreamEast } from './streamEastScraper'
 import { scrapeLiveTV } from './liveTvScraper'
+import { scrapePortals } from './portalScraper'
 
 import { closeBrowser, reorganizeStreams } from '../../core'
 import path from 'node:path'
@@ -299,6 +300,17 @@ async function main() {
   if (allFamelackStreams.length) {
     logger.info(`total streams after famelack additions: ${combinedStreams.count()}`)
   }
+
+  // Scrape Xtream-Codes portals for live streams
+  logger.info('scraping Xtream-Codes portals...')
+  const portalStreams = await scrapePortals(logger)
+  for (const { groupTitle, streams } of portalStreams) {
+    logger.info(`adding ${streams.length} streams to group "${groupTitle}"...`)
+    streams.forEach((stream: Stream) => {
+      combinedStreams.add(stream)
+    })
+  }
+  logger.info(`total streams after portals: ${combinedStreams.count()}`)
 
   // Run all sports scrapers in parallel (with individual timeouts)
   logger.info('scraping all sports streams (parallel)...')

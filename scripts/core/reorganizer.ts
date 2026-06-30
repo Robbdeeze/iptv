@@ -2,6 +2,7 @@ import { Collection } from '@freearhey/core'
 import { Stream } from '../models'
 
 const SECTION_ORDER = [
+  'portals',
   'sports-events',
   'sports-football',
   'sports-combat',
@@ -57,6 +58,11 @@ function classifyStream(stream: Stream): { section: string; subGroup: string } {
     }
     if (gt.includes('movies') || gt.includes('movie')) return { section: 'vod-movies', subGroup: 'VOD - Movies' }
     return { section: 'vod-other', subGroup: stream.groupTitle }
+  }
+
+  // Portals at the top
+  if (gt.startsWith('! portals')) {
+    return { section: 'portals', subGroup: stream.groupTitle }
   }
 
   // VIPRow / Sportsurge / StreamEast / LiveTV - preserve per-sport grouping

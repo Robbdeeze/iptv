@@ -917,6 +917,15 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 | Pre-write stream check | `scripts/commands/playlist/generateUltimate.ts` | Added `checkStreams()` — runs HEAD/GET Range on all streams (50 concurrent, 10s timeout) before writing final M3U, removes streams returning fatal errors (ECONNREFUSED, ENOTFOUND, 404, 410, 000) |
 | Version bump | `IPTV_VERSION.md` | Updated to 1.5.0 |
 
+### June 29, 2026 — Xtream-Codes Portal Scraper
+
+| Change | File | Description |
+|--------|------|-------------|
+| Portal scraper | `scripts/commands/playlist/portalScraper.ts` | New scraper — scrapes Xtream-Codes portals from Reddit (IPTV_ZONENEW, FreeIPTV, iptvguru, IPTVfree via OAuth2) and GitHub XML2 dumps (akeotaseo/world_repo), verifies via player_api.php, fetches live streams from verified portals |
+| Pipeline integration | `scripts/commands/playlist/generateUltimate.ts` | Added `scrapePortals()` before sports scrapers — runs every 24h during ultimate playlist generation |
+| Portal section at top | `scripts/core/reorganizer.ts` | Added `'portals'` as first entry in `SECTION_ORDER` — portal streams appear at the very top of the M3U |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.5.0 |
+
 ### June 28, 2026 — SportsHD Scraper + Dead DrewLive Removal
 
 | Change | File | Description |
