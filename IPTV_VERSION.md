@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.6.0
+**Version:** 1.8.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -903,6 +903,31 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 ---
 
 ## 11. Recent Improvements
+
+### June 30, 2026 — English-Only Stream Filter + Domain-Level Adult Filter (v1.8.0)
+
+| Change | File | Description |
+|--------|------|-------------|
+| English-only stream filter | `scripts/commands/playlist/portalScraper.ts` | Added `hasNonLatinScript()` — filters streams with Arabic, Cyrillic, CJK, Japanese, Korean, Thai, Greek, Hebrew, Devanagari characters. Applied in both M3U parsing and Xtream API fetching |
+| get.php English verification | `scripts/commands/playlist/portalScraper.ts` | Samples first 30 EXTINF lines from get.php, skips portal if ≥30% non-English stream names |
+| Domain-level adult filter | `scripts/commands/playlist/portalScraper.ts` | Added `ADULT_DOMAIN_PATTERNS` — skips portals with xxx, adult, porn, sex, onlyfans in domain name (e.g. xxx13.shop caught) |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.8.0 |
+
+### June 30, 2026 — Portal Scraper Adult Filter + Duplicate Stream Numbering (v1.7.0)
+
+| Change | File | Description |
+|--------|------|-------------|
+| Adult category pre-filter | `scripts/commands/playlist/portalScraper.ts` | Fetches `get_live_categories` per verified portal; skips portal entirely if ≥30% categories match adult keywords (xxx, porn, sex, adult, etc.) |
+| Adult stream name filter | `scripts/commands/playlist/portalScraper.ts` | Filters individual streams by `category_name` and stream `name` against adult keyword lists (includes studio names: Brazzers, BangBros, Pornhub, etc.) |
+| Duplicate stream numbering | `scripts/commands/playlist/portalScraper.ts` | Duplicate titles within a portal get `str N - ` prefix (e.g. `str 2 - ESPN`, `str 3 - ESPN`); first occurrence stays clean |
+| get.php verification fallback | `scripts/commands/playlist/portalScraper.ts` | `verifyPortal()` now falls back to `get.php` (M3U) when `player_api.php` returns 404 — ~46% of XML2 portals respond to `get.php` with valid M3U playlists |
+| M3U stream fetching | `scripts/commands/playlist/portalScraper.ts` | Added `fetchPortalStreamsM3u()` — parses raw M3U from `get.php` when Xtream JSON API is unavailable; parses tvg-id, tvg-logo, channel names |
+| Dual-mode fetch | `scripts/commands/playlist/portalScraper.ts` | `fetchPortalStreams()` now tries Xtream API first, falls back to `get.php` M3U parsing automatically |
+| Adult check for M3U portals | `scripts/commands/playlist/portalScraper.ts` | `verifyPortal()` samples first 30 EXTINF lines from `get.php` response; skips portal if ≥30% match adult stream keywords |
+| Re-enabled Reddit API | `scripts/commands/playlist/portalScraper.ts` | Reddit public JSON API fixed via `fetchContent()` — tries direct request first, falls back to 4 CORS proxies (allorigins.win, corsproxy.io, codetabs, cors.lol). PlayTorrio IPTV Generator uses same approach. |
+| Configurable GitHub repos + CORS proxies | `scripts/commands/playlist/portalScraper.ts` | Replaced hardcoded single-repo fetch with `GITHUB_PORTAL_REPOS` config array; added `CORS_PROXIES` array for Reddit fallback |
+| PlayTorrio investigation | `iptvgen.pages.dev` | PlayTorrio IPTV Generator uses identical sources (Reddit r/IPTV_ZONENEW + GitHub akeotaseo/world_repo XML2). Routes Reddit through CORS proxies. Verifies portals via `player_api.php` only. Has full paste.sh AES-256-CBC decryption. |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.7.0 |
 
 ### June 29, 2026 — Removed SportsHD Scraper + 24hr Pacific Time Filter + Pre-Write Stream Check
 
