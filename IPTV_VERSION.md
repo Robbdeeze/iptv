@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.10.0
+**Version:** 1.11.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -903,6 +903,16 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 ---
 
 ## 11. Recent Improvements
+
+### July 1, 2026 — paste.sh Decryption Fix: PBKDF2-HMAC-SHA512 + Serverkey (v1.11.0)
+
+| Change | File | Description |
+|--------|------|-------------|
+| Correct paste.sh KDF for v2/v3 pastes | `scripts/commands/playlist/portalScraper.ts` | v2/v3 pastes use **PBKDF2-HMAC-SHA512** (`OpenSSLPbkdf2`), not EVP_BytesToKey. DK = `HMAC-SHA512(password, salt \|\| 0x00000001)` — key=first 32 bytes, IV=next 16 bytes |
+| EVP_BytesToKey v1 fallback | `scripts/commands/playlist/portalScraper.ts` | Legacy pastes still use `SHA-512(password \|\| salt)` with count=1 — tried second after PBKDF2 |
+| Serverkey extracted from first line | `scripts/commands/playlist/portalScraper.ts` | First line of `.txt` response is the serverkey (may be blank or non-blank). Now properly extracted and included in password: `id + serverkey + clientKey + 'https://paste.sh'` |
+| Hex-based fallback preserved | `scripts/commands/playlist/portalScraper.ts` | Third fallback for non-OpenSSL-format pastes (if any remain) |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.11.0 |
 
 ### June 30, 2026 — CORS Proxy Circuit Breaker, Reddit Pagination, paste.sh Decryption (v1.10.0)
 

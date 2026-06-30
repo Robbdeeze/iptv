@@ -19,6 +19,10 @@ const CORS_PROXIES = [
   (u: string) => `https://proxy.corsfix.com/?${encodeURIComponent(u)}`,
 ]
 
+const TELEGRAM_CHANNELS = ['xtreamcodes']
+
+const SHORTENER_DOMAINS = ['oxy.st', 'oxy.name', 'try2link.com', 'linkvertise.com', 'exe.io', 'sh.st']
+
 // Circuit breaker state per proxy
 const PROXY_FAIL_THRESHOLD = 2
 const PROXY_COOLDOWN_MS = 45000
@@ -45,6 +49,19 @@ function markProxyFailure(build: (u: string) => string, status?: number) {
 function markProxySuccess(build: (u: string) => string) {
   const state = proxyState.get(build.name)
   if (state) { state.fails = 0; state.cooldownUntil = 0 }
+}
+
+async function followShortener(url: string, depth = 5): Promise<string | null> {
+  if (depth === 0 || !url.startsWith('http')) return url || null
+  try {
+    const res = await axios.get(url, { timeout: 10000, headers: { 'User-Agent': UA }, maxRedirects: 5 })
+    const html: string = typeof res.data === 'string' ? res.data : ''
+    const meta = html.match(/<meta[^>]*http-equiv=["']refresh["'][^>]*content=["']\d*;?\s*url=([^"']+)["']/i)
+    if (meta && meta[1]) return followShortener(new URL(meta[1], url).toString(), depth - 1)
+    const loc = html.match(/window\.location(?:\.href)?\s*=\s*["']([^"']+)["']/)
+    if (loc && loc[1]) return followShortener(new URL(loc[1], url).toString(), depth - 1)
+    return res.request?.res?.responseUrl || url
+  } catch { return null }
 }
 
 const GITHUB_PORTAL_REPOS: { owner: string; repo: string; path: string; ref: string; fallbackFiles?: string[] }[] = [
@@ -304,46 +321,61 @@ async function fetchContent(url: string, timeoutMs = 15000): Promise<string | nu
   return null
 }
 
-async function decryptPasteSh(dataHex: string, clientKey: string): Promise<string | null> {
+async function decryptPasteSh(raw: string, clientKey: string, id: string): Promise<string | null> {
+  // First line is serverkey (blank if none), rest is base64 content
+  const rawLines = raw.split('\n')
+  const serverkey = rawLines[0]?.trim() || ''
+  const b64 = rawLines.slice(1).join('')
+  const buf = Buffer.from(b64, 'base64')
+  if (buf.length < 16 || buf.toString('utf-8', 0, 8) !== 'Salted__') return null
+
+  const salt = buf.subarray(8, 16)
+  const ct = buf.subarray(16)
+  // password = id + serverkey + clientKey + 'https://paste.sh'
+  const password = `${id}${serverkey}${clientKey}https://paste.sh`
+
+  // Try v2: PBKDF2-HMAC-SHA512 (ptype v2/v3, uses OpenSSLPbkdf2)
+  // DK = HMAC-SHA512(password, salt || 0x00000001)
   try {
-    const buf = Buffer.from(dataHex, 'hex')
-    if (buf.length < 48) return null
-    const salt = buf.subarray(0, 32)
-    const iv = buf.subarray(32, 48)
-    const ct = buf.subarray(48)
-
-    // Try PBKDF2-SHA512
-    const key = await new Promise<Buffer>((resolve, reject) => {
-      crypto.pbkdf2(clientKey, salt, 100000, 32, 'sha512', (err, k) => {
-        if (err) reject(err)
-        else resolve(k)
-      })
-    })
-
+    const blockIndex = Buffer.alloc(4)
+    blockIndex.writeUInt32BE(1, 0)
+    const hmac = crypto.createHmac('sha512', Buffer.from(password))
+    const dk = hmac.update(Buffer.concat([salt, blockIndex])).digest()
+    const key = dk.subarray(0, 32)
+    const iv = dk.subarray(32, 48)
     const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
     decipher.setAutoPadding(true)
-    const dec = Buffer.concat([decipher.update(ct), decipher.final()])
-    return dec.toString('utf-8')
-  } catch {
-    // Fallback: EVP BytesToKey with MD5
-    try {
-      const buf = Buffer.from(dataHex, 'hex')
-      const salt = buf.subarray(0, 32)
-      const iv = buf.subarray(32, 48)
-      const ct = buf.subarray(48)
+    return Buffer.concat([decipher.update(ct), decipher.final()]).toString('utf-8')
+  } catch {}
 
-      const key = crypto.createHash('md5').update(Buffer.from(clientKey)).update(salt.subarray(0, 8)).digest()
-      const key2 = crypto.createHash('md5').update(key).update(Buffer.from(clientKey)).update(salt.subarray(0, 8)).digest()
-      const finalKey = Buffer.concat([key, key2])
+  // Try v1: EVP_BytesToKey with SHA-512 (legacy ptype v1, openssl enc -iter 1)
+  try {
+    const d0 = crypto.createHash('sha512').update(Buffer.from(password)).update(salt).digest()
+    const key = d0.subarray(0, 32)
+    const iv = d0.subarray(32, 48)
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
+    decipher.setAutoPadding(true)
+    return Buffer.concat([decipher.update(ct), decipher.final()]).toString('utf-8')
+  } catch {}
 
-      const decipher = crypto.createDecipheriv('aes-256-cbc', finalKey, iv)
-      decipher.setAutoPadding(true)
-      const dec = Buffer.concat([decipher.update(ct), decipher.final()])
-      return dec.toString('utf-8')
-    } catch {
-      return null
-    }
-  }
+  // Fallback: hex-based format with PBKDF2-SHA512 (original assumption)
+  try {
+    const hexBuf = Buffer.from(raw.replace(/^.*\n/, ''), 'hex')
+    if (hexBuf.length < 48) return null
+    const hexSalt = hexBuf.subarray(0, 32)
+    const hexIv = hexBuf.subarray(32, 48)
+    const hexCt = hexBuf.subarray(48)
+    const key = await new Promise<Buffer>((resolve, reject) => {
+      crypto.pbkdf2(clientKey, hexSalt, 100000, 32, 'sha512', (err, k) => {
+        if (err) reject(err); else resolve(k)
+      })
+    })
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, hexIv)
+    decipher.setAutoPadding(true)
+    return Buffer.concat([decipher.update(hexCt), decipher.final()]).toString('utf-8')
+  } catch {}
+
+  return null
 }
 
 async function fetchPasteContent(url: string): Promise<string | null> {
@@ -353,11 +385,12 @@ async function fetchPasteContent(url: string): Promise<string | null> {
       const clientKey = fragmentIdx >= 0 ? url.substring(fragmentIdx + 1) : ''
       if (!clientKey) return null
       const baseUrl = fragmentIdx >= 0 ? url.substring(0, fragmentIdx) : url
+      const id = baseUrl.replace(/\/+$/, '').split('/').pop() || ''
       const txtUrl = baseUrl.replace(/\/+$/, '') + '.txt'
       const res = await axios.get(txtUrl, { timeout: 10000, headers: { 'User-Agent': UA } })
-      const dataHex = (res.data || '').toString().trim()
-      if (!dataHex) return null
-      return await decryptPasteSh(dataHex, clientKey)
+      const raw = (res.data || '').toString()
+      if (!raw) return null
+      return await decryptPasteSh(raw, clientKey, id)
     }
     if (url.includes('pastebin.com/') && !url.includes('/raw/')) {
       const id = url.replace(/.*pastebin\.com\//, '').split(/[?#]/)[0]
@@ -442,70 +475,182 @@ async function fetchGitHubPortals(logger: Logger): Promise<Portal[]> {
 async function fetchRedditPortals(logger: Logger): Promise<Portal[]> {
   const portals: Portal[] = []
   const seenPastes = new Set<string>()
-  const MAX_REDDIT_PAGES = 5
-  let after: string | null = null
 
-  for (let page = 0; page < MAX_REDDIT_PAGES; page++) {
-    let url = 'https://www.reddit.com/r/IPTV_ZONENEW/new/.json?limit=100&sort=new'
-    if (after) url += `&after=${encodeURIComponent(after)}`
+  // Use Reddit RSS feed — not blocked by Reddit's anti-bot (unlike JSON API)
+  try {
+    const url = 'https://www.reddit.com/r/IPTV_ZONENEW/new/.rss?limit=100'
+    const res = await axios.get(url, { timeout: 20000, headers: { 'User-Agent': UA } })
+    const xml: string = typeof res.data === 'string' ? res.data : ''
+    if (!xml) { logger.warn('  Reddit RSS returned empty response'); return portals }
 
-    try {
-      const text = await fetchContent(url, 20000)
-      if (!text) {
-        logger.warn('  Reddit r/IPTV_ZONENEW returned no data')
-        break
+    const entryRegex = /<entry>([\s\S]*?)<\/entry>/g
+    const entries: string[] = []
+    let m: RegExpExecArray | null
+    while ((m = entryRegex.exec(xml)) !== null) entries.push(m[1])
+
+    logger.info(`  RSS: ${entries.length} r/IPTV_ZONENEW posts`)
+
+    for (const entry of entries) {
+      const titleMatch = entry.match(/<title[^>]*>([\s\S]*?)<\/title>/)
+      const contentMatch = entry.match(/<content type="html">([\s\S]*?)<\/content>/)
+      const title = titleMatch ? titleMatch[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim() : ''
+      const content = contentMatch ? contentMatch[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/<[^>]+>/g, ' ').trim() : ''
+      const body = `${title} ${content}`.trim()
+      if (!body) continue
+
+      portals.push(...extractPortals(body, `reddit:IPTV_ZONENEW`))
+
+      const deepLinks = new Set<string>()
+      for (const bm of body.match(B64) || []) {
+        try {
+          const decoded = Buffer.from(bm, 'base64').toString('utf-8')
+          if (decoded.startsWith('http') && PASTE_DOMAINS.some(d => decoded.includes(d))) deepLinks.add(decoded)
+          else if (!decoded.startsWith('http') && decoded.includes(':')) portals.push(...extractPortals(decoded, `reddit/b64:IPTV_ZONENEW`))
+        } catch { }
       }
+      for (const pm of body.match(RAW_PASTE) || []) deepLinks.add(pm)
 
-      let root: any
-      try { root = JSON.parse(text) } catch {
-        logger.warn(`  Reddit r/IPTV_ZONENEW returned non-JSON (page ${page + 1}, likely blocked)`)
-        break
+      let dlCount = 0
+      for (const dl of deepLinks) {
+        if (dlCount >= 4) break
+        const pk = dl.replace(/\/+$/, '').toLowerCase()
+        if (seenPastes.has(pk)) continue
+        seenPastes.add(pk)
+        dlCount++
+        const pasteText = await fetchPasteContent(dl)
+        if (pasteText) portals.push(...extractPortals(pasteText, `reddit/deep:IPTV_ZONENEW`))
       }
-
-      const posts: any[] = root?.data?.children || []
-      if (posts.length === 0) break
-      after = root?.data?.after || null
-      logger.info(`  fetched ${posts.length} posts from r/IPTV_ZONENEW (page ${page + 1}/${MAX_REDDIT_PAGES})`)
-
-      for (const post of posts) {
-        const pdata = post?.data
-        if (!pdata) continue
-        const title = pdata.title?.toString() || ''
-        const body = `${title} ${pdata.selftext?.toString() || ''}`.trim()
-        portals.push(...extractPortals(body, `reddit:IPTV_ZONENEW`))
-
-        const deepLinks = new Set<string>()
-        for (const bm of body.match(B64) || []) {
-          try {
-            const decoded = Buffer.from(bm, 'base64').toString('utf-8')
-            if (decoded.startsWith('http') && PASTE_DOMAINS.some(d => decoded.includes(d))) {
-              deepLinks.add(decoded)
-            } else if (!decoded.startsWith('http') && decoded.includes(':')) {
-              portals.push(...extractPortals(decoded, `reddit/b64:IPTV_ZONENEW`))
-            }
-          } catch { }
-        }
-        for (const pm of body.match(RAW_PASTE) || []) {
-          deepLinks.add(pm)
-        }
-
-        let dlCount = 0
-        for (const dl of deepLinks) {
-          if (dlCount >= 4) break
-          const pk = dl.replace(/\/+$/, '').toLowerCase()
-          if (seenPastes.has(pk)) continue
-          seenPastes.add(pk)
-          dlCount++
-          const pasteText = await fetchPasteContent(dl)
-          if (pasteText) portals.push(...extractPortals(pasteText, `reddit/deep:IPTV_ZONENEW`))
-        }
-      }
-
-      if (!after) break
-    } catch (err: any) {
-      logger.warn(`  Reddit r/IPTV_ZONENEW page ${page + 1} failed: ${err.message?.substring(0, 60) || err}`)
-      break
     }
+  } catch (err: any) {
+    logger.warn(`  Reddit RSS failed: ${err.message?.substring(0, 60) || err}`)
+  }
+
+  if (portals.length > 0) return portals
+
+  // Last resort: reddit.com via CORS proxies
+  logger.info('  RSS returned 0 portals, trying Reddit.com via CORS proxies...')
+  {
+    let after: string | null = null
+    for (let page = 0; page < 3; page++) {
+      let url = 'https://www.reddit.com/r/IPTV_ZONENEW/new/.json?limit=100&sort=new'
+      if (after) url += `&after=${encodeURIComponent(after)}`
+      try {
+        const text = await fetchContent(url, 20000)
+        if (!text) { logger.warn('  Reddit via proxy returned no data'); break }
+        let root: any
+        try { root = JSON.parse(text) } catch { logger.warn(`  Reddit via proxy returned non-JSON (page ${page + 1})`); break }
+        const posts: any[] = root?.data?.children || []
+        if (posts.length === 0) break
+        after = root?.data?.after || null
+        logger.info(`  Proxy: ${posts.length} r/IPTV_ZONENEW posts (page ${page + 1})`)
+        for (const post of posts) {
+          const pdata = post?.data
+          if (!pdata) continue
+          const body = `${pdata.title?.toString() || ''} ${pdata.selftext?.toString() || ''}`.trim()
+          portals.push(...extractPortals(body, `reddit:IPTV_ZONENEW`))
+          const deepLinks = new Set<string>()
+          for (const bm of body.match(B64) || []) {
+            try {
+              const decoded = Buffer.from(bm, 'base64').toString('utf-8')
+              if (decoded.startsWith('http') && PASTE_DOMAINS.some(d => decoded.includes(d))) deepLinks.add(decoded)
+              else if (!decoded.startsWith('http') && decoded.includes(':')) portals.push(...extractPortals(decoded, `reddit/b64:IPTV_ZONENEW`))
+            } catch { }
+          }
+          for (const pm of body.match(RAW_PASTE) || []) deepLinks.add(pm)
+          let dlCount = 0
+          for (const dl of deepLinks) {
+            if (dlCount >= 4) break
+            const pk = dl.replace(/\/+$/, '').toLowerCase()
+            if (seenPastes.has(pk)) continue
+            seenPastes.add(pk)
+            dlCount++
+            const pasteText = await fetchPasteContent(dl)
+            if (pasteText) portals.push(...extractPortals(pasteText, `reddit/deep:IPTV_ZONENEW`))
+          }
+        }
+        if (!after) break
+      } catch (err: any) { logger.warn(`  Reddit via proxy page ${page + 1} failed: ${err.message?.substring(0, 60) || err}`); break }
+    }
+  }
+
+  return portals
+}
+
+async function fetchTelegramPortals(logger: Logger): Promise<Portal[]> {
+  const portals: Portal[] = []
+  const seenPastes = new Set<string>()
+  const seen = new Set<string>()
+  const MAX_TELEGRAM_PAGES = 3
+
+  for (const channel of TELEGRAM_CHANNELS) {
+    let before: string | null = null
+    const beforeCount = portals.length
+
+    for (let page = 0; page < MAX_TELEGRAM_PAGES; page++) {
+      let url = `https://t.me/s/${channel}`
+      if (before) url += `?before=${before}`
+
+      try {
+        const res = await axios.get(url, { timeout: 15000, headers: { 'User-Agent': UA }, validateStatus: (s) => s >= 200 && s < 400 })
+        const html: string = typeof res.data === 'string' ? res.data : ''
+        if (!html) break
+
+        const msgRegex = /<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/g
+        const messages: string[] = []
+        let m: RegExpExecArray | null
+        while ((m = msgRegex.exec(html)) !== null) {
+          const text = m[1].replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').trim()
+          if (text) messages.push(text)
+        }
+
+        for (const msg of messages) {
+          for (const p of extractPortals(msg, `telegram:${channel}`)) {
+            const key = `${p.url}|${p.username}|${p.password}`
+            if (!seen.has(key)) { seen.add(key); portals.push(p) }
+          }
+
+          for (const pm of msg.match(RAW_PASTE) || []) {
+            const pk = pm.replace(/\/+$/, '').toLowerCase()
+            if (seenPastes.has(pk)) continue
+            seenPastes.add(pk)
+            const pasteText = await fetchPasteContent(pm)
+            if (pasteText) {
+              for (const p of extractPortals(pasteText, `telegram/deep:${channel}`)) {
+                const key = `${p.url}|${p.username}|${p.password}`
+                if (!seen.has(key)) { seen.add(key); portals.push(p) }
+              }
+            }
+          }
+
+          const shortRx = new RegExp(`https?://(?:${SHORTENER_DOMAINS.join('|')})/[a-zA-Z0-9_=-]+`, 'gi')
+          for (const sm of msg.match(shortRx) || []) {
+            const resolvedUrl = await followShortener(sm)
+            if (resolvedUrl && PASTE_DOMAINS.some(d => resolvedUrl.includes(d))) {
+              const pk = resolvedUrl.replace(/\/+$/, '').toLowerCase()
+              if (seenPastes.has(pk)) continue
+              seenPastes.add(pk)
+              const pasteText = await fetchPasteContent(resolvedUrl)
+              if (pasteText) {
+                for (const p of extractPortals(pasteText, `telegram/short:${channel}`)) {
+                  const key = `${p.url}|${p.username}|${p.password}`
+                  if (!seen.has(key)) { seen.add(key); portals.push(p) }
+                }
+              }
+            }
+          }
+        }
+
+        const beforeMatch = html.match(/\?before=(\d+)/)
+        if (beforeMatch && beforeMatch[1] !== before) before = beforeMatch[1]
+        else break
+      } catch (err: any) {
+        logger.warn(`  Telegram @${channel} page ${page + 1} failed: ${err.message?.substring(0, 60) || err}`)
+        break
+      }
+    }
+
+    const channelCount = portals.length - beforeCount
+    if (channelCount > 0) logger.info(`  Telegram @${channel}: ${channelCount} portals`)
   }
 
   return portals
@@ -744,8 +889,12 @@ export async function scrapePortals(logger: Logger): Promise<{ groupTitle: strin
   const redditPortals = await fetchRedditPortals(logger)
   logger.info(`Found ${redditPortals.length} raw portals from Reddit`)
 
+  logger.info('Fetching portal credentials from Telegram...')
+  const telegramPortals = await fetchTelegramPortals(logger)
+  logger.info(`Found ${telegramPortals.length} raw portals from Telegram`)
+
   const deduped = new Map<string, Portal>()
-  for (const p of [...gitPortals, ...redditPortals]) {
+  for (const p of [...gitPortals, ...redditPortals, ...telegramPortals]) {
     const key = `${p.url}|${p.username}|${p.password}`.toLowerCase()
     if (!deduped.has(key)) deduped.set(key, p)
   }
