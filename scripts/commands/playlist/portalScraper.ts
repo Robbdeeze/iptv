@@ -2,6 +2,7 @@ import { Logger } from '@freearhey/core'
 import { Stream } from '../../models'
 import axios from 'axios'
 import { eachLimit } from 'async'
+import crypto from 'crypto'
 
 const VERIFY_TIMEOUT = 8000
 const FETCH_TIMEOUT = 15000
@@ -15,7 +16,36 @@ const CORS_PROXIES = [
   (u: string) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
   (u: string) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(u)}`,
   (u: string) => `https://api.cors.lol/?url=${encodeURIComponent(u)}`,
+  (u: string) => `https://proxy.corsfix.com/?${encodeURIComponent(u)}`,
 ]
+
+// Circuit breaker state per proxy
+const PROXY_FAIL_THRESHOLD = 2
+const PROXY_COOLDOWN_MS = 45000
+const PROXY_RATE_COOLDOWN_MS = 90000
+const proxyState = new Map<string, { fails: number; cooldownUntil: number }>()
+function isProxyHealthy(build: (u: string) => string): boolean {
+  const state = proxyState.get(build.name)
+  if (!state) return true
+  if (state.cooldownUntil > Date.now()) return false
+  state.fails = 0
+  state.cooldownUntil = 0
+  return true
+}
+function markProxyFailure(build: (u: string) => string, status?: number) {
+  let state = proxyState.get(build.name)
+  if (!state) {
+    state = { fails: 0, cooldownUntil: 0 }
+    proxyState.set(build.name, state)
+  }
+  state.fails++
+  const cd = status === 429 ? PROXY_RATE_COOLDOWN_MS : PROXY_COOLDOWN_MS
+  state.cooldownUntil = Date.now() + cd
+}
+function markProxySuccess(build: (u: string) => string) {
+  const state = proxyState.get(build.name)
+  if (state) { state.fails = 0; state.cooldownUntil = 0 }
+}
 
 const GITHUB_PORTAL_REPOS: { owner: string; repo: string; path: string; ref: string; fallbackFiles?: string[] }[] = [
   {
@@ -236,33 +266,99 @@ async function fetchPortalCategories(p: Portal): Promise<{ id: string; name: str
 }
 
 async function fetchContent(url: string, timeoutMs = 15000): Promise<string | null> {
-  const makeRequest = async (targetUrl: string): Promise<string | null> => {
+  const makeRequest = async (targetUrl: string): Promise<{ data: string | null; status?: number }> => {
     try {
       const res = await axios.get(targetUrl, {
         timeout: timeoutMs,
         headers: { 'User-Agent': UA, Accept: 'application/json,text/plain,*/*' },
         validateStatus: () => true,
       })
-      if (res.status >= 200 && res.status < 300) return res.data
-    } catch {}
-    return null
+      if (res.status >= 200 && res.status < 300) return { data: res.data }
+      return { data: null, status: res.status }
+    } catch {
+      return { data: null }
+    }
   }
 
-  let result = await makeRequest(url)
-  if (result) return result
+  // Try direct first
+  const direct = await makeRequest(url)
+  if (direct.data) return direct.data
 
-  for (const build of CORS_PROXIES) {
-    result = await makeRequest(build(url))
-    if (result && !result.startsWith('<!doctype') && !result.includes('<title>Blocked</title>')) return result
+  // Try proxies with circuit breaker (race-based, fire healthy ones)
+  const healthy = CORS_PROXIES.filter(isProxyHealthy)
+  if (healthy.length === 0) return null
+
+  for (const build of healthy) {
+    const result = await makeRequest(build(url))
+    if (result.data && !result.data.startsWith('<!doctype') && !result.data.includes('<title>Blocked</title>')) {
+      markProxySuccess(build)
+      return result.data
+    }
+    if (result.status && result.status >= 400) {
+      markProxyFailure(build, result.status)
+    } else {
+      markProxyFailure(build)
+    }
   }
 
   return null
 }
 
+async function decryptPasteSh(dataHex: string, clientKey: string): Promise<string | null> {
+  try {
+    const buf = Buffer.from(dataHex, 'hex')
+    if (buf.length < 48) return null
+    const salt = buf.subarray(0, 32)
+    const iv = buf.subarray(32, 48)
+    const ct = buf.subarray(48)
+
+    // Try PBKDF2-SHA512
+    const key = await new Promise<Buffer>((resolve, reject) => {
+      crypto.pbkdf2(clientKey, salt, 100000, 32, 'sha512', (err, k) => {
+        if (err) reject(err)
+        else resolve(k)
+      })
+    })
+
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
+    decipher.setAutoPadding(true)
+    const dec = Buffer.concat([decipher.update(ct), decipher.final()])
+    return dec.toString('utf-8')
+  } catch {
+    // Fallback: EVP BytesToKey with MD5
+    try {
+      const buf = Buffer.from(dataHex, 'hex')
+      const salt = buf.subarray(0, 32)
+      const iv = buf.subarray(32, 48)
+      const ct = buf.subarray(48)
+
+      const key = crypto.createHash('md5').update(Buffer.from(clientKey)).update(salt.subarray(0, 8)).digest()
+      const key2 = crypto.createHash('md5').update(key).update(Buffer.from(clientKey)).update(salt.subarray(0, 8)).digest()
+      const finalKey = Buffer.concat([key, key2])
+
+      const decipher = crypto.createDecipheriv('aes-256-cbc', finalKey, iv)
+      decipher.setAutoPadding(true)
+      const dec = Buffer.concat([decipher.update(ct), decipher.final()])
+      return dec.toString('utf-8')
+    } catch {
+      return null
+    }
+  }
+}
+
 async function fetchPasteContent(url: string): Promise<string | null> {
   try {
-    if (url.includes('paste.sh'))
-      return null // paste.sh uses AES-256-CBC decryption, skip
+    if (url.includes('paste.sh')) {
+      const fragmentIdx = url.indexOf('#')
+      const clientKey = fragmentIdx >= 0 ? url.substring(fragmentIdx + 1) : ''
+      if (!clientKey) return null
+      const baseUrl = fragmentIdx >= 0 ? url.substring(0, fragmentIdx) : url
+      const txtUrl = baseUrl.replace(/\/+$/, '') + '.txt'
+      const res = await axios.get(txtUrl, { timeout: 10000, headers: { 'User-Agent': UA } })
+      const dataHex = (res.data || '').toString().trim()
+      if (!dataHex) return null
+      return await decryptPasteSh(dataHex, clientKey)
+    }
     if (url.includes('pastebin.com/') && !url.includes('/raw/')) {
       const id = url.replace(/.*pastebin\.com\//, '').split(/[?#]/)[0]
       return await axios.get(`https://pastebin.com/raw/${id}`, { timeout: 10000, headers: { 'User-Agent': UA } }).then(r => r.data)
@@ -346,58 +442,70 @@ async function fetchGitHubPortals(logger: Logger): Promise<Portal[]> {
 async function fetchRedditPortals(logger: Logger): Promise<Portal[]> {
   const portals: Portal[] = []
   const seenPastes = new Set<string>()
+  const MAX_REDDIT_PAGES = 5
+  let after: string | null = null
 
-  try {
-    const text = await fetchContent('https://www.reddit.com/r/IPTV_ZONENEW/new/.json?limit=100&sort=new', 20000)
-    if (!text) {
-      logger.warn('  Reddit r/IPTV_ZONENEW returned no data')
-      return portals
-    }
+  for (let page = 0; page < MAX_REDDIT_PAGES; page++) {
+    let url = 'https://www.reddit.com/r/IPTV_ZONENEW/new/.json?limit=100&sort=new'
+    if (after) url += `&after=${encodeURIComponent(after)}`
 
-    let root: any
-    try { root = JSON.parse(text) } catch {
-      logger.warn('  Reddit r/IPTV_ZONENEW returned non-JSON (likely blocked)')
-      return portals
-    }
-
-    const posts: any[] = root?.data?.children || []
-    logger.info(`  fetched ${posts.length} posts from r/IPTV_ZONENEW`)
-
-    for (const post of posts) {
-      const pdata = post?.data
-      if (!pdata) continue
-      const title = pdata.title?.toString() || ''
-      const body = `${title} ${pdata.selftext?.toString() || ''}`.trim()
-      portals.push(...extractPortals(body, `reddit:IPTV_ZONENEW`))
-
-      const deepLinks = new Set<string>()
-      for (const bm of body.match(B64) || []) {
-        try {
-          const decoded = Buffer.from(bm, 'base64').toString('utf-8')
-          if (decoded.startsWith('http') && PASTE_DOMAINS.some(d => decoded.includes(d))) {
-            deepLinks.add(decoded)
-          } else if (!decoded.startsWith('http') && decoded.includes(':')) {
-            portals.push(...extractPortals(decoded, `reddit/b64:IPTV_ZONENEW`))
-          }
-        } catch { }
-      }
-      for (const pm of body.match(RAW_PASTE) || []) {
-        deepLinks.add(pm)
+    try {
+      const text = await fetchContent(url, 20000)
+      if (!text) {
+        logger.warn('  Reddit r/IPTV_ZONENEW returned no data')
+        break
       }
 
-      let dlCount = 0
-      for (const dl of deepLinks) {
-        if (dlCount >= 4) break
-        const pk = dl.replace(/\/+$/, '').toLowerCase()
-        if (seenPastes.has(pk)) continue
-        seenPastes.add(pk)
-        dlCount++
-        const pasteText = await fetchPasteContent(dl)
-        if (pasteText) portals.push(...extractPortals(pasteText, `reddit/deep:IPTV_ZONENEW`))
+      let root: any
+      try { root = JSON.parse(text) } catch {
+        logger.warn(`  Reddit r/IPTV_ZONENEW returned non-JSON (page ${page + 1}, likely blocked)`)
+        break
       }
+
+      const posts: any[] = root?.data?.children || []
+      if (posts.length === 0) break
+      after = root?.data?.after || null
+      logger.info(`  fetched ${posts.length} posts from r/IPTV_ZONENEW (page ${page + 1}/${MAX_REDDIT_PAGES})`)
+
+      for (const post of posts) {
+        const pdata = post?.data
+        if (!pdata) continue
+        const title = pdata.title?.toString() || ''
+        const body = `${title} ${pdata.selftext?.toString() || ''}`.trim()
+        portals.push(...extractPortals(body, `reddit:IPTV_ZONENEW`))
+
+        const deepLinks = new Set<string>()
+        for (const bm of body.match(B64) || []) {
+          try {
+            const decoded = Buffer.from(bm, 'base64').toString('utf-8')
+            if (decoded.startsWith('http') && PASTE_DOMAINS.some(d => decoded.includes(d))) {
+              deepLinks.add(decoded)
+            } else if (!decoded.startsWith('http') && decoded.includes(':')) {
+              portals.push(...extractPortals(decoded, `reddit/b64:IPTV_ZONENEW`))
+            }
+          } catch { }
+        }
+        for (const pm of body.match(RAW_PASTE) || []) {
+          deepLinks.add(pm)
+        }
+
+        let dlCount = 0
+        for (const dl of deepLinks) {
+          if (dlCount >= 4) break
+          const pk = dl.replace(/\/+$/, '').toLowerCase()
+          if (seenPastes.has(pk)) continue
+          seenPastes.add(pk)
+          dlCount++
+          const pasteText = await fetchPasteContent(dl)
+          if (pasteText) portals.push(...extractPortals(pasteText, `reddit/deep:IPTV_ZONENEW`))
+        }
+      }
+
+      if (!after) break
+    } catch (err: any) {
+      logger.warn(`  Reddit r/IPTV_ZONENEW page ${page + 1} failed: ${err.message?.substring(0, 60) || err}`)
+      break
     }
-  } catch (err: any) {
-    logger.warn(`  Reddit r/IPTV_ZONENEW failed: ${err.message?.substring(0, 60) || err}`)
   }
 
   return portals

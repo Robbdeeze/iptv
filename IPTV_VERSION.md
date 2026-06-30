@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.9.0
+**Version:** 1.10.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -903,6 +903,16 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 ---
 
 ## 11. Recent Improvements
+
+### June 30, 2026 — CORS Proxy Circuit Breaker, Reddit Pagination, paste.sh Decryption (v1.10.0)
+
+| Change | File | Description |
+|--------|------|-------------|
+| corsfix.com proxy | `scripts/commands/playlist/portalScraper.ts` | Added 5th CORS proxy `proxy.corsfix.com` to `CORS_PROXIES` array |
+| Circuit breaker per proxy | `scripts/commands/playlist/portalScraper.ts` | Tracks consecutive failures per proxy with 45s cooldown (90s on 429). Skips proxies in cooldown instead of retrying them on every call |
+| Reddit pagination | `scripts/commands/playlist/portalScraper.ts` | `fetchRedditPortals()` now fetches up to 5 pages using the `after` cursor instead of just 1 page |
+| paste.sh AES decryption | `scripts/commands/playlist/portalScraper.ts` | Replaced `return null` for paste.sh with full `decryptPasteSh()` — PBKDF2-SHA512 with MD5 EVP BytesToKey fallback, AES-256-CBC |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.10.0 |
 
 ### June 30, 2026 — Portal Organization: Domain Grouping, Content Dedup, Dead Portal Detection (v1.9.0)
 
