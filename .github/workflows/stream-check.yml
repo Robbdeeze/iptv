@@ -1,0 +1,60 @@
+name: Stream Check
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'Streams to check (ultimate, all, or specific path)'
+        default: 'ultimate'
+        required: false
+      fix:
+        description: 'Remove dead streams'
+        type: boolean
+        default: false
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  stream-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+
+      - name: Validate ${{ inputs.scope }} streams
+        id: check
+        run: |
+          npx tsx scripts/commands/playlist/streamCheck.ts --scope "${{ inputs.scope }}"
+
+      - name: Remove dead streams from streams/
+        if: inputs.fix == true
+        run: |
+          npx tsx scripts/commands/playlist/quickHealthCheck.ts --fix
+
+      - name: Commit fixes
+        if: inputs.fix == true
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "[Bot] Remove dead streams (manual check)"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          file_pattern: streams/**/*.m3u
+
+      - name: Post summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('/tmp/stream-check-report.txt', 'utf8');
+            core.summary.addRaw(report);
+            await core.summary.write();

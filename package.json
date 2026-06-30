@@ -17,6 +17,7 @@
     "playlist:mergeAll": "tsx scripts/commands/playlist/mergeAllM3u.ts",
     "playlist:health": "tsx scripts/commands/playlist/quickHealthCheck.ts",
     "playlist:health:fix": "tsx scripts/commands/playlist/quickHealthCheck.ts --fix",
+    "playlist:streamcheck": "tsx scripts/commands/playlist/streamCheck.ts",
     "playlist:epg": "tsx scripts/commands/playlist/generateEpg.ts",
     "readme:update": "tsx scripts/commands/readme/update.ts",
     "report:create": "tsx scripts/commands/report/create.ts",
