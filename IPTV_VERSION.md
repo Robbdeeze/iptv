@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.5.1
+**Version:** 1.6.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -916,6 +916,15 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 | Time filter VIPRow | `scripts/commands/playlist/vipboxScraper.ts` | Filters events by `event.time` to only include within 24hrs PT |
 | Pre-write stream check | `scripts/commands/playlist/generateUltimate.ts` | Added `checkStreams()` — runs HEAD/GET Range on all streams (50 concurrent, 10s timeout) before writing final M3U, removes streams returning fatal errors (ECONNREFUSED, ENOTFOUND, 404, 410, 000) |
 | Version bump | `IPTV_VERSION.md` | Updated to 1.5.0 |
+
+### June 29, 2026 — Stream Check Workflow (v1.6.0)
+
+| Change | File | Description |
+|--------|------|-------------|
+| Stream check workflow | `.github/workflows/stream-check.yml` | New `workflow_dispatch` GitHub Actions workflow to validate streams on demand. Supports scope (ultimate/all/path), fix mode, sampled checking. |
+| Stream check script | `scripts/commands/playlist/streamCheck.ts` | Standalone stream validator — random-samples streams from a playlist, checks HEAD/GET Range (8s timeout, 100 concurrent), reports status codes per-group, saves report to job summary. |
+| npm script | `package.json` | Added `playlist:streamcheck` command |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.6.0 |
 
 ### June 29, 2026 — Xtream-Codes Portal Scraper (v1.5.1 — Bug Fix)
 
