@@ -50,13 +50,9 @@ https://vs-hls-pushb-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_persia
 #EXTINF:-1 tvg-id="RQlB3Nwkn2RwIf" group-title="Famelack - UK",BBC Persian
 https://vs-hls-pushb-ww.live.cf.md.bbci.co.uk/x=4/i=urn:bbc:pips:service:bbc_persian_tv/pc_hd_abr_v2.m3u8
 #EXTINF:-1 tvg-id="bxrLpOnIw2cIku" group-title="Famelack - UK",BBC Three/CBBC
-https://adpnetworkhd-cmd.github.io/iptv/BBCThreeCBBC.m3u8
-#EXTINF:-1 tvg-id="bxrLpOnIw2cIku" group-title="Famelack - UK",BBC Three/CBBC
 https://41.205.77.102/BBC-THREE/index.m3u8
 #EXTINF:-1 tvg-id="EohUZfaHu9Fw27" group-title="Famelack - UK",BBC Two
 https://adpnetworkhd-cmd.github.io/iptv/BBCTwo.m3u8
-#EXTINF:-1 tvg-id="lM7b4zFwGuvMGj" group-title="Famelack - UK",Blaze
-https://adpnetworkhd-cmd.github.io/iptv/Blaze.m3u8
 #EXTINF:-1 tvg-id="lbVppOys0N4toA" group-title="Famelack - UK",Born to Kill
 https://amg00654-itv-amg00654c7-samsung-gb-1168.playouts.now.amagi.tv/playlist/amg00654-itvstudiosfast-truelives-samsunggb/playlist.m3u8
 #EXTINF:-1 tvg-id="QM97jV9eSE3fpe" group-title="Famelack - UK",Brit Asia TV
@@ -67,6 +63,8 @@ https://amg00654-itv-amg00654c25-samsung-gb-4838.playouts.now.amagi.tv/playlist.
 https://5caf24a595d94.streamlock.net:1937/pvyugfkzkc/pvyugfkzkc/playlist.m3u8
 #EXTINF:-1 tvg-id="OeJiCXESX00gax" group-title="Famelack - UK",Channel 4 UK HD
 https://adpnetworkhd-cmd.github.io/iptv/Channel4.m3u8
+#EXTINF:-1 tvg-id="tszORKqR9xnZXC" group-title="Famelack - UK",Channel 5
+https://adpnetworkhd-cmd.github.io/iptv/Channel5Milkshake.m3u8
 #EXTINF:-1 tvg-id="h25WUyBe4528fW" group-title="Famelack - UK",Channel S
 https://app.ncare.live/c3VydmVyX8RpbEU9Mi8xNy8yMDE0GIDU6RgzQ6NTAgdEoaeFzbF92YWxIZTO0U0ezN1IzMyfvcGVMZEJCTEFWeVN3PTOmdFsaWRtaW51aiPhnPTI/chsukoff.stream/playlist.m3u8
 #EXTINF:-1 tvg-id="62eKndgtAr3oQz" group-title="Famelack - UK",Chaos on Cam
@@ -157,6 +155,8 @@ https://d1msejlow1t3l4.cloudfront.net/211125/godtv/chunks.m3u8
 https://amg01753-narrativeuk-amg01753c3-lg-gb-1833.playouts.now.amagi.tv/playlist/amg01753-narrativeuk-greatmovies-lggb/playlist.m3u8
 #EXTINF:-1 tvg-id="aZ7OPQQXDiuZF3" group-title="Famelack - UK",GREAT! movies UK
 https://amg01753-narrativeentert-greatmovies-samsunguk-7z6eh.amagi.tv/playlist/amg01753-narrativeentert-greatmovies-samsunguk/playlist.m3u8
+#EXTINF:-1 tvg-id="Bd3hGtrAoBkLtg" group-title="Famelack - UK",GREAT! mystery
+https://adpnetworkhd-cmd.github.io/iptv/GreatMystery.m3u8
 #EXTINF:-1 tvg-id="fROG7Xv2Vlx2Vb" group-title="Famelack - UK",GREAT! romance UK
 https://amg01753-narrativeuk-amg01753c2-lg-gb-1832.playouts.now.amagi.tv/playlist/amg01753-narrativeuk-greatchristmas-lggb/playlist.m3u8
 #EXTINF:-1 tvg-id="fROG7Xv2Vlx2Vb" group-title="Famelack - UK",GREAT! romance UK
@@ -193,8 +193,6 @@ https://amg00654-itv-amg00654c4-rakuten-uk-5263.playouts.now.amagi.tv/playlist.m
 https://ibc.massstream.net/IBC2/index.m3u8
 #EXTINF:-1 tvg-id="KgPGrtRlf7Ua6o" group-title="Famelack - UK",IBC Tamil
 https://ibc.massstream.net/IBC/index.m3u8
-#EXTINF:-1 tvg-id="9IlfLSM7VoPFbk" group-title="Famelack - UK",Inside Crime UK
-https://aenetworks-insidecrime-rakuten.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="9IlfLSM7VoPFbk" group-title="Famelack - UK",Inside Crime UK
 https://amg00841-aenetworksukane-insidecrime-samsunguk-o968i.amagi.tv/playlist/amg00841-aenetworksukane-insidecrime-samsunguk/playlist.m3u8
 #EXTINF:-1 tvg-id="9IlfLSM7VoPFbk" group-title="Famelack - UK",Inside Crime UK
@@ -244,7 +242,11 @@ https://d1si3n1st4nkgb.cloudfront.net/10502/88896051/hls/master.m3u8?ads.xumo_ch
 #EXTINF:-1 tvg-id="LbTx61exNziTLe" group-title="Famelack - UK",Miracle TV
 https://viewmedia7219.bozztv.com/wmedia/viewmedia100/web_030/Stream/playlist.m3u8
 #EXTINF:-1 tvg-id="FeQiCZUhzv3lT3" group-title="Famelack - UK",Moonbug Kids
+https://moonbug-rokuus.amagi.tv/playlist.m3u8
+#EXTINF:-1 tvg-id="FeQiCZUhzv3lT3" group-title="Famelack - UK",Moonbug Kids
 https://dq2a9ghraf7sw.cloudfront.net/Moonbug.m3u8
+#EXTINF:-1 tvg-id="SwOk0JaF4Gca4x" group-title="Famelack - UK",More4
+https://adpnetworkhd-cmd.github.io/iptv/More4.m3u8
 #EXTINF:-1 tvg-id="lUe0NaFHoGcU2K" group-title="Famelack - UK",Most Haunted UK
 https://amg00426-lds-amg00426c17-samsung-gb-10157.playouts.now.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="mlJPw3ECDsvDmO" group-title="Famelack - UK",MovieSphere UK
@@ -345,6 +347,12 @@ https://qvcuk-live.akamaized.net/hls/live/2097112/qex/master.m3u8
 https://qvcuk-live.akamaized.net/hls/live/2097112/qst/master.m3u8
 #EXTINF:-1 tvg-id="fOSUi9hkZeTBQ3" group-title="Famelack - UK",Rabbids Invasion
 https://dikkyk1ckkhzq.cloudfront.net/RabiddsInvasion_GB.m3u8
+#EXTINF:-1 tvg-id="bM1ajyE0MLR0WL" group-title="Famelack - UK",Rakuten TV Family Movies UK
+https://e3207568b726401995c25670faaf32e4.mediatailor.eu-west-1.amazonaws.com/v1/master/0547f18649bd788bec7b67b746e47670f558b6b2/production-LiveChannel-6203/master.m3u8
+#EXTINF:-1 tvg-id="pCghkk05sIwmT1" group-title="Famelack - UK",Rakuten TV Reality UK
+https://68f6dfd1f2bd415b9c42f1d383004b69.mediatailor.eu-west-1.amazonaws.com/v1/master/0547f18649bd788bec7b67b746e47670f558b6b2/production-LiveChannel-6233/master.m3u8
+#EXTINF:-1 tvg-id="6OObHoCz5T6mVt" group-title="Famelack - UK",Rakuten TV Sci-Fi UK
+https://sci-fi-rakuten-tv-uk.fast.rakuten.tv/v1/master/0547f18649bd788bec7b67b746e47670f558b6b2/production-LiveChannel-6241/master.m3u8
 #EXTINF:-1 tvg-id="uHYtTL2fEDHMX0" group-title="Famelack - UK",Rally.TV FAST+
 https://di4fb7mbsq3nf.cloudfront.net/playlist.m3u8
 #EXTINF:-1 tvg-id="RekrBPbX5KKpZp" group-title="Famelack - UK",Real Crime
@@ -377,6 +385,8 @@ https://d10c3fwb9yju0h.cloudfront.net/master.m3u8
 https://dv8lsrd8fecw9.cloudfront.net/master.m3u8
 #EXTINF:-1 tvg-id="IOF8Iz2JmaTIcg" group-title="Famelack - UK",Teletubbies
 https://dy9gbyiaxw0rb.cloudfront.net/master.m3u8
+#EXTINF:-1 tvg-id="4YjOR1sj6Tzig4" group-title="Famelack - UK",Tennis+
+https://amg01935-amg01935c1-amgplt0002.playout.now3.amagi.tv/playlist/amg01935-amg01935c1-amgplt0002/playlist.m3u8
 #EXTINF:-1 tvg-id="4YjOR1sj6Tzig4" group-title="Famelack - UK",Tennis+
 https://amg01935-amg01935c1-amgplt0165.playout.now3.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="yenlo48DOLbqmP" group-title="Famelack - UK",The Chat Show Channel
@@ -457,6 +467,8 @@ https://amg01076-amg01076c16-samsung-gb-4793.playouts.now.amagi.tv/playlist/amg0
 https://amg01415-waterbearnetwor-waterbear-samsunguk-1h0y8.amagi.tv/playlist/amg01415-waterbearnetwor-waterbear-samsunguk/playlist.m3u8
 #EXTINF:-1 tvg-id="gELbUwheaDhRt3" group-title="Famelack - UK",wedo movies
 https://videosolu-w4freemovies-samsunguk-jpmp3.amagi.tv/playlist/videosolu-w4freemovies-samsunguk/playlist.m3u8
+#EXTINF:-1 tvg-id="PdlsmNwPyLUBKV" group-title="Famelack - UK",Wheels & Steel
+https://amg01775-amg01775c2-amgplt0002.playout.now3.amagi.tv/ts-eu-w1-n2/playlist/amg01775-amg01775c2-amgplt0002/playlist.m3u8
 #EXTINF:-1 tvg-id="a70tGgKnt6OXwc" group-title="Famelack - UK",Wicked Tuna
 https://amg00353-amg00353c25-rakuten-us-4896.playouts.now.amagi.tv/playlist.m3u8
 #EXTINF:-1 tvg-id="xupmjwA43GzSOI" group-title="Famelack - UK",Wild Planet
