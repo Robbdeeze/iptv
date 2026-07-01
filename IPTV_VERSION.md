@@ -924,6 +924,7 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 | Version bump | `IPTV_VERSION.md` | Updated to 1.12.0 |
 | Health check workflow fix | `scripts/commands/playlist/quickHealthCheck.ts` | Exits with code 0 after successful `--fix` so the commit step runs — was exiting 1 even after removing dead streams, causing workflow failure |
 | Upstream stream sync command | `scripts/commands/playlist/syncStreams.ts` | New command — fetches latest M3U files from iptv-org/iptv's `streams/` and routes country files to `streams/countries/` and source files to `streams/sources/` |
+| External playlist sync | `scripts/commands/playlist/syncStreams.ts` | Also fetches YueChan (Global + Radio), DrewLive merged playlist into `streams/external/` and Famelack US/UK data into `streams/generated/` |
 | npm script | `package.json` | Added `playlist:sync` command |
 
 ### July 1, 2026 — paste.sh Decryption Fix: PBKDF2-HMAC-SHA512 + Serverkey (v1.11.0)
