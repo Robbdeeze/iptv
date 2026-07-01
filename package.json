@@ -19,6 +19,7 @@
     "playlist:health:fix": "tsx scripts/commands/playlist/quickHealthCheck.ts --fix",
     "playlist:streamcheck": "tsx scripts/commands/playlist/streamCheck.ts",
     "playlist:sports": "tsx scripts/commands/playlist/scrapeSports.ts",
+    "playlist:sync": "tsx scripts/commands/playlist/syncStreams.ts",
     "playlist:epg": "tsx scripts/commands/playlist/generateEpg.ts",
     "readme:update": "tsx scripts/commands/readme/update.ts",
     "report:create": "tsx scripts/commands/report/create.ts",
