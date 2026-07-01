@@ -921,6 +921,7 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 | GitHub Actions workflow | `.github/workflows/scrape-sports.yml` | New `workflow_dispatch` workflow — user enters sport via input, installs deps + Playwright, runs scraper, commits changes |
 | npm script | `package.json` | Added `playlist:sports` command |
 | Version bump | `IPTV_VERSION.md` | Updated to 1.12.0 |
+| Health check workflow fix | `scripts/commands/playlist/quickHealthCheck.ts` | Exits with code 0 after successful `--fix` so the commit step runs — was exiting 1 even after removing dead streams, causing workflow failure |
 
 ### July 1, 2026 — paste.sh Decryption Fix: PBKDF2-HMAC-SHA512 + Serverkey (v1.11.0)
 
