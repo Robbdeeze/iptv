@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.11.0
+**Version:** 1.12.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -721,7 +721,10 @@ iptv/
 ├── .github/workflows/
 │   ├── ultimate.yml          # Daily UltimateTV playlist + EPG
 │   ├── merge-all.yml         # Every 3 days: merge all streams
-│   └── check.yml             # PR validation (lint + validate)
+│   ├── check.yml             # PR validation (lint + validate)
+│   ├── health-check.yml      # Every 60 min: remove dead streams
+│   ├── stream-check.yml      # Manual: validate stream URLs
+│   ├── scrape-sports.yml     # Manual: scrape live sports by user input
 ├── .readme/
 ├── .readme/
 │   ├── template.md           # Template for PLAYLISTS.md
@@ -756,8 +759,10 @@ iptv/
    │   │   │   ├── sportyHunterScraper.ts # SportyHunter scraper
     │   │   │   └── vipboxScraper.ts     # VIPRow/VIPBox niche sports scraper
     │   │   │   ├── sportsurgeScraper.ts  # Sportsurge scraper
-    │   │   │   ├── streamEastScraper.ts  # StreamEast scraper
-    │   │   │   └── liveTvScraper.ts      # LiveTV scraper
+│   │   │   ├── streamEastScraper.ts  # StreamEast scraper
+│   │   │   ├── liveTvScraper.ts      # LiveTV scraper
+│   │   │   ├── scrapeSports.ts       # User-driven sports scrape command
+│   │   │   └── portalScraper.ts      # Xtream-Codes portal scraper
 │   │   ├── readme/update.ts  # Update PLAYLISTS.md with stats
 │   │   └── report/create.ts  # Create issue/discussion reports
 │   ├── core/
@@ -837,6 +842,7 @@ iptv/
 | `npm run playlist:test` | `scripts/commands/playlist/test.ts` | Test stream link availability |
 | `npm run playlist:edit` | `scripts/commands/playlist/edit.ts` | Interactive channel-to-stream mapping |
 | `npm run playlist:export` | `scripts/commands/playlist/export.ts` | Export streams to JSON for iptv-org/api |
+| `npm run playlist:sports` | `scripts/commands/playlist/scrapeSports.ts` | Scrape live sports by user-specified sport (NFL, NBA, all, etc.) |
 | `npm run readme:update` | `scripts/commands/readme/update.ts` | Update PLAYLISTS.md with current stats |
 | `npm run report:create` | `scripts/commands/report/create.ts` | Generate issue/discussion report |
 | `npm run lint` | eslint `scripts/` `tests/` | Lint TypeScript files |
@@ -903,6 +909,18 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 ---
 
 ## 11. Recent Improvements
+
+### July 1, 2026 — Scrape Sports Workflow + Portal Sports Filter (v1.12.0)
+
+| Change | File | Description |
+|--------|------|-------------|
+| User-driven sports scrape command | `scripts/commands/playlist/scrapeSports.ts` | New command — accepts `--sport` arg (NFL, NBA, Soccer, all, etc.), runs all 11 sports scrapers + portals in parallel with 5-min timeouts, filters by sport keyword, health-checks streams, updates `Robbdeeze_UltimateTV.m3u` |
+| Portal scraper: sports/PPV/live events only | `scripts/commands/playlist/scrapeSports.ts` | Portal streams filtered through `isPortalSportsStream()` — 90+ keyword filter (sport, espn, nfl, ppv, live event, etc.) before user sport filter is applied |
+| All scraped streams in one category | `scripts/commands/playlist/scrapeSports.ts` | All scraped streams set to group-title `"Sports - Live / PPV / Events"` |
+| No old-entry stripping | `scripts/commands/playlist/scrapeSports.ts` | New streams merge with existing via URL dedup only |
+| GitHub Actions workflow | `.github/workflows/scrape-sports.yml` | New `workflow_dispatch` workflow — user enters sport via input, installs deps + Playwright, runs scraper, commits changes |
+| npm script | `package.json` | Added `playlist:sports` command |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.12.0 |
 
 ### July 1, 2026 — paste.sh Decryption Fix: PBKDF2-HMAC-SHA512 + Serverkey (v1.11.0)
 

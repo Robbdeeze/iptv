@@ -1,0 +1,49 @@
+name: Scrape Sports
+on:
+  workflow_dispatch:
+    inputs:
+      sport:
+        description: 'Sport to scrape (e.g. NFL, NBA, Soccer, UFC, F1, or "all" for everything)'
+        default: 'all'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  scrape-sports:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+
+      - name: Install Playwright browser
+        run: npx playwright install chromium
+
+      - name: Scrape ${{ inputs.sport }} sport events
+        run: npx tsx scripts/commands/playlist/scrapeSports.ts --sport="${{ inputs.sport }}"
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git status --porcelain
+          echo "changes=$(git status --porcelain | wc -l | tr -d ' ')" >> $GITHUB_OUTPUT
+
+      - name: Commit and push changes
+        if: steps.git-check.outputs.changes != '0'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "[Bot] Add ${{ inputs.sport }} sport streams"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          file_pattern: Robbdeeze_UltimateTV.m3u
