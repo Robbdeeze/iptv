@@ -151,6 +151,8 @@ async function main() {
 
       if (options.fix) {
         await removeBrokenLinks()
+        drawTable()
+        process.exit(0)
       }
 
       drawTable()
