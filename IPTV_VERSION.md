@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.12.0
+**Version:** 1.13.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -24,10 +24,11 @@ iptv-org API (channels, streams, guides)
               Famelack data
                    │
                    ▼
-            Sports scrapers (11x parallel)
-            DaddyLive | Streamed | NTV | SportsBite
-            PPV.TO    | Roxie    | SportyHunter | VIPRow
-            Sportsurge | StreamEast | LiveTV
+             Sports scrapers (16x parallel)
+             DaddyLive  | Streamed   | NTV         | SportsBite
+             PPV.TO     | Roxie      | SportyHunter | VIPRow
+             Sportsurge | StreamEast | LiveTV      | Portals
+             DLHD       | RabbitMeow | TheTVApp    | TotalSportek
                    │
                    ▼
             Dedup by URL → Reorganize → 19 sections
@@ -59,7 +60,7 @@ iptv-org API (channels, streams, guides)
    - [Path A: Built-in EPG (in generateUltimate.ts)](#51-path-a-built-in-epg)
    - [Path B: Docker-based EPG (generateEpg.ts + iptv-org/epg)](#52-path-b-docker-based-epg)
    - [generateEpg.ts Details](#53-generateepgts-details)
- 6. [Sports Scrapers](#6-sports-scrapers)
+6. [Sports Scrapers](#6-sports-scrapers)
     - [daddyliveScraper.ts](#61-daddylivescraperts)
     - [streamedScraper.ts](#62-streamedscraperts)
     - [aggregatorHelpers.ts](#63-aggregatorhelpersts)
@@ -72,7 +73,12 @@ iptv-org API (channels, streams, guides)
     - [sportsurgeScraper.ts](#610-sportsurgescraperts)
     - [streamEastScraper.ts](#611-streameastscraperts)
     - [liveTvScraper.ts](#612-livetvscraperts)
- 7. [Project File Structure](#7-project-file-structure)
+    - [portalScraper.ts](#613-portalscraperts)
+    - [dlhdScraper.ts](#614-dlhdscraperts)
+    - [rabbitMeowScraper.ts](#615-rabbitmeowscraperts)
+    - [theTvAppScraper.ts](#616-thetvappscraperts)
+    - [totalSportekScraper.ts](#617-totalsportekscraperts)
+  7. [Project File Structure](#7-project-file-structure)
 8. [Script Reference (npm commands)](#8-script-reference)
 9. [Dependencies](#9-dependencies)
 10. [Testing](#10-testing)
@@ -714,6 +720,147 @@ Scrapes live sports events from LiveTV aggregator.
 
 ---
 
+### 6.13 `portalScraper.ts`
+
+**Location:** `scripts/commands/playlist/portalScraper.ts`
+
+**Group title:** `"! Portals - {domain}"` (e.g., `! Portals - cord-cutter.net:8080`)
+
+**Base source:** GitHub XML2 dumps (configurable repos) + Reddit RSS
+
+Scrapes live streams from Xtream-Codes IPTV portals. This is the most sophisticated scraper in the codebase, handling encryption, multi-protocol verification, and intelligent deduplication.
+
+**Architecture:**
+
+1. **Portal Discovery** — Fetches portal URLs from two sources:
+   - **GitHub XML2 dumps** — Reads `.txt` files from configurable repos (`GITHUB_PORTAL_REPOS`), each line being a `username:password@host:port` or full URL. Lines may be plaintext or OpenSSL-encrypted (v1/v2/v3 paste.sh encryption).
+   - **Reddit RSS** — Fetches up to 5 pages of r/XML2 posts via Reddit's public JSON API (with CORS proxy fallback), extracts code blocks containing portal credentials.
+
+2. **Paste Decryption** — Paste.sh encrypted lines go through a 3-tier decryption cascade:
+   - **PBKDF2-HMAC-SHA512** (v2/v3): `DK = HMAC-SHA512(password, salt || 0x00000001)`, key=first 32 bytes, IV=next 16 bytes, AES-256-CBC. Password = `id + serverkey + clientKey + 'https://paste.sh'`
+   - **EVP_BytesToKey** (v1 fallback): SHA-512(password + salt) with count=1
+   - **Hex-based fallback**: Direct hex decoding for non-OpenSSL formats
+
+3. **Portal Verification** — Each discovered portal is verified via `verifyPortal()`:
+   - Attempts `player_api.php?action=user&username=...&password=...` — Xtream JSON API
+   - Falls back to `get.php?username=...&password=...&type=m3u_plus` — M3U playlist
+   - Rejects portals returning: XUI.one debug pages, `<html>` responses, `Debug Mode` text, M3U with <5 real streams, English text <70% (non-Latin script filter)
+   - **Adult filter**: Also samples first 30 EXTINF lines against adult keywords; skips if ≥30% match
+
+4. **Stream Fetching** — `fetchPortalStreams()` in dual mode:
+   - **Xtream API** (`get_live_categories` → `get_live_streams`): JSON response with HD/stream_id/stream_icon/category_id. Fetches categories first, then streams per category (up to `MAX_STREAMS_PER_PORTAL`).
+   - **M3U fallback** (`get.php`): Parses raw M3U with tvg-id, tvg-logo, channel names via regex.
+   - Both modes apply: **adult category pre-filter** (if ≥30% of categories are adult, skip entirely), **adult stream name filter** (per-stream keyword check), **non-Latin script filter** (removes Arabic, Cyrillic, CJK, etc.)
+
+5. **Sports Filtering** — `isPortalSportsStream()` matches stream names against 90+ keywords in 3 categories:
+   - **Sports** (nfl, nba, mlb, nhl, ufc, boxing, soccer, tennis, etc.)
+   - **PPV** (ppv, pay-per-view, event, fight, wrestling, wwe, etc.)
+   - **Live Events** (live, 24/7, 24x7, news, etc. — excludes music, cartoon, movie-only channels)
+   Only streams matching these keywords are returned.
+
+6. **Deduplication & Grouping** — Intelligent merging across portals:
+   - **Domain-based grouping**: Portals grouped by `extractDomain()` — e.g., 13 users on `cord-cutter.net:8080` merged into one group
+   - **Jaccard similarity dedup**: Compares first 25 channel titles per portal. Portals with >70% identical names are duplicates — keeps the one with most streams
+   - **Cross-portal URL dedup**: Within a domain group, duplicate stream URLs are eliminated
+   - **Duplicate stream numbering**: Duplicate titles get `str N - ` prefix (e.g., `str 2 - ESPN`)
+
+7. **Time Filtering** — `isRecentStream()`: drops events >6 hours past or >24 hours in the future
+
+**Key Features:**
+- Circuit breaker per CORS proxy — 45s cooldown on failure, 90s on 429
+- Domain-level adult filter (`ADULT_DOMAIN_PATTERNS`) — skips portals with xxx/adult/porn in domain
+- Configurable env vars: `VERIFY_TIMEOUT`, `FETCH_TIMEOUT`, `MAX_VERIFIED_PORTALS`, `MAX_STREAMS_PER_PORTAL`
+- Portal health report: saves stats per portal (status, stream count, domain group)
+
+---
+
+### 6.14 `dlhdScraper.ts`
+
+**Location:** `scripts/commands/playlist/dlhdScraper.ts`
+
+**Group title:** `"! Sports - DLHD - {sport}"`
+
+**Base URL:** `https://dlhd.st/`
+
+Scrapes live sports streams from DLHD sports aggregator.
+
+**Architecture:**
+
+1. **Mirror resolution** — `findActiveMirror(MIRRORS)` checks each mirror domain with HTTP GET; uses the first responsive one (default: `dlhd.st`)
+2. **Sport page fetching** — HTTP GET for each sport (nfl, nba, mlb, nhl, ufc, soccer, boxing, wrestling, tennis, f1, mlr, ncaaf, ncaam, golf, nll, afl, cricket, rugby, darts, snooker, cyclying, motors, nba g-league)
+3. **Stream URL extraction** — Regex parses event links from sport page HTML
+4. **Per-event scraping** — For each event link, fetches page and extracts m3u8 streams via regex (`https?://[^"']+\.m3u8[^"']*`)
+5. **404 filtering** — Checks each m3u8 URL with HTTP HEAD before adding
+6. **Stream creation** — Uses `createStream()` with group-title `"! Sports - DLHD - {sport}"`, tvg-logo from OG image
+7. **Limits** — Max 25 stream resolves per scrape run
+
+---
+
+### 6.15 `rabbitMeowScraper.ts`
+
+**Location:** `scripts/commands/playlist/rabbitMeowScraper.ts`
+
+**Group title:** `"! Sports - RabbitMeow - {sport}"`
+
+**Base URL:** `https://rabbitmeow.live/`
+
+Scrapes live sports streams from RabbitMeow SPA (Single Page Application).
+
+**Architecture:**
+
+1. **Browser launch** — Uses Playwright Chromium with page blocking (images, fonts) for speed
+2. **Mirror resolution** — `findActiveMirror(MIRRORS)` with 3 mirror domains
+3. **Navigation** — Loads homepage, waits for `.category-card` elements to appear, extracts sport categories
+4. **SPA interaction** — Clicks each sport category, waits for stream cards to render
+5. **Stream extraction** — From each stream page, intercepts network requests to capture `playlist.m3u8` URLs using `page.on('request')`
+6. **iframe resolution** — Some streams open in iframes; uses `extractM3u8FromEmbed()` for those
+7. **Limits** — Max 20 stream resolves per scraper run
+
+---
+
+### 6.16 `theTvAppScraper.ts`
+
+**Location:** `scripts/commands/playlist/theTvAppScraper.ts`
+
+**Group title:** `"! Sports - TheTVApp - {sport}"`
+
+**Base URL:** `https://thetvappv2.com/`
+
+Scrapes live TV sports channels from TheTVApp aggregator.
+
+**Architecture:**
+
+1. **Mirror resolution** — `findActiveMirror(MIRRORS)` with 2 mirror domains
+2. **Category pages** — HTTP GET for 11 sport category pages (Sports, NFL, NBA, MLB, NHL, NCAAF, NCAAB, Soccer, Boxing, MMA/UFC, Rugby)
+3. **HTML parsing** — Regex extracts channel entries from each category page (channel name, iframe embed URL)
+4. **Embed extraction** — For each channel, fetches the embed page and extracts m3u8 URL via regex and `extractM3u8FromEmbed()`
+5. **Stream creation** — Uses `createStream()` with descriptive group-title
+6. **Limits** — Max 25 stream resolves per scrape run
+
+---
+
+### 6.17 `totalSportekScraper.ts`
+
+**Location:** `scripts/commands/playlist/totalSportekScraper.ts`
+
+**Group title:** `"! Sports - TotalSportek - {sport}"`
+
+**Base URL:** `https://totalsporteka.com/`
+
+Scrapes live sports events from TotalSportek SPA.
+
+**Architecture:**
+
+1. **Browser launch** — Uses Playwright Chromium with resource blocking
+2. **Mirror resolution** — `findActiveMirror(MIRRORS)` with 3 mirror domains (totalsporteka.com, totalsportek.to, totalsportek.pro)
+3. **Navigation** — Loads homepage, waits for sport category links to render
+4. **Category extraction** — Extracts sport categories from navigation links
+5. **Event listing** — For each sport category, waits for event cards to appear, extracts event links
+6. **Stream resolution** — For each event, clicks the stream link, waits for iframe or video element, intercepts m3u8 network requests
+7. **Limits** — Max 20 stream resolves per scrape run
+
+---
+
 ## 7. Project File Structure
 
 ```
@@ -762,7 +909,11 @@ iptv/
 │   │   │   ├── streamEastScraper.ts  # StreamEast scraper
 │   │   │   ├── liveTvScraper.ts      # LiveTV scraper
 │   │   │   ├── scrapeSports.ts       # User-driven sports scrape command
-│   │   │   └── portalScraper.ts      # Xtream-Codes portal scraper
+│   │   │   ├── portalScraper.ts      # Xtream-Codes portal scraper
+│   │   │   ├── dlhdScraper.ts        # DLHD sports streams (HTTP)
+│   │   │   ├── rabbitMeowScraper.ts  # RabbitMeow SPA sports (Playwright)
+│   │   │   ├── theTvAppScraper.ts    # TheTVAppv2 channels (HTTP)
+│   │   │   └── totalSportekScraper.ts # TotalSportek SPA (Playwright)
 │   │   ├── readme/update.ts  # Update PLAYLISTS.md with stats
 │   │   └── report/create.ts  # Create issue/discussion reports
 │   ├── core/
@@ -911,11 +1062,290 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 
 ## 11. Recent Improvements
 
+### July 1, 2026 — Configurable Env Vars, Multi-Sport, Tests, Dashboard, Snapshots, .opencode.json (v1.13.0)
+
+**Theme:** *Operational maturity — making the system tunable, observable, testable, and configurable without code changes.*
+
+---
+
+#### 1. Environment Variable Configuration
+
+**Problem:** All timeouts and concurrency limits were hardcoded. Tuning for different environments (local dev vs GitHub Actions vs beefy server) required editing source files. The 5-minute scraper timeout that works on a fast machine might be too aggressive on a slow runner, and the 50-concurrent-stream check might overwhelm a metered connection.
+
+**Solution:** Every tunable constant now reads from an environment variable first, falling back to its hardcoded default:
+
+| Env Var | Files | Default | Purpose |
+|---------|-------|---------|---------|
+| `SCRAPER_TIMEOUT` | scrapeSports.ts, generateUltimate.ts | 300000 (5 min) | Max time per scraper before it's killed |
+| `GLOBAL_TIMEOUT` | generateUltimate.ts | 3300000 (55 min) | Total timeout for the entire playlist generation |
+| `CHECK_TIMEOUT` | scrapeSports.ts, generateUltimate.ts, quickHealthCheck.ts | 10000 (10s) | Timeout for each individual stream HTTP check |
+| `CHECK_CONCURRENCY` | scrapeSports.ts, generateUltimate.ts | 50 | How many streams to check simultaneously |
+| `VERIFY_TIMEOUT` | portalScraper.ts | 8000 (8s) | Timeout for portal API verification calls |
+| `FETCH_TIMEOUT` | portalScraper.ts | 15000 (15s) | Timeout for fetching portal stream lists |
+| `MAX_VERIFIED_PORTALS` | portalScraper.ts | 20 | Max verified portals to keep per scrape run |
+| `MAX_STREAMS_PER_PORTAL` | portalScraper.ts | 500 | Max streams to pull from a single portal |
+
+**Usage:** `SCRAPER_TIMEOUT=60000 npm run playlist:sports -- --sport=nfl` — overrides scraper timeout to 60s for this run only.
+
+**Pattern used:** `parseInt(process.env.VAR_NAME || '') || DEFAULT_VALUE` — this ensures that:
+- If the env var is not set (`undefined`), the default is used
+- If the env var is set to an empty string, the default is used
+- If the env var is set to a valid number, that value is used
+- No `NaN` propagation (a typo like `export CHECK_TIMEOUT=abc` falls back safely)
+
+---
+
+#### 2. Multi-Sport Scraping
+
+**Problem:** The `--sport` flag accepted only a single value. To scrape both NFL and NBA streams, you'd need two separate runs. Since scrapers take 5 minutes each, this doubled runtime.
+
+**Solution:** `--sport` now accepts comma-separated values:
+
+```bash
+# Before
+npm run playlist:sports -- --sport=nfl    # One run for NFL
+npm run playlist:sports -- --sport=nba    # Second run for NBA
+
+# After
+npm run playlist:sports -- --sport=nfl,nba    # Single run, both sports
+```
+
+**How it works:** The `matchesSport()` function was refactored from a simple string-includes check to an array-based check:
+
+```typescript
+// Before: matchesSport(stream, sport: string)
+function matchesSport(stream: Stream, sports: string[]): boolean {
+  if (sports.length === 1 && sports[0] === 'all') return true
+  const title = (stream.title || '').toLowerCase()
+  const group = (stream.groupTitle || '').toLowerCase()
+  return sports.some(s => title.includes(s.toLowerCase()) || group.includes(s.toLowerCase()))
+}
+```
+
+Each stream's title and group-title are checked against every sport in the list. If any match, the stream is kept. The `all` shortcut is preserved as a special case.
+
+**Data flow:**
+1. `parseArg('sport', 'all')` returns the raw string (e.g. `"nfl,nba"`)
+2. `.split(',').map(s => s.trim()).filter(Boolean)` produces `["nfl", "nba"]`
+3. The array is passed to `matchesSport()` and used in log messages via `sports.join(', ')`
+
+---
+
+#### 3. Scraper Health Dashboard
+
+**Problem:** When scrapers fail (timeout, site changed, domain dead), there was no record of which scraper failed, how many streams it produced before failing, or how the overall health changed over time. You'd only know something was wrong when sports streams went missing from the playlist.
+
+**Solution:** After each scrape run, a JSON report is saved to `streams/scraper-report.json`:
+
+```json
+{
+  "date": "2026-07-01T12:00:00.000Z",
+  "sport": "nfl,nba",
+  "scrapers": [
+    {
+      "name": "DaddyLive",
+      "status": "fulfilled",
+      "streams": 45
+    },
+    {
+      "name": "StreamEast",
+      "status": "rejected",
+      "streams": 0
+    }
+  ],
+  "totalScraped": 187,
+  "aliveAfterCheck": 142,
+  "existingKept": 3521,
+  "totalWritten": 3663
+}
+```
+
+**Dashboard fields:**
+- `date` — ISO timestamp of the run
+- `sport` — The sport filter used (preserves comma-separated values)
+- `scrapers[]` — Per-scraper breakdown with status (`fulfilled`/`rejected`) and raw stream count before health check
+- `totalScraped` — Raw count of streams extracted from all scrapers (before health check)
+- `aliveAfterCheck` — Streams that passed the HTTP reachability check
+- `existingKept` — Streams already in the playlist that were preserved
+- `totalWritten` — Final playlist size
+
+**How to monitor:** Commit and push this file alongside the playlist. Over time, you can track:
+- Which scrapers are consistently failing (site may have changed or gone offline)
+- Which scrapers produce the most streams (roi per scraper)
+- Whether the health check is removing too many or too few streams
+- The ratio of scraped-to-kept streams (a sudden drop indicates a site change)
+
+---
+
+#### 4. Health Check Snapshots (Stream Archive)
+
+**Problem:** The hourly health check removes dead streams silently. If a stream goes down briefly (transient network issue, server restart), it gets removed and has to be re-added on the next full playlist generation (up to 24 hours later). There was no historical record of which streams were removed or how stream health changes over time.
+
+**Solution:** Each health check run now appends a snapshot to a daily JSON file in `streams/health-snapshots/`:
+
+```json
+[
+  {
+    "timestamp": "2026-07-01T12:00:00.000Z",
+    "checked": 4521,
+    "working": 4403,
+    "errors": 89,
+    "warnings": 29,
+    "totalStreams": 4521
+  },
+  {
+    "timestamp": "2026-07-01T13:00:00.000Z",
+    "checked": 4512,
+    "working": 4401,
+    "errors": 82,
+    "warnings": 29,
+    "totalStreams": 4512
+  }
+]
+```
+
+**Archive mechanics:**
+- One file per day: `streams/health-snapshots/health-2026-07-01.json`
+- Each run appends a new entry (not overwrite)
+- Maximum 30 entries per file (last 30 runs — at 1/hour, that's ~30 hours of history)
+- Older entries are automatically trimmed
+
+**What you can learn from snapshots:**
+- Sudden spike in errors → possible network issue or upstream source went offline
+- Steady decline in working streams → sources are dying and need replacement
+- Recovery patterns after playlist regeneration (full gen usually restores many "dead" streams)
+- Which days/times have the highest error rates (could indicate traffic patterns or maintenance windows)
+
+---
+
+#### 5. Opencode Configuration (`.opencode.json`)
+
+**Problem:** The project had an `AGENTS.md` with minimal instructions but no structured configuration for AI tooling. Each session started cold — no custom commands, no agent specializations.
+
+**Solution:** Created `.opencode.json` with:
+
+**Custom commands** — shortcuts for common operations:
+```json
+{
+  "name": "scrape-sports",
+  "command": "npm run playlist:sports -- --sport={{sport}}",
+  "description": "Scrape live sports streams (e.g. nfl, nba, ufc, or comma-separated: nfl,nba)"
+}
+```
+Available commands: `scrape-sports`, `sync-streams`, `generate-ultimate`, `health-check`, `run-tests`, `lint`.
+
+**Scraper-dev agent** — a specialized agent with deep knowledge of the scraping patterns used in this project:
+```json
+{
+  "agents": {
+    "scraper-dev": {
+      "description": "Specialist for developing and fixing sports scrapers",
+      "instructions": "1) Use the shared browser from aggregatorHelpers.ts via getBrowser()/closeBrowser() 2) Follow the mirror pattern (findActiveMirror, MIRRORS array) 3) Use createStream() factory..."
+    }
+  }
+}
+```
+
+**Permissions** — scoped filesystem access to prevent accidental writes outside the project:
+```json
+{
+  "permissions": {
+    "allow_fs_write_paths": [".", "streams", "Robbdeeze_UltimateTV.m3u"]
+  }
+}
+```
+
+---
+
+#### 6. Scraper Unit Tests
+
+**Problem:** The 11 sports scrapers and portal scraper had zero tests. The shared utility functions in `aggregatorHelpers.ts` (used by every scraper) had no test coverage. Bugs in `extractTimeFromText` or `createStream` would silently corrupt stream data across all 11 scrapers.
+
+**Solution:** Created `tests/core/aggregatorHelpers.test.ts` with **14 tests** across 3 describe blocks:
+
+**`extractTimeFromText`** (4 tests):
+- `"Game starts at 8:00 PM ET"` → extracts `"8:00 PM"`
+- `"Match at 10:30 AM"` → extracts `"10:30 AM"`
+- `"Event at 14:30"` → extracts `"14:30"` (24h, no am/pm)
+- `"No time here"` → returns `null`
+
+**`isWithin24hrsPT`** (6 tests):
+- 1 hour ago → `true`
+- 12 hours from now → `true`
+- 48 hours ago → `false`
+- 48 hours from now → `false`
+- Exactly 24 hours ago → `true` (boundary)
+- Exactly 24 hours from now → `true` (boundary)
+
+**`createStream`** (4 tests):
+- Correctly sets title, url, groupTitle
+- Sets tvgId when provided
+- Defaults tvgId to title when not provided
+- Preserves the "Sports - Live / PPV / Events" group-title
+
+**Test infrastructure change:** Added `transformIgnorePatterns` to the Jest config to allow transforming `@freearhey/core` and `@iptv-org/*` packages through SWC. Previously, only direct project code was transformed; these ESM dependencies would cause `unexpected token` errors. The pattern:
+```json
+"transformIgnorePatterns": ["/node_modules/(?!(@freearhey|@iptv-org)/)"]
+```
+This tells Jest: "ignore all node_modules EXCEPT @freearhey and @iptv-org packages" — the `?!` is a negative lookahead in regex.
+
+---
+
+#### 7. 4 New Sports Scrapers (DLHD, RabbitMeow, TheTVApp, TotalSportek)
+
+**Problem:** Only 12 scrapers covered mainstream sports sites. Niche sports, 24/7 sports channels, and sites with different architectures (SPA vs server-rendered) were missed. Users reported streams going dark when specific sites changed their layout.
+
+**Solution:** Added 4 new scrapers targeting different site architectures and content types:
+
+**DLHD** (`dlhdScraper.ts`) — Server-rendered HTML site with 23+ sport categories (including niche: MLR, NLL, AFL, cricket, rugby, darts, snooker, cycling, motors, NBA G-League). Uses `findActiveMirror` pattern with 2 mirrors, HTTP GET + regex for event extraction, and HTTP HEAD pre-check for m3u8 validity before adding streams. Max 25 stream resolves.
+
+**RabbitMeow** (`rabbitMeowScraper.ts`) — SPA site rendered client-side via JavaScript. Uses Playwright Chromium with resource blocking (images/fonts for speed). Extracts sport categories from `.category-card` elements, clicks each category, intercepts network requests to capture `playlist.m3u8` URLs. Falls back to `extractM3u8FromEmbed()` for iframe-based streams. Max 20 stream resolves.
+
+**TheTVApp** (`theTvAppScraper.ts`) — Server-rendered TV channel aggregator with 11 sport category pages (including 24/7 sports news channels). Uses HTTP GET + regex for channel/embed URL extraction. Resolves m3u8 from embed pages via regex and `extractM3u8FromEmbed()`. Good source for always-on sports channels. Max 25 stream resolves.
+
+**TotalSportek** (`totalSportekScraper.ts`) — SPA event aggregator covering major sports (NFL, NBA, MLB, NHL, UFC, soccer, boxing, etc.). Uses Playwright Chromium with 3 mirror domains. Extracts sport categories from navigation, clicks each to reveal event cards, then resolves m3u8 via network interception. Max 20 stream resolves.
+
+**Integration:**
+- All 4 scrapers imported into `scrapeSports.ts` (sports scrape command) and `generateUltimate.ts` (full pipeline)
+- Each follows the mirror pattern (`MIRRORS` array + `findActiveMirror()`)
+- Each uses `createStream()` from `aggregatorHelpers.ts` for uniform Stream object creation
+- Each sets descriptive group-title: `"! Sports - {ScraperName} - {sport}"`
+- All integrated with existing health-check, dedup, and time-filtering pipeline
+- All respect the 24-hour event window via `isRecentStream()`
+- Pipeline now runs 16 scrapers in parallel instead of 12
+
+**Scraper patterns used:**
+
+| Pattern | Scrapers | Why |
+|---------|----------|-----|
+| Server-rendered HTML | DLHD, TheTVApp | HTTP GET + regex is faster, lighter, no browser needed |
+| SPA / Client-rendered | RabbitMeow, TotalSportek | Playwright needed for JS-rendered content |
+| Mirror fallback | All 4 | `findActiveMirror()` ensures resilience if primary domain changes |
+| Network interception | RabbitMeow, TotalSportek | Captures m3u8 URLs from browser network traffic |
+| Time filtering | All 4 | `isRecentStream()` ensures only current/recent events appear |
+| Stream cap | All 4 | 20-25 max resolves per scraper keeps runtime bounded |
+
+---
+
+| Change | File | Description |
+|--------|------|-------------|
+| Configurable timeouts via env vars | `scripts/commands/playlist/scrapeSports.ts` | SCRAPER_TIMEOUT, CHECK_TIMEOUT, CHECK_CONCURRENCY now read from environment variables with fallback to hardcoded defaults |
+| Configurable timeouts via env vars | `scripts/commands/playlist/generateUltimate.ts` | SCRAPER_TIMEOUT, GLOBAL_TIMEOUT, CHECK_TIMEOUT, CHECK_CONCURRENCY now read from env vars |
+| Configurable timeouts via env vars | `scripts/commands/playlist/quickHealthCheck.ts` | CHECK_TIMEOUT now read from env var |
+| Configurable timeouts via env vars | `scripts/commands/playlist/portalScraper.ts` | VERIFY_TIMEOUT, FETCH_TIMEOUT, MAX_VERIFIED_PORTALS, MAX_STREAMS_PER_PORTAL now read from env vars |
+| Multi-sport scraping | `scripts/commands/playlist/scrapeSports.ts` | `--sport` now accepts comma-separated values (e.g. `--sport=nfl,nba,ufc`) to scrape multiple sports at once |
+| Scraper unit tests | `tests/core/aggregatorHelpers.test.ts` | 14 tests covering extractTimeFromText, isWithin24hrsPT, createStream — all pure functions used by every scraper |
+| Transform ignore patterns for Jest | `package.json` | Added transformIgnorePatterns to correctly handle @freearhey and @iptv-org ESM packages |
+| Scraper health dashboard | `scripts/commands/playlist/scrapeSports.ts` | Saves `streams/scraper-report.json` after each scrape with per-scraper status, stream counts, alive/dead breakdown |
+| Health check snapshots | `scripts/commands/playlist/quickHealthCheck.ts` | Saves daily health snapshots to `streams/health-snapshots/health-YYYY-MM-DD.json` (keeps last 30 days) |
+| Opencode configuration | `.opencode.json` | Custom commands (scrape-sports, sync-streams, etc.) and scraper-dev agent with instructions |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.13.0 |
+
 ### July 1, 2026 — Scrape Sports Workflow + Portal Sports Filter (v1.12.0)
 
 | Change | File | Description |
 |--------|------|-------------|
-| User-driven sports scrape command | `scripts/commands/playlist/scrapeSports.ts` | New command — accepts `--sport` arg (NFL, NBA, Soccer, all, etc.), runs all 11 sports scrapers + portals in parallel with 5-min timeouts, filters by sport keyword, health-checks streams, updates `Robbdeeze_UltimateTV.m3u` |
+| User-driven sports scrape command | `scripts/commands/playlist/scrapeSports.ts` | New command — accepts `--sport` arg (NFL, NBA, Soccer, all, etc.), runs all 15 sports scrapers + portals in parallel with 5-min timeouts, filters by sport keyword, health-checks streams, updates `Robbdeeze_UltimateTV.m3u` |
 | Portal scraper: sports/PPV/live events only | `scripts/commands/playlist/scrapeSports.ts` | Portal streams filtered through `isPortalSportsStream()` — 90+ keyword filter (sport, espn, nfl, ppv, live event, etc.) before user sport filter is applied |
 | All scraped streams in one category | `scripts/commands/playlist/scrapeSports.ts` | All scraped streams set to group-title `"Sports - Live / PPV / Events"` |
 | No old-entry stripping | `scripts/commands/playlist/scrapeSports.ts` | New streams merge with existing via URL dedup only |

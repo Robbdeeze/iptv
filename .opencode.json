@@ -1,0 +1,44 @@
+{
+  "customCommands": [
+    {
+      "name": "scrape-sports",
+      "command": "npm run playlist:sports -- --sport={{sport}}",
+      "description": "Scrape live sports streams (e.g. nfl, nba, ufc, or comma-separated: nfl,nba)"
+    },
+    {
+      "name": "sync-streams",
+      "command": "npm run playlist:sync",
+      "description": "Sync latest M3U files from iptv-org/iptv upstream"
+    },
+    {
+      "name": "generate-ultimate",
+      "command": "npm run playlist:ultimate",
+      "description": "Generate full UltimateTV playlist + EPG"
+    },
+    {
+      "name": "health-check",
+      "command": "npm run playlist:health:fix",
+      "description": "Check all streams and remove dead ones"
+    },
+    {
+      "name": "run-tests",
+      "command": "npm test",
+      "description": "Run all Jest tests"
+    },
+    {
+      "name": "lint",
+      "command": "npm run lint",
+      "description": "Lint TypeScript files"
+    }
+  ],
+  "agents": {
+    "scraper-dev": {
+      "description": "Specialist for developing and fixing sports scrapers",
+      "instructions": "You are a scraper specialist. When building scrapers: 1) Use the shared browser from aggregatorHelpers.ts via getBrowser()/closeBrowser() 2) Follow the mirror pattern (findActiveMirror, MIRRORS array) 3) Use createStream() factory for Stream objects 4) Use fetchWithTimeout() for HTTP fetches 5) Set descriptive group-title like '! Sports - SiteName' 6) Always set timeouts (5 min per scraper) 7) Return { groupTitle: string; streams: Stream[] }[] 8) Deduplicate streams by URL 9) All scraped streams in scrapeSports.ts get group-title 'Sports - Live / PPV / Events'"
+    }
+  },
+  "permissions": {
+    "allow_fs_write_paths": [".", "streams", "Robbdeeze_UltimateTV.m3u"],
+    "allow_fs_read_paths": [".", "streams"]
+  }
+}

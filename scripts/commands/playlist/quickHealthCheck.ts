@@ -11,8 +11,10 @@ import { ProxyParser } from '../../core/proxyParser'
 import { eachLimit } from 'async'
 import dns from 'node:dns'
 import chalk from 'chalk'
+import fs from 'node:fs'
+import path from 'node:path'
 
-const CHECK_TIMEOUT = 10000
+const CHECK_TIMEOUT = parseInt(process.env.CHECK_TIMEOUT || '') || 10000
 
 let errors = 0
 let warnings = 0
@@ -148,6 +150,24 @@ async function main() {
       }
 
       logger.info(`\n${completed} checked, ${workingCount} working, ${errors} errors, ${warnings} warnings`)
+
+      const snapshotDir = path.join(STREAMS_DIR, 'health-snapshots')
+      fs.mkdirSync(snapshotDir, { recursive: true })
+      const now = new Date()
+      const snapshotFile = path.join(snapshotDir, `health-${now.toISOString().split('T')[0]}.json`)
+      const existing: Record<string, unknown>[] = []
+      try { existing.push(...JSON.parse(fs.readFileSync(snapshotFile, 'utf8'))) } catch { /* file doesn't exist yet */ }
+      existing.push({
+        timestamp: now.toISOString(),
+        checked: completed,
+        working: workingCount,
+        errors,
+        warnings,
+        totalStreams: streams.length
+      })
+      if (existing.length > 30) existing.splice(0, existing.length - 30)
+      fs.writeFileSync(snapshotFile, JSON.stringify(existing, null, 2))
+      logger.info(`Snapshot saved to ${snapshotFile}`)
 
       if (options.fix) {
         await removeBrokenLinks()

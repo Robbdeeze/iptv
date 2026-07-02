@@ -19,6 +19,10 @@ import { scrapeSportsurge } from './sportsurgeScraper'
 import { scrapeStreamEast } from './streamEastScraper'
 import { scrapeLiveTV } from './liveTvScraper'
 import { scrapePortals } from './portalScraper'
+import { scrapeDlhd } from './dlhdScraper'
+import { scrapeRabbitMeow } from './rabbitMeowScraper'
+import { scrapeTheTvApp } from './theTvAppScraper'
+import { scrapeTotalSportek } from './totalSportekScraper'
 
 import { closeBrowser, reorganizeStreams } from '../../core'
 import path from 'node:path'
@@ -26,10 +30,10 @@ import fs from 'node:fs'
 import axios from 'axios'
 import zlib from 'node:zlib'
 
-const SCRAPER_TIMEOUT = 5 * 60 * 1000 // 5 minutes per scraper
-const GLOBAL_TIMEOUT = 55 * 60 * 1000  // 55 minutes total
-const CHECK_TIMEOUT = 10000
-const CHECK_CONCURRENCY = 50
+const SCRAPER_TIMEOUT = parseInt(process.env.SCRAPER_TIMEOUT || '') || 5 * 60 * 1000
+const GLOBAL_TIMEOUT = parseInt(process.env.GLOBAL_TIMEOUT || '') || 55 * 60 * 1000
+const CHECK_TIMEOUT = parseInt(process.env.CHECK_TIMEOUT || '') || 10000
+const CHECK_CONCURRENCY = parseInt(process.env.CHECK_CONCURRENCY || '') || 50
 
 const FATAL_NETWORK_CODES = new Set([
   'ECONNREFUSED', 'ENOTFOUND', 'ENETUNREACH', 'EAI_AGAIN', 'HTTP_000'
@@ -145,7 +149,7 @@ async function main() {
 
   // List all m3u files under streams/
   const files = await streamsStorage.list('**/*.m3u')
-  
+
   // Filter for US, CA, UK files (case-insensitive), excluding auto-generated famelack files
   const targetFiles = files.filter(filepath => {
     const filename = path.basename(filepath).toLowerCase()
@@ -325,10 +329,14 @@ async function main() {
     withTimeout(scrapeVipbox(logger), SCRAPER_TIMEOUT, 'VIPRow'),
     withTimeout(scrapeSportsurge(logger), SCRAPER_TIMEOUT, 'Sportsurge'),
     withTimeout(scrapeStreamEast(logger), SCRAPER_TIMEOUT, 'StreamEast'),
-    withTimeout(scrapeLiveTV(logger), SCRAPER_TIMEOUT, 'LiveTV')
+    withTimeout(scrapeLiveTV(logger), SCRAPER_TIMEOUT, 'LiveTV'),
+    withTimeout(scrapeDlhd(logger), SCRAPER_TIMEOUT, 'DLHD'),
+    withTimeout(scrapeRabbitMeow(logger), SCRAPER_TIMEOUT, 'RabbitMeow'),
+    withTimeout(scrapeTheTvApp(logger), SCRAPER_TIMEOUT, 'TheTVApp'),
+    withTimeout(scrapeTotalSportek(logger), SCRAPER_TIMEOUT, 'TotalSportek')
   ])
 
-  const scraperNames = ['DaddyLive', 'Streamed', 'NTV', 'SportsBite', 'PPV.TO', 'Roxie', 'SportyHunter', 'VIPRow', 'Sportsurge', 'StreamEast', 'LiveTV']
+  const scraperNames = ['DaddyLive', 'Streamed', 'NTV', 'SportsBite', 'PPV.TO', 'Roxie', 'SportyHunter', 'VIPRow', 'Sportsurge', 'StreamEast', 'LiveTV', 'DLHD', 'RabbitMeow', 'TheTVApp', 'TotalSportek']
   for (let i = 0; i < scraperResults.length; i++) {
     const result = scraperResults[i]
     if (result.status === 'rejected') {
@@ -366,7 +374,7 @@ async function main() {
   logger.info('generating Robbdeeze_UltimateTV.m3u...')
   const rootStorage = new Storage(ROOT_DIR)
   const playlist = new Playlist(combinedStreams, { public: true })
-  
+
   let playlistString = playlist.toString()
   // Replace the first line to point to our generated Robbdeeze_UltimateTV_Epg.xml.gz
   const firstLineEnd = playlistString.indexOf('\r\n')
@@ -462,15 +470,15 @@ async function main() {
   logger.info('compiling Robbdeeze_UltimateTV_Epg.xml...')
   let xmltv = '<?xml version="1.0" encoding="UTF-8"?>\n'
   xmltv += '<tv generator-info-name="Robbdeeze UltimateTV EPG Generator">\n'
-  
+
   matchedChannels.forEach((channelXml) => {
     xmltv += '  ' + channelXml + '\n'
   })
-  
+
   matchedProgrammes.forEach((programmeXml) => {
     xmltv += '  ' + programmeXml + '\n'
   })
-  
+
   xmltv += '</tv>\n'
 
   await rootStorage.save('Robbdeeze_UltimateTV_Epg.xml', xmltv)

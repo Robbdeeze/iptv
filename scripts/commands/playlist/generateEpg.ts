@@ -86,7 +86,7 @@ async function generateChannelsXml(m3uRelativePath: string, outputPath: string) 
 
   logger.info(`Generated ${outputPath} with ${matched}/${baseToFull.size} matched channels (${(matched / baseToFull.size * 100).toFixed(1)}%)`)
   logger.info(`Channels span ${new Set([...siteCounts.keys()].map(k => k.split('|')[0])).size} unique sites`)
-  logger.info(`\nSite distribution:`)
+  logger.info('\nSite distribution:')
   const siteGroups = new Map<string, number>()
   for (const [key, count] of siteCounts) {
     const [site] = key.split('|')

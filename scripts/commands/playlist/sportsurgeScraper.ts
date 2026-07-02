@@ -88,9 +88,9 @@ async function extractEvents(domain: string, logger: Logger): Promise<SportEvent
     } finally {
       await context.close()
     }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
-      logger.error(`Sportsurge browser error: ${msg}`)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    logger.error(`Sportsurge browser error: ${msg}`)
   }
 
   return events

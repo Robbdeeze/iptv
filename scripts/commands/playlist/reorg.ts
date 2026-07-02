@@ -19,7 +19,7 @@ function parseEntries(content: string): Entry[] {
   const entries: Entry[] = []
 
   for (let i = 0; i < lines.length; i++) {
-    let line = lines[i].trimEnd()
+    const line = lines[i].trimEnd()
     if (!line) continue
 
     if (line.startsWith('#EXTINF:')) {
@@ -247,7 +247,7 @@ const SECTION_ORDER = [
 ]
 
 function updateExtinf(extinf: string, newGroupTitle: string): string {
-  let updated = extinf.replace(/group-title="[^"]*"/, `group-title="${newGroupTitle}"`)
+  const updated = extinf.replace(/group-title="[^"]*"/, `group-title="${newGroupTitle}"`)
   return updated
 }
 
@@ -366,7 +366,7 @@ async function main() {
   console.log('Building output...')
   const outputLines: string[] = []
   outputLines.push(header)
-  outputLines.push(`# Cleaned and reorganized by OpenCode on 2026-06-27`)
+  outputLines.push('# Cleaned and reorganized by OpenCode on 2026-06-27')
   outputLines.push(`# Total entries: ${entries.length}`)
   outputLines.push(`# Sports Events: ${sections['sports-events'].length} | Sports Football: ${sections['sports-football'].length} | Sports Combat: ${sections['sports-combat'].length} | Sports Motorsports: ${sections['sports-motorsports'].length} | Sports Other: ${sections['sports-other'].length}`)
   outputLines.push(`# News: ${sections['news'].length} | US: ${sections['us'].length} | Canada: ${sections['canada'].length} | UK: ${sections['uk'].length} | LocalNow: ${sections['localnow'].length}`)

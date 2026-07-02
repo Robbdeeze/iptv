@@ -3,6 +3,7 @@ import { Storage } from '@freearhey/storage-js'
 import { Logger } from '@freearhey/core'
 import { Stream } from '../../models'
 import { PlaylistParser, closeBrowser } from '../../core'
+import { extractTimeFromText } from '../../core/aggregatorHelpers'
 import { loadData } from '../../api'
 import { scrapeDaddylive } from './daddyliveScraper'
 import { scrapeStreamEast } from './streamEastScraper'
@@ -16,12 +17,16 @@ import { scrapeSportyHunter } from './sportyHunterScraper'
 import { scrapeVipbox } from './vipboxScraper'
 import { scrapeSportsurge } from './sportsurgeScraper'
 import { scrapePortals } from './portalScraper'
+import { scrapeDlhd } from './dlhdScraper'
+import { scrapeRabbitMeow } from './rabbitMeowScraper'
+import { scrapeTheTvApp } from './theTvAppScraper'
+import { scrapeTotalSportek } from './totalSportekScraper'
 import { eachLimit } from 'async'
 import axios from 'axios'
 
-const SCRAPER_TIMEOUT = 5 * 60 * 1000
-const CHECK_TIMEOUT = 10000
-const CHECK_CONCURRENCY = 50
+const SCRAPER_TIMEOUT = parseInt(process.env.SCRAPER_TIMEOUT || '') || 5 * 60 * 1000
+const CHECK_TIMEOUT = parseInt(process.env.CHECK_TIMEOUT || '') || 10000
+const CHECK_CONCURRENCY = parseInt(process.env.CHECK_CONCURRENCY || '') || 50
 
 const FATAL_NETWORK_CODES = new Set([
   'ECONNREFUSED', 'ENOTFOUND', 'ENETUNREACH', 'EAI_AGAIN', 'HTTP_000'
@@ -75,12 +80,42 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
   ])
 }
 
-function matchesSport(stream: Stream, sport: string): boolean {
-  if (sport === 'all') return true
-  const lower = sport.toLowerCase()
+function isRecentStream(stream: Stream): boolean {
+  const title = stream.title || ''
+  const timeStr = extractTimeFromText(title)
+  if (!timeStr) return true
+
+  const now = new Date()
+  const lower = timeStr.toLowerCase()
+  const isPM = lower.includes('pm')
+  const isAM = lower.includes('am')
+  const clean = timeStr.replace(/\s*(am|pm)\s*/i, '').trim()
+  const [h, m] = clean.split(':').map(Number)
+  if (isNaN(h) || isNaN(m)) return true
+
+  let hour = h
+  if (isPM && hour !== 12) hour += 12
+  if (isAM && hour === 12) hour = 0
+
+  const eventDate = new Date(now)
+  eventDate.setHours(hour, m, 0, 0)
+
+  const diff = eventDate.getTime() - now.getTime()
+
+  if (diff < -6 * 60 * 60 * 1000) return false
+  if (diff > 24 * 60 * 60 * 1000) return false
+
+  return true
+}
+
+function matchesSport(stream: Stream, sports: string[]): boolean {
+  if (sports.length === 1 && sports[0] === 'all') return true
   const title = (stream.title || '').toLowerCase()
   const group = (stream.groupTitle || '').toLowerCase()
-  return title.includes(lower) || group.includes(lower)
+  return sports.some(s => {
+    const lower = s.toLowerCase()
+    return title.includes(lower) || group.includes(lower)
+  })
 }
 
 async function checkStreams(
@@ -137,16 +172,17 @@ async function checkStreams(
 }
 
 async function main() {
-  const sport = parseArg('sport', 'all')!
+  const sportRaw = parseArg('sport', 'all')!
+  const sports = sportRaw.split(',').map(s => s.trim()).filter(Boolean)
   const logger = new Logger()
 
   logger.info('=== Sports Scraper ===')
-  logger.info(`Sport filter: "${sport}"`)
+  logger.info(`Sport filter: "${sports.join(', ')}"`)
 
   logger.info('loading data from api...')
   await loadData()
 
-  const scraperNames = ['DaddyLive', 'Streamed', 'NTV', 'SportsBite', 'PPV.TO', 'Roxie', 'SportyHunter', 'VIPRow', 'Sportsurge', 'StreamEast', 'LiveTV', 'Portals']
+  const scraperNames = ['DaddyLive', 'Streamed', 'NTV', 'SportsBite', 'PPV.TO', 'Roxie', 'SportyHunter', 'VIPRow', 'Sportsurge', 'StreamEast', 'LiveTV', 'Portals', 'DLHD', 'RabbitMeow', 'TheTVApp', 'TotalSportek']
 
   logger.info('scraping sports streams...')
   const scraperResults = await Promise.allSettled([
@@ -161,7 +197,11 @@ async function main() {
     withTimeout(scrapeSportsurge(logger), SCRAPER_TIMEOUT, 'Sportsurge'),
     withTimeout(scrapeStreamEast(logger), SCRAPER_TIMEOUT, 'StreamEast'),
     withTimeout(scrapeLiveTV(logger), SCRAPER_TIMEOUT, 'LiveTV'),
-    withTimeout(scrapePortals(logger), SCRAPER_TIMEOUT, 'Portals')
+    withTimeout(scrapePortals(logger), SCRAPER_TIMEOUT, 'Portals'),
+    withTimeout(scrapeDlhd(logger), SCRAPER_TIMEOUT, 'DLHD'),
+    withTimeout(scrapeRabbitMeow(logger), SCRAPER_TIMEOUT, 'RabbitMeow'),
+    withTimeout(scrapeTheTvApp(logger), SCRAPER_TIMEOUT, 'TheTVApp'),
+    withTimeout(scrapeTotalSportek(logger), SCRAPER_TIMEOUT, 'TotalSportek')
   ])
 
   await closeBrowser()
@@ -180,19 +220,20 @@ async function main() {
       let added = 0
       for (const stream of streams) {
         if (isPortalSource && !isPortalSportsStream(stream)) continue
-        if (matchesSport(stream, sport)) {
+        if (!isRecentStream(stream)) continue
+        if (matchesSport(stream, sports)) {
           stream.groupTitle = 'Sports - Live / PPV / Events'
           scrapedStreams.push(stream)
           added++
         }
       }
       if (added > 0) {
-        logger.info(`  ${scraperNames[i]}: ${added} streams matching "${sport}" in "${groupTitle}"`)
+        logger.info(`  ${scraperNames[i]}: ${added} streams matching "${sports.join(', ')}" in "${groupTitle}"`)
       }
     }
   }
 
-  logger.info(`Total scraped streams matching "${sport}": ${scrapedStreams.length}`)
+  logger.info(`Total scraped streams matching "${sports.join(', ')}": ${scrapedStreams.length}`)
 
   if (scrapedStreams.length === 0) {
     logger.warn('No streams found. Exiting.')
@@ -246,6 +287,24 @@ async function main() {
 
   await rootStorage.save(existingFile, output)
   logger.info(`Done! Playlist saved to ${existingFile}`)
+
+  const report = {
+    date: new Date().toISOString(),
+    sport: sports.join(', '),
+    scrapers: scraperResults.map((r, i) => ({
+      name: scraperNames[i],
+      status: r.status,
+      streams: r.status === 'fulfilled'
+        ? (r.value as { groupTitle: string; streams: Stream[] }[]).reduce((sum, g) => sum + g.streams.length, 0)
+        : 0
+    })),
+    totalScraped: scrapedStreams.length,
+    aliveAfterCheck: checkedStreams.length,
+    existingKept: keptStreams.length,
+    totalWritten: allStreams.length
+  }
+  await rootStorage.save('streams/scraper-report.json', JSON.stringify(report, null, 2))
+  logger.info('Health report saved to streams/scraper-report.json')
 }
 
 main().then(() => {

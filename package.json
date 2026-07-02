@@ -32,6 +32,9 @@
       "^.+\\.ts$": "@swc/jest"
     },
     "testRegex": "tests/(.*?/)?.*test.ts$",
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(@freearhey|@iptv-org)/)"
+    ],
     "setupFilesAfterEnv": [
       "jest-expect-message"
     ]

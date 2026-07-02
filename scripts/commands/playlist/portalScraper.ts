@@ -4,10 +4,10 @@ import axios from 'axios'
 import { eachLimit } from 'async'
 import crypto from 'crypto'
 
-const VERIFY_TIMEOUT = 8000
-const FETCH_TIMEOUT = 15000
-const MAX_VERIFIED = 20
-const MAX_STREAMS_PER_PORTAL = 500
+const VERIFY_TIMEOUT = parseInt(process.env.VERIFY_TIMEOUT || '') || 8000
+const FETCH_TIMEOUT = parseInt(process.env.FETCH_TIMEOUT || '') || 15000
+const MAX_VERIFIED = parseInt(process.env.MAX_VERIFIED_PORTALS || '') || 20
+const MAX_STREAMS_PER_PORTAL = parseInt(process.env.MAX_STREAMS_PER_PORTAL || '') || 500
 
 const UA = 'Mozilla/5.0 (Linux; Android 11; PlayTorrio) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36'
 
@@ -498,14 +498,14 @@ async function fetchRedditPortals(logger: Logger): Promise<Portal[]> {
       const body = `${title} ${content}`.trim()
       if (!body) continue
 
-      portals.push(...extractPortals(body, `reddit:IPTV_ZONENEW`))
+      portals.push(...extractPortals(body, 'reddit:IPTV_ZONENEW'))
 
       const deepLinks = new Set<string>()
       for (const bm of body.match(B64) || []) {
         try {
           const decoded = Buffer.from(bm, 'base64').toString('utf-8')
           if (decoded.startsWith('http') && PASTE_DOMAINS.some(d => decoded.includes(d))) deepLinks.add(decoded)
-          else if (!decoded.startsWith('http') && decoded.includes(':')) portals.push(...extractPortals(decoded, `reddit/b64:IPTV_ZONENEW`))
+          else if (!decoded.startsWith('http') && decoded.includes(':')) portals.push(...extractPortals(decoded, 'reddit/b64:IPTV_ZONENEW'))
         } catch { }
       }
       for (const pm of body.match(RAW_PASTE) || []) deepLinks.add(pm)
@@ -518,7 +518,7 @@ async function fetchRedditPortals(logger: Logger): Promise<Portal[]> {
         seenPastes.add(pk)
         dlCount++
         const pasteText = await fetchPasteContent(dl)
-        if (pasteText) portals.push(...extractPortals(pasteText, `reddit/deep:IPTV_ZONENEW`))
+        if (pasteText) portals.push(...extractPortals(pasteText, 'reddit/deep:IPTV_ZONENEW'))
       }
     }
   } catch (err: any) {
@@ -547,13 +547,13 @@ async function fetchRedditPortals(logger: Logger): Promise<Portal[]> {
           const pdata = post?.data
           if (!pdata) continue
           const body = `${pdata.title?.toString() || ''} ${pdata.selftext?.toString() || ''}`.trim()
-          portals.push(...extractPortals(body, `reddit:IPTV_ZONENEW`))
+          portals.push(...extractPortals(body, 'reddit:IPTV_ZONENEW'))
           const deepLinks = new Set<string>()
           for (const bm of body.match(B64) || []) {
             try {
               const decoded = Buffer.from(bm, 'base64').toString('utf-8')
               if (decoded.startsWith('http') && PASTE_DOMAINS.some(d => decoded.includes(d))) deepLinks.add(decoded)
-              else if (!decoded.startsWith('http') && decoded.includes(':')) portals.push(...extractPortals(decoded, `reddit/b64:IPTV_ZONENEW`))
+              else if (!decoded.startsWith('http') && decoded.includes(':')) portals.push(...extractPortals(decoded, 'reddit/b64:IPTV_ZONENEW'))
             } catch { }
           }
           for (const pm of body.match(RAW_PASTE) || []) deepLinks.add(pm)
@@ -565,7 +565,7 @@ async function fetchRedditPortals(logger: Logger): Promise<Portal[]> {
             seenPastes.add(pk)
             dlCount++
             const pasteText = await fetchPasteContent(dl)
-            if (pasteText) portals.push(...extractPortals(pasteText, `reddit/deep:IPTV_ZONENEW`))
+            if (pasteText) portals.push(...extractPortals(pasteText, 'reddit/deep:IPTV_ZONENEW'))
           }
         }
         if (!after) break
