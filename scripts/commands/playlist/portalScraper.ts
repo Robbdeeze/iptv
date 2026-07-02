@@ -6,8 +6,11 @@ import crypto from 'crypto'
 
 const VERIFY_TIMEOUT = parseInt(process.env.VERIFY_TIMEOUT || '') || 8000
 const FETCH_TIMEOUT = parseInt(process.env.FETCH_TIMEOUT || '') || 15000
-const MAX_VERIFIED = parseInt(process.env.MAX_VERIFIED_PORTALS || '') || 20
+const MAX_VERIFIED = parseInt(process.env.MAX_VERIFIED_PORTALS || '') || 30
 const MAX_STREAMS_PER_PORTAL = parseInt(process.env.MAX_STREAMS_PER_PORTAL || '') || 500
+
+// Permanent portal domains - never removed, always included when available
+const KEEP_PORTAL_DOMAINS = ['jackofclubs.vip', 'vividmedia.xyz', 'cord-cutter.net']
 
 const UA = 'Mozilla/5.0 (Linux; Android 11; PlayTorrio) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36'
 
@@ -907,7 +910,22 @@ export async function scrapePortals(logger: Logger): Promise<{ groupTitle: strin
   logger.info(`Verifying up to ${Math.min(allPortals.length, MAX_VERIFIED * 3)} portals (will keep ${MAX_VERIFIED} verified)...`)
   const verified: VerifiedPortal[] = []
 
-  await eachLimit(allPortals, 10, async (portal) => {
+  // Verify up to 3 entries per whitelisted domain first, then fill rest
+  const whitelisted = allPortals.filter(p => KEEP_PORTAL_DOMAINS.some(d => p.url.includes(d)))
+  const rest = allPortals.filter(p => !KEEP_PORTAL_DOMAINS.some(d => p.url.includes(d)))
+
+  // Limit whitelisted verification: ensure at least 1 per domain, at most 5
+  const whitelistByDomain = new Map<string, typeof allPortals>()
+  for (const p of whitelisted) {
+    const domain = KEEP_PORTAL_DOMAINS.find(d => p.url.includes(d)) || 'other'
+    const list = whitelistByDomain.get(domain) || []
+    if (list.length < 5) list.push(p)
+    whitelistByDomain.set(domain, list)
+  }
+  const cappedWhitelisted = [...whitelistByDomain.values()].flat()
+  const ordered = [...cappedWhitelisted, ...rest]
+
+  await eachLimit(ordered, 10, async (portal) => {
     if (verified.length >= MAX_VERIFIED) return
     const vp = await verifyPortal(portal, logger)
     if (vp) {
@@ -941,6 +959,26 @@ export async function scrapePortals(logger: Logger): Promise<{ groupTitle: strin
 
   // For each domain: dedup, merge, deduplicate by URL
   for (const [domain, entries] of domainMap) {
+    const isKept = KEEP_PORTAL_DOMAINS.some(d => domain.includes(d))
+
+    if (isKept) {
+      // Keep all entries for whitelisted domains (no dedup)
+      const groupTitle = `! Portals - ${domain}`
+      const seenUrls = new Set<string>()
+      const merged: Stream[] = []
+      for (const entry of entries) {
+        for (const s of entry.streams) {
+          if (seenUrls.has(s.url)) continue
+          seenUrls.add(s.url)
+          s.groupTitle = groupTitle
+          merged.push(s)
+        }
+      }
+      logger.info(`  Keeping ${merged.length} streams for whitelisted domain ${domain}`)
+      result.push({ groupTitle, streams: merged })
+      continue
+    }
+
     // Sort by stream count descending
     entries.sort((a, b) => b.streams.length - a.streams.length)
 
