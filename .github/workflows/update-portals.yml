@@ -1,0 +1,43 @@
+name: Update Portals
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Every 6 hours
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-portals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+
+      - name: Update portal streams only
+        run: npx tsx scripts/commands/playlist/generateUltimate.ts --portals-only
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git status --porcelain
+          echo "changes=$(git status --porcelain | wc -l | tr -d ' ')" >> $GITHUB_OUTPUT
+
+      - name: Commit and push changes
+        if: steps.git-check.outputs.changes != '0'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "[Bot] Update portal streams"
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          file_pattern: Robbdeeze_UltimateTV.m3u

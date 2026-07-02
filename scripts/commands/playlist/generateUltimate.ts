@@ -137,6 +137,7 @@ function getGroupTitle(filename: string): string {
 
 async function main() {
   const logger = new Logger()
+  const portalsOnly = process.argv.includes('--portals-only')
 
   logger.info('loading data from api...')
   await loadData()
@@ -317,6 +318,12 @@ async function main() {
   logger.info(`total streams after portals: ${combinedStreams.count()}`)
 
   // Run all sports scrapers in parallel (with individual timeouts)
+  // Skip sports scrapers if --portals-only flag is set
+  if (portalsOnly) {
+    logger.info('--portals-only flag set, skipping sports scrapers...')
+    await closeBrowser()
+    logger.info(`loaded ${combinedStreams.count()} total streams`)
+  } else {
   logger.info('scraping all sports streams (parallel)...')
   const scraperResults = await Promise.allSettled([
     withTimeout(scrapeDaddylive(logger), SCRAPER_TIMEOUT, 'DaddyLive'),
@@ -354,6 +361,7 @@ async function main() {
 
   await closeBrowser()
   logger.info(`loaded ${combinedStreams.count()} total streams`)
+  }
 
   // Deduplicate streams by URL
   logger.info('deduplicating streams by URL...')
