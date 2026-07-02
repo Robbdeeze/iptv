@@ -1012,14 +1012,18 @@ export async function scrapePortals(logger: Logger): Promise<{ groupTitle: strin
     const isKept = KEEP_PORTAL_DOMAINS.some(d => domain.includes(d))
 
     if (isKept) {
-      // Keep all entries for whitelisted domains (no dedup)
+      // Keep all entries for whitelisted domains, dedup by URL and title
       const groupTitle = `! Portals - ${domain}`
       const seenUrls = new Set<string>()
+      const seenTitles = new Set<string>()
       const merged: Stream[] = []
       for (const entry of entries) {
         for (const s of entry.streams) {
           if (seenUrls.has(s.url)) continue
           seenUrls.add(s.url)
+          const titleKey = s.title.toLowerCase().trim()
+          if (seenTitles.has(titleKey)) continue
+          seenTitles.add(titleKey)
           s.groupTitle = groupTitle
           merged.push(s)
         }
