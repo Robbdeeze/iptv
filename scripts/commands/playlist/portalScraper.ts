@@ -25,6 +25,8 @@ const CORS_PROXIES = [
 
 const TELEGRAM_CHANNELS = ['xtreamcodes']
 
+const REDDIT_SUBREDDITS = ['IPTV_ZONENEW', 'xml2']
+
 const SHORTENER_DOMAINS = ['oxy.st', 'oxy.name', 'try2link.com', 'linkvertise.com', 'exe.io', 'sh.st']
 
 // Circuit breaker state per proxy
@@ -68,7 +70,16 @@ async function followShortener(url: string, depth = 5): Promise<string | null> {
   } catch { return null }
 }
 
-const GITHUB_PORTAL_REPOS: { owner: string; repo: string; path: string; ref: string; fallbackFiles?: string[] }[] = [
+type GitHubRepoConfig = {
+  owner: string
+  repo: string
+  path: string
+  ref: string
+  format?: 'txt' | 'json'
+  fallbackFiles?: string[]
+}
+
+const GITHUB_PORTAL_REPOS: GitHubRepoConfig[] = [
   {
     owner: 'akeotaseo',
     repo: 'world_repo',
@@ -94,6 +105,13 @@ const GITHUB_PORTAL_REPOS: { owner: string; repo: string; path: string; ref: str
       'kgen%20(4).txt', 'kgen.txt', 'rg.txt', 'x.txt',
       '%7BAllTelegram%7D2.txt',
     ],
+  },
+  {
+    owner: 'rochana-sadila',
+    repo: 'Xtream-Codes-Library',
+    path: '',
+    ref: 'main',
+    format: 'json',
   },
 ]
 
@@ -414,7 +432,7 @@ async function fetchPasteContent(url: string): Promise<string | null> {
   }
 }
 
-async function fetchGitHubRepoPortals(cfg: typeof GITHUB_PORTAL_REPOS[0], logger: Logger): Promise<Portal[]> {
+async function fetchGitHubRepoPortals(cfg: GitHubRepoConfig, logger: Logger): Promise<Portal[]> {
   let files: { url: string; name: string }[] = []
 
   try {
@@ -424,8 +442,9 @@ async function fetchGitHubRepoPortals(cfg: typeof GITHUB_PORTAL_REPOS[0], logger
       timeout: 15000,
     })
     const entries: any[] = res.data
+    const extPattern = cfg.format === 'json' ? /\.json$/i : /\.txt$/i
     files = entries
-      .filter((e: any) => e.type === 'file' && /\.txt$/i.test(e.name) && e.download_url)
+      .filter((e: any) => e.type === 'file' && extPattern.test(e.name) && e.download_url)
       .sort((a: any, b: any) => (a.size || 0) - (b.size || 0))
       .map((e: any) => ({ url: e.download_url, name: e.name }))
     logger.info(`  listed ${files.length} files from ${cfg.owner}/${cfg.repo}`)
@@ -434,6 +453,10 @@ async function fetchGitHubRepoPortals(cfg: typeof GITHUB_PORTAL_REPOS[0], logger
       logger.warn(`  GitHub API failed for ${cfg.owner}/${cfg.repo}: ${err.message?.substring(0, 60) || err}, using fallback`)
       const base = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.ref}/${cfg.path}/`
       files = cfg.fallbackFiles.map(n => ({ url: base + n, name: n }))
+    } else if (cfg.format === 'json') {
+      logger.warn(`  GitHub API failed for ${cfg.owner}/${cfg.repo}: ${err.message?.substring(0, 60) || err}, trying direct`)
+      const base = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.ref}/${cfg.path}`
+      files = [{ url: base + 'xtreams.json', name: 'xtreams.json' }]
     } else {
       logger.warn(`  GitHub API failed for ${cfg.owner}/${cfg.repo}: ${err.message?.substring(0, 60) || err}, skipping`)
       return []
@@ -446,12 +469,29 @@ async function fetchGitHubRepoPortals(cfg: typeof GITHUB_PORTAL_REPOS[0], logger
   for (const file of files) {
     try {
       const res = await axios.get(file.url, { timeout: 15000, headers: { 'User-Agent': UA } })
-      const found = extractPortals(res.data, `github/${cfg.repo}:${file.name}`)
-      for (const p of found) {
-        const key = `${p.url}|${p.username}|${p.password}`
-        if (seen.has(key)) continue
-        seen.add(key)
-        portals.push(p)
+
+      if (file.name.endsWith('.json')) {
+        const arr: any[] = (() => {
+          try { return Array.isArray(res.data) ? res.data : JSON.parse(res.data) } catch { return [] }
+        })()
+        for (const entry of arr) {
+          const url = entry.url || ''
+          const user = entry.user || entry.username || ''
+          const pass = entry.password || entry.pass || ''
+          if (!url || user.length < 3 || pass.length < 3) continue
+          const key = `${url}|${user}|${pass}`
+          if (seen.has(key)) continue
+          seen.add(key)
+          portals.push({ url: cleanPortalUrl(url), username: cleanCred(user), password: cleanCred(pass), source: `github/${cfg.repo}` })
+        }
+      } else {
+        const found = extractPortals(res.data, `github/${cfg.repo}:${file.name}`)
+        for (const p of found) {
+          const key = `${p.url}|${p.username}|${p.password}`
+          if (seen.has(key)) continue
+          seen.add(key)
+          portals.push(p)
+        }
       }
     } catch { }
   }
@@ -479,85 +519,101 @@ async function fetchGitHubPortals(logger: Logger): Promise<Portal[]> {
 async function fetchRedditPortals(logger: Logger): Promise<Portal[]> {
   const portals: Portal[] = []
   const seenPastes = new Set<string>()
+  const seenPortalKeys = new Set<string>()
 
-  // Use Reddit RSS feed — not blocked by Reddit's anti-bot (unlike JSON API)
-  try {
-    const url = 'https://www.reddit.com/r/IPTV_ZONENEW/new/.rss?limit=100'
-    const res = await axios.get(url, { timeout: 20000, headers: { 'User-Agent': UA } })
-    const xml: string = typeof res.data === 'string' ? res.data : ''
-    if (!xml) { logger.warn('  Reddit RSS returned empty response'); return portals }
-
-    const entryRegex = /<entry>([\s\S]*?)<\/entry>/g
-    const entries: string[] = []
-    let m: RegExpExecArray | null
-    while ((m = entryRegex.exec(xml)) !== null) entries.push(m[1])
-
-    logger.info(`  RSS: ${entries.length} r/IPTV_ZONENEW posts`)
-
-    for (const entry of entries) {
-      const titleMatch = entry.match(/<title[^>]*>([\s\S]*?)<\/title>/)
-      const contentMatch = entry.match(/<content type="html">([\s\S]*?)<\/content>/)
-      const title = titleMatch ? titleMatch[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim() : ''
-      const content = contentMatch ? contentMatch[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/<[^>]+>/g, ' ').trim() : ''
-      const body = `${title} ${content}`.trim()
-      if (!body) continue
-
-      portals.push(...extractPortals(body, 'reddit:IPTV_ZONENEW'))
-
-      const deepLinks = new Set<string>()
-      for (const bm of body.match(B64) || []) {
-        try {
-          const decoded = Buffer.from(bm, 'base64').toString('utf-8')
-          if (decoded.startsWith('http') && PASTE_DOMAINS.some(d => decoded.includes(d))) deepLinks.add(decoded)
-          else if (!decoded.startsWith('http') && decoded.includes(':')) portals.push(...extractPortals(decoded, 'reddit/b64:IPTV_ZONENEW'))
-        } catch { }
-      }
-      for (const pm of body.match(RAW_PASTE) || []) deepLinks.add(pm)
-
-      let dlCount = 0
-      for (const dl of deepLinks) {
-        if (dlCount >= 4) break
-        const pk = dl.replace(/\/+$/, '').toLowerCase()
-        if (seenPastes.has(pk)) continue
-        seenPastes.add(pk)
-        dlCount++
-        const pasteText = await fetchPasteContent(dl)
-        if (pasteText) portals.push(...extractPortals(pasteText, 'reddit/deep:IPTV_ZONENEW'))
+  function addPortals(found: Portal[]) {
+    for (const p of found) {
+      const key = `${p.url}|${p.username}|${p.password}`
+      if (!seenPortalKeys.has(key)) {
+        seenPortalKeys.add(key)
+        portals.push(p)
       }
     }
-  } catch (err: any) {
-    logger.warn(`  Reddit RSS failed: ${err.message?.substring(0, 60) || err}`)
+  }
+
+  for (const subreddit of REDDIT_SUBREDDITS) {
+    const subLabel = `r/${subreddit}`
+
+    // Use Reddit RSS feed — not blocked by Reddit's anti-bot (unlike JSON API)
+    try {
+      const url = `https://www.reddit.com/r/${subreddit}/new/.rss?limit=100`
+      const res = await axios.get(url, { timeout: 20000, headers: { 'User-Agent': UA } })
+      const xml: string = typeof res.data === 'string' ? res.data : ''
+      if (!xml) { logger.warn(`  RSS ${subLabel} returned empty response`); continue }
+
+      const entryRegex = /<entry>([\s\S]*?)<\/entry>/g
+      const entries: string[] = []
+      let m: RegExpExecArray | null
+      while ((m = entryRegex.exec(xml)) !== null) entries.push(m[1])
+
+      logger.info(`  RSS ${subLabel}: ${entries.length} posts`)
+
+      for (const entry of entries) {
+        const titleMatch = entry.match(/<title[^>]*>([\s\S]*?)<\/title>/)
+        const contentMatch = entry.match(/<content type="html">([\s\S]*?)<\/content>/)
+        const title = titleMatch ? titleMatch[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim() : ''
+        const content = contentMatch ? contentMatch[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/<[^>]+>/g, ' ').trim() : ''
+        const body = `${title} ${content}`.trim()
+        if (!body) continue
+
+        addPortals(extractPortals(body, `reddit:${subreddit}`))
+
+        const deepLinks = new Set<string>()
+        for (const bm of body.match(B64) || []) {
+          try {
+            const decoded = Buffer.from(bm, 'base64').toString('utf-8')
+            if (decoded.startsWith('http') && PASTE_DOMAINS.some(d => decoded.includes(d))) deepLinks.add(decoded)
+            else if (!decoded.startsWith('http') && decoded.includes(':')) addPortals(extractPortals(decoded, `reddit/b64:${subreddit}`))
+          } catch { }
+        }
+        for (const pm of body.match(RAW_PASTE) || []) deepLinks.add(pm)
+
+        let dlCount = 0
+        for (const dl of deepLinks) {
+          if (dlCount >= 4) break
+          const pk = dl.replace(/\/+$/, '').toLowerCase()
+          if (seenPastes.has(pk)) continue
+          seenPastes.add(pk)
+          dlCount++
+          const pasteText = await fetchPasteContent(dl)
+          if (pasteText) addPortals(extractPortals(pasteText, `reddit/deep:${subreddit}`))
+        }
+      }
+    } catch (err: any) {
+      logger.warn(`  Reddit RSS ${subLabel} failed: ${err.message?.substring(0, 60) || err}`)
+    }
   }
 
   if (portals.length > 0) return portals
 
   // Last resort: reddit.com via CORS proxies
   logger.info('  RSS returned 0 portals, trying Reddit.com via CORS proxies...')
-  {
+  for (const subreddit of REDDIT_SUBREDDITS) {
+    const subLabel = `r/${subreddit}`
     let after: string | null = null
     for (let page = 0; page < 3; page++) {
-      let url = 'https://www.reddit.com/r/IPTV_ZONENEW/new/.json?limit=100&sort=new'
+      let url = `https://www.reddit.com/r/${subreddit}/new/.json?limit=100&sort=new`
       if (after) url += `&after=${encodeURIComponent(after)}`
       try {
         const text = await fetchContent(url, 20000)
-        if (!text) { logger.warn('  Reddit via proxy returned no data'); break }
+        if (!text) { logger.warn(`  Reddit via proxy ${subLabel} returned no data`); break }
         let root: any
-        try { root = JSON.parse(text) } catch { logger.warn(`  Reddit via proxy returned non-JSON (page ${page + 1})`); break }
+        try { root = JSON.parse(text) } catch { logger.warn(`  Reddit via proxy ${subLabel} returned non-JSON (page ${page + 1})`); break }
         const posts: any[] = root?.data?.children || []
         if (posts.length === 0) break
         after = root?.data?.after || null
-        logger.info(`  Proxy: ${posts.length} r/IPTV_ZONENEW posts (page ${page + 1})`)
+        logger.info(`  Proxy ${subLabel}: ${posts.length} posts (page ${page + 1})`)
         for (const post of posts) {
           const pdata = post?.data
           if (!pdata) continue
           const body = `${pdata.title?.toString() || ''} ${pdata.selftext?.toString() || ''}`.trim()
-          portals.push(...extractPortals(body, 'reddit:IPTV_ZONENEW'))
+          addPortals(extractPortals(body, `reddit:${subreddit}`))
           const deepLinks = new Set<string>()
           for (const bm of body.match(B64) || []) {
             try {
               const decoded = Buffer.from(bm, 'base64').toString('utf-8')
               if (decoded.startsWith('http') && PASTE_DOMAINS.some(d => decoded.includes(d))) deepLinks.add(decoded)
-              else if (!decoded.startsWith('http') && decoded.includes(':')) portals.push(...extractPortals(decoded, 'reddit/b64:IPTV_ZONENEW'))
+              else if (!decoded.startsWith('http') && decoded.includes(':')) addPortals(extractPortals(decoded, `reddit/b64:${subreddit}`))
             } catch { }
           }
           for (const pm of body.match(RAW_PASTE) || []) deepLinks.add(pm)
@@ -569,11 +625,11 @@ async function fetchRedditPortals(logger: Logger): Promise<Portal[]> {
             seenPastes.add(pk)
             dlCount++
             const pasteText = await fetchPasteContent(dl)
-            if (pasteText) portals.push(...extractPortals(pasteText, 'reddit/deep:IPTV_ZONENEW'))
+            if (pasteText) addPortals(extractPortals(pasteText, `reddit/deep:${subreddit}`))
           }
         }
         if (!after) break
-      } catch (err: any) { logger.warn(`  Reddit via proxy page ${page + 1} failed: ${err.message?.substring(0, 60) || err}`); break }
+      } catch (err: any) { logger.warn(`  Reddit via proxy ${subLabel} page ${page + 1} failed: ${err.message?.substring(0, 60) || err}`); break }
     }
   }
 
@@ -684,14 +740,6 @@ async function verifyPortal(p: Portal, logger: Logger): Promise<VerifiedPortal |
       const status = (info.status || '').toString().toLowerCase()
       if (auth === '1' || status === 'active' || data.user_info) {
         const name = (info.username || p.username).toString()
-        const categories = await fetchPortalCategories(p)
-        if (categories.length > 0) {
-          const adultCount = categories.filter(c => isAdultCategory(c.name)).length
-          if (adultCount / categories.length >= ADULT_PENALTY_THRESHOLD) {
-            logger.info(`  Skipped (adult content): ${name} — ${adultCount}/${categories.length} categories adult`)
-            return null
-          }
-        }
         return { portal: p, name, domain: extractDomain(p.url) }
       }
     }

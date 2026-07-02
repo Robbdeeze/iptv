@@ -1,6 +1,6 @@
 # IPTV Version & Architecture Document
 
-**Version:** 1.13.0
+**Version:** 1.14.0
 
 ## Repository: Robbdeeze/iptv
 
@@ -1061,6 +1061,49 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 ---
 
 ## 11. Recent Improvements
+
+### July 1, 2026 — New GitHub Source + r/XML2 Reddit Subreddit (v1.14.0)
+
+**Theme:** *Expanding portal discovery with new sources matching iptvgen.pages.dev coverage.*
+
+#### 1. New GitHub Source: `rochana-sadila/Xtream-Codes-Library`
+
+**Problem:** Only XML2 `.txt` format repos were supported. `rochana-sadila/Xtream-Codes-Library` uses a JSON array format (`url`/`user`/`password` fields).
+
+**Solution:**
+- Added `format?: 'txt' | 'json'` to `GitHubRepoConfig` type
+- `fetchGitHubRepoPortals()` now accepts `.json` files and parses them by extracting `url/user/password` from JSON objects
+- JSON repos also have a direct raw fallback if GitHub API fails
+
+#### 2. New Reddit Subreddit: `r/XML2`
+
+**Problem:** Only `r/IPTV_ZONENEW` was scraped for portals. `r/xml2` also contains portal dumps.
+
+**Solution:**
+- Added `REDDIT_SUBREDDITS = ['IPTV_ZONENEW', 'xml2']` constant
+- `fetchRedditPortals()` now iterates over all configured subreddits
+- Shared paste cache prevents duplicate paste fetches across subreddits
+- Shared portal dedup across all Reddit sources
+
+#### 3. Investigation: iptvgen.pages.dev Sources
+
+**Investigated:** `scraper.js`, `verifier.js`, `pasteSh.js` from iptvgen.pages.dev
+
+**Findings:** Our portal scraper already covers everything they do:
+- Same GitHub repo (`akeotaseo/world_repo/Updater_Matrix/XML2`) — we use 2 repos, they use 1
+- Same Reddit subreddit (`r/IPTV_ZONENEW`) — we use RSS (more reliable), they use JSON via CORS proxies
+- Same paste domains (paste.sh, pastebin.com, justpaste.it, controlc.com, pastes.dev, text.is, rentry.co) — identical
+- Same verification (`player_api.php` + `auth=1`/`status=active`) — we also have M3U fallback
+- We additionally have: Telegram scraping, URL shortener resolution, encrypted paste.sh decryption (same algorithm)
+
+**Result:** No missing sources — our implementation already matches or exceeds theirs.
+
+| Change | File | Description |
+|--------|------|-------------|
+| GitHub JSON repo support | `scripts/commands/playlist/portalScraper.ts` | Added `GitHubRepoConfig` type with `format` field, JSON parsing in `fetchGitHubRepoPortals()`, `rochana-sadila/Xtream-Codes-Library` as new repo |
+| Multi-subreddit Reddit scraping | `scripts/commands/playlist/portalScraper.ts` | Added `REDDIT_SUBREDDITS` array, `fetchRedditPortals()` iterates over all subreddits with shared dedup |
+| iptvgen.pages.dev source audit | `IPTV_VERSION.md` | Confirmed all sources already covered |
+| Version bump | `IPTV_VERSION.md` | Updated to 1.14.0 |
 
 ### July 1, 2026 — Configurable Env Vars, Multi-Sport, Tests, Dashboard, Snapshots, .opencode.json (v1.13.0)
 
