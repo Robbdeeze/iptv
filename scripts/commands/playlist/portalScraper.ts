@@ -740,6 +740,14 @@ async function verifyPortal(p: Portal, logger: Logger): Promise<VerifiedPortal |
       const status = (info.status || '').toString().toLowerCase()
       if (auth === '1' || status === 'active' || data.user_info) {
         const name = (info.username || p.username).toString()
+        const categories = await fetchPortalCategories(p)
+        if (categories.length > 0) {
+          const adultCount = categories.filter(c => isAdultCategory(c.name)).length
+          if (adultCount === categories.length) {
+            logger.info(`  Skipped (all categories adult): ${name} — ${adultCount}/${categories.length}`)
+            return null
+          }
+        }
         return { portal: p, name, domain: extractDomain(p.url) }
       }
     }
