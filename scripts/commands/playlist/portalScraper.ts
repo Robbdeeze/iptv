@@ -11,6 +11,8 @@ const MAX_STREAMS_PER_PORTAL = parseInt(process.env.MAX_STREAMS_PER_PORTAL || ''
 
 // Permanent portal domains - never removed, always included when available
 const KEEP_PORTAL_DOMAINS = ['jackofclubs.vip', 'vividmedia.xyz', 'cord-cutter.net']
+// Portal domains to always exclude from output
+const BLOCK_PORTAL_DOMAINS = ['185.182.193.203', 'hardcoremedia.xyz']
 const MAX_PORTAL_GROUPS = 8
 
 const UA = 'Mozilla/5.0 (Linux; Android 11; PlayTorrio) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36'
@@ -1017,6 +1019,10 @@ export async function scrapePortals(logger: Logger): Promise<{ groupTitle: strin
   // For each domain: dedup, merge, deduplicate by URL, cap at MAX_PORTAL_GROUPS
   let portalGroupCount = 0
   for (const [domain, entries] of domainMap) {
+    if (BLOCK_PORTAL_DOMAINS.some(d => domain.includes(d))) {
+      logger.info(`  Skipping blocked domain ${domain}`)
+      continue
+    }
     const isKept = KEEP_PORTAL_DOMAINS.some(d => domain.includes(d))
 
     if (isKept) {
