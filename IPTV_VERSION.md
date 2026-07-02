@@ -1085,7 +1085,19 @@ npx jest tests/commands/playlist/validate.test.ts   # Individual test
 - Shared paste cache prevents duplicate paste fetches across subreddits
 - Shared portal dedup across all Reddit sources
 
-#### 3. Investigation: iptvgen.pages.dev Sources
+#### 3. Title-Based Dedup for Whitelisted Portals
+
+**Problem:** Whitelisted portals (cord-cutter.net, vividmedia.xyz, jackofclubs.vip) had 5 users each, each returning the same ~500 channels with different URLs (`/live/user1/pass/123.ts` vs `/live/user2/pass/123.ts`). URL-level dedup couldn't catch these — each portal appeared to have unique URLs.
+
+**Solution:** Added title-based dedup alongside URL dedup for whitelisted domains. After URL dedup, a `seenTitles` set tracks lowercase stream titles and skips duplicates. Result: 2,000-2,500 streams per domain → 499 unique streams per domain.
+
+#### 4. Refined Adult Content Filtering (Mixed-Content Portals)
+
+**Problem:** The previous change removed the adult category check entirely, causing 100% adult portals (like `server.iptvxxx.net` with 4/4 adult categories) to consume verification slots that should go to useful portals like `fortv.cc` and `hardcoremedia.xyz`.
+
+**Solution:** Replaced the old ≥30% threshold with a 100% check — portals where ALL categories are adult are skipped (they'd produce 0 streams anyway). Mixed-content portals (some adult, some clean) are kept, and individual adult streams are filtered at the stream level.
+
+#### 5. Investigation: iptvgen.pages.dev Sources
 
 **Investigated:** `scraper.js`, `verifier.js`, `pasteSh.js` from iptvgen.pages.dev
 
