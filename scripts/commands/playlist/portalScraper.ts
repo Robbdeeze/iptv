@@ -11,6 +11,7 @@ const MAX_STREAMS_PER_PORTAL = parseInt(process.env.MAX_STREAMS_PER_PORTAL || ''
 
 // Permanent portal domains - never removed, always included when available
 const KEEP_PORTAL_DOMAINS = ['jackofclubs.vip', 'vividmedia.xyz', 'cord-cutter.net']
+const MAX_PORTAL_GROUPS = 8
 
 const UA = 'Mozilla/5.0 (Linux; Android 11; PlayTorrio) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36'
 
@@ -957,7 +958,8 @@ export async function scrapePortals(logger: Logger): Promise<{ groupTitle: strin
     domainMap.set(ps.vp.domain, list)
   }
 
-  // For each domain: dedup, merge, deduplicate by URL
+  // For each domain: dedup, merge, deduplicate by URL, cap at MAX_PORTAL_GROUPS
+  let portalGroupCount = 0
   for (const [domain, entries] of domainMap) {
     const isKept = KEEP_PORTAL_DOMAINS.some(d => domain.includes(d))
 
@@ -976,8 +978,11 @@ export async function scrapePortals(logger: Logger): Promise<{ groupTitle: strin
       }
       logger.info(`  Keeping ${merged.length} streams for whitelisted domain ${domain}`)
       result.push({ groupTitle, streams: merged })
+      portalGroupCount++
       continue
     }
+
+    if (portalGroupCount >= MAX_PORTAL_GROUPS) continue
 
     // Sort by stream count descending
     entries.sort((a, b) => b.streams.length - a.streams.length)
@@ -1013,6 +1018,7 @@ export async function scrapePortals(logger: Logger): Promise<{ groupTitle: strin
     }
 
     result.push({ groupTitle, streams: merged })
+    portalGroupCount++
   }
 
   return result
