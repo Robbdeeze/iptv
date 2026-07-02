@@ -10,7 +10,7 @@ const MAX_VERIFIED = parseInt(process.env.MAX_VERIFIED_PORTALS || '') || 30
 const MAX_STREAMS_PER_PORTAL = parseInt(process.env.MAX_STREAMS_PER_PORTAL || '') || 500
 
 // Permanent portal domains - never removed, always included when available
-const KEEP_PORTAL_DOMAINS = ['jackofclubs.vip', 'vividmedia.xyz', 'cord-cutter.net']
+const KEEP_PORTAL_DOMAINS = ['jackofclubs.vip', 'vividmedia.xyz', 'cord-cutter.net', 'odietv.xyz']
 // Portal domains to always exclude from output
 const BLOCK_PORTAL_DOMAINS = ['185.182.193.203', 'hardcoremedia.xyz']
 const MAX_PORTAL_GROUPS = 8
@@ -638,6 +638,72 @@ async function fetchRedditPortals(logger: Logger): Promise<Portal[]> {
   return portals
 }
 
+async function fetchAMZIPTVPortals(logger: Logger): Promise<Portal[]> {
+  const portals: Portal[] = []
+  const seen = new Set<string>()
+  const MAX_PAGES = 10
+
+  logger.info('  Fetching AMZ IPTV listings...')
+  let allHashes: string[] = []
+
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    try {
+      const url = `https://iptv.tutoje.cz/list/?page=${page}`
+      const res = await axios.get(url, { timeout: 15000, headers: { 'User-Agent': UA } })
+      const html: string = typeof res.data === 'string' ? res.data : ''
+      const hashes = [...html.matchAll(/\?data=([a-f0-9]{32})/g)].map(m => m[1])
+      const uniq = [...new Set(hashes)]
+      allHashes.push(...uniq)
+      if (uniq.length === 0) break
+    } catch {
+      break
+    }
+  }
+
+  allHashes = [...new Set(allHashes)]
+  logger.info(`  Found ${allHashes.length} credential hashes (${MAX_PAGES} pages)`)
+
+  let count = 0
+  for (const hash of allHashes) {
+    try {
+      const res = await axios.get(`https://iptv.tutoje.cz/?data=${hash}`, {
+        timeout: 15000,
+        headers: { 'User-Agent': UA },
+      })
+      const decoded = (typeof res.data === 'string' ? res.data : '').replace(/&quot;/g, '"')
+
+      const serverMatch = decoded.match(/name="server_url"\s+value="([^"]*)"/)
+      const spans = [...decoded.matchAll(/<span[^>]*class="[^"]*font-black text-3xl[^"]*"[^>]*>([^<]+)<\/span>/g)]
+      const server = serverMatch ? serverMatch[1] : ''
+      const username = spans[0] ? spans[0][1].trim() : ''
+      const password = spans[1] ? spans[1][1].trim() : ''
+
+      if (!server || !username) continue
+
+      const key = `${server}|${username}|${password}`.toLowerCase()
+      if (seen.has(key)) continue
+      seen.add(key)
+
+      portals.push({ url: cleanPortalUrl(server), username: cleanCred(username), password: cleanCred(password), source: 'amziptv' })
+      count++
+    } catch {
+      continue
+    }
+  }
+
+  logger.info(`  AMZ IPTV: ${count} portals extracted`)
+  return portals
+}
+
+const HARDCODED_PORTALS: Portal[] = [
+  { url: 'http://odietv.xyz:80', username: 'Mex', password: 'Mex123', source: 'hardcoded' },
+  { url: 'http://odietv.xyz:80', username: 'GaryBeasley', password: 'QYhSWdw3OM', source: 'hardcoded' },
+]
+
+async function fetchHardcodedPortals(_logger: Logger): Promise<Portal[]> {
+  return HARDCODED_PORTALS
+}
+
 async function fetchTelegramPortals(logger: Logger): Promise<Portal[]> {
   const portals: Portal[] = []
   const seenPastes = new Set<string>()
@@ -955,8 +1021,16 @@ export async function scrapePortals(logger: Logger): Promise<{ groupTitle: strin
   const telegramPortals = await fetchTelegramPortals(logger)
   logger.info(`Found ${telegramPortals.length} raw portals from Telegram`)
 
+  logger.info('Fetching portal credentials from AMZ IPTV...')
+  const amzPortals = await fetchAMZIPTVPortals(logger)
+  logger.info(`Found ${amzPortals.length} raw portals from AMZ IPTV`)
+
+  logger.info('Fetching hardcoded portals...')
+  const hardcodedPortals = await fetchHardcodedPortals(logger)
+  logger.info(`Found ${hardcodedPortals.length} hardcoded portals`)
+
   const deduped = new Map<string, Portal>()
-  for (const p of [...gitPortals, ...redditPortals, ...telegramPortals]) {
+  for (const p of [...gitPortals, ...redditPortals, ...telegramPortals, ...amzPortals, ...hardcodedPortals]) {
     const key = `${p.url}|${p.username}|${p.password}`.toLowerCase()
     if (!deduped.has(key)) deduped.set(key, p)
   }
